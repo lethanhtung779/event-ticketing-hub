@@ -1,0 +1,250 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                  String        @id @default(uuid())
+  email               String        @unique
+  password            String
+  fullName            String
+  role                Role          @default(USER)
+  isVerified          Boolean       @default(false)
+  verificationToken   String?
+  resetPasswordToken  String?
+  resetPasswordExpires DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  tickets             Ticket[]
+  reviews             Review[]
+  waitingListEntries  WaitingListEntry[]
+  refreshTokens       RefreshToken[]
+  auditLogs           AuditLog[]
+  payments            Payment[]
+  orders              Order[]
+
+  @@index([email])
+  @@index([role])
+}
+
+enum Role {
+  USER
+  STAFF
+  ADMIN
+}
+
+model Category {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  events Event[]
+}
+
+model Event {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  location    String
+  bannerUrl   String?
+  categoryId  String?
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  status      EventStatus  @default(DRAFT)
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ticketTypes TicketType[]
+  reviews     Review[]
+  waitingListEntries WaitingListEntry[]
+
+  @@index([status])
+  @@index([startTime])
+  @@index([categoryId])
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+}
+
+model TicketType {
+  id             String    @id @default(uuid())
+  eventId        String
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name           String
+  price          Float
+  totalQuantity  Int
+  soldQuantity   Int       @default(0)
+  minPerOrder    Int       @default(1)
+  maxPerOrder    Int?
+  saleStartTime  DateTime?
+  saleEndTime    DateTime?
+  createdAt      DateTime  @default(now())
+  tickets        Ticket[]
+
+  @@index([eventId])
+  @@index([saleStartTime, saleEndTime])
+}
+
+model Order {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  totalAmount Float
+  discount    Float        @default(0)
+  finalAmount Float
+  promoCode   String?
+  status      OrderStatus  @default(PENDING)
+  paidAt      DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tickets     Ticket[]
+  payments    Payment[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+model Ticket {
+  id           String       @id @default(uuid())
+  orderId      String?
+  order        Order?       @relation(fields: [orderId], references: [id])
+  ticketTypeId String
+  ticketType   TicketType   @relation(fields: [ticketTypeId], references: [id])
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  transferredFromId String?
+  transferredToId   String?
+  status       TicketStatus @default(PENDING)
+  qrCodeToken  String       @unique
+  checkedInAt  DateTime?
+  createdAt    DateTime     @default(now())
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([ticketTypeId])
+  @@index([status])
+  @@index([qrCodeToken])
+}
+
+enum TicketStatus {
+  PENDING
+  VALID
+  CHECKED_IN
+  CANCELLED
+  TRANSFERRED
+}
+
+model WaitingListEntry {
+  id           String   @id @default(uuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  ticketTypeId String
+  quantity     Int      @default(1)
+  notified     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@unique([eventId, userId, ticketTypeId])
+  @@index([ticketTypeId, notified])
+}
+
+model PromoCode {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  discountPct Float    // 0-100
+  maxUses     Int
+  usedCount   Int      @default(0)
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([code])
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  orderId        String
+  order          Order         @relation(fields: [orderId], references: [id])
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  amount         Float
+  currency       String        @default("VND")
+  method         String        // VNPAY, MOMO, BANK_TRANSFER
+  status         PaymentStatus @default(PENDING)
+  transactionNo  String?
+  bankCode       String?
+  payUrl         String?
+  refundAmount   Float?
+  refundReason   String?
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String   // CREATE_EVENT, UPDATE_EVENT, DELETE_EVENT, etc.
+  entity    String   // Event, TicketType, Ticket
+  entityId  String?
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
