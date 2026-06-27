@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import EventCard from '@/components/events/EventCard'
 import EventFilters from '@/components/events/EventFilters'
 import { Pagination } from '@/components/ui/Pagination'
@@ -11,6 +12,7 @@ import { unwrapList, unwrapMeta } from '@/lib/utils'
 import type { Event, Category } from '@/types'
 
 export default function EventsContent() {
+  const { t } = useTranslation()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -75,10 +77,9 @@ export default function EventsContent() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Sự kiện</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('events.title')}</h1>
         <p className="mt-2 text-gray-600">
-          Khám phá các sự kiện hấp dẫn dành cho bạn
-          {total > 0 && <span> (tổng số {total} sự kiện)</span>}
+          {total > 0 ? `${total} ${t('events.title').toLowerCase()}` : ''}
         </p>
       </div>
 
@@ -98,8 +99,7 @@ export default function EventsContent() {
           <PageSpinner />
         ) : events.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <p className="text-lg font-medium">Không tìm thấy sự kiện nào</p>
-            <p className="mt-1 text-sm">Hãy thử thay đổi bộ lọc tìm kiếm</p>
+            <p className="text-lg font-medium">{t('events.noEvents')}</p>
           </div>
         ) : (
           <>

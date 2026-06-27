@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search } from 'lucide-react'
+import Link from 'next/link'
+import { Search, Download } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Card } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -9,7 +10,7 @@ import Select from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Pagination } from '@/components/ui/Pagination'
 import { PageSpinner } from '@/components/ui/Spinner'
-import { getStatusColor, getStatusLabel, formatDate, unwrapList, unwrapMeta } from '@/lib/utils'
+import { formatDate, unwrapList, unwrapMeta } from '@/lib/utils'
 import { adminApi } from '@/lib/api'
 import type { User } from '@/types'
 
@@ -45,7 +46,21 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Quản lý người dùng</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Quản lý người dùng</h1>
+        <Button variant="outline" size="sm" onClick={async () => {
+          try {
+            const res = await adminApi.exportUsers()
+            const blob = new Blob([res.data as BlobPart], { type: 'text/csv' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url; a.download = 'users.csv'; a.click()
+            URL.revokeObjectURL(url)
+          } catch { toast.error('Xuất CSV thất bại') }
+        }}>
+          <Download className="h-4 w-4" /> Xuất CSV
+        </Button>
+      </div>
 
       <div className="relative max-w-xs mb-6">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -76,7 +91,11 @@ export default function AdminUsersPage() {
               <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-500">Không tìm thấy người dùng</td></tr>
             ) : users.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">{user.fullName}</td>
+                <td className="px-4 py-3">
+                  <Link href={`/admin/users/${user.id}`} className="font-medium text-gray-900 hover:text-indigo-600">
+                    {user.fullName}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-gray-600">{user.email}</td>
                 <td className="px-4 py-3">
                   <Select

@@ -13,6 +13,10 @@ import {
   X,
   Menu,
   TrendingUp,
+  ShoppingCart,
+  Star,
+  Bell,
+  BarChart3,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -21,12 +25,16 @@ import { useAuthStore } from '@/stores/auth-store'
 const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/events', label: 'Sự kiện', icon: Calendar },
+  { href: '/admin/orders', label: 'Đơn hàng', icon: ShoppingCart },
   { href: '/admin/categories', label: 'Danh mục', icon: Tag },
+  { href: '/admin/reviews', label: 'Đánh giá', icon: Star },
   { href: '/admin/check-in', label: 'Check-in', icon: Shield },
   { href: '/admin/promo-codes', label: 'Mã giảm giá', icon: Receipt },
   { href: '/admin/revenue', label: 'Doanh thu', icon: TrendingUp },
   { href: '/admin/users', label: 'Người dùng', icon: Users },
   { href: '/admin/audit-logs', label: 'Nhật ký', icon: Shield },
+  { href: '/admin/analytics', label: 'Thống kê', icon: BarChart3 },
+  { href: '/admin/notifications', label: 'Thông báo', icon: Bell },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

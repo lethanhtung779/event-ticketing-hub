@@ -337,21 +337,25 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
       data: { soldQuantity: { decrement: 1 } },
     });
 
-    await this.releaseTickets(ticket.ticketTypeId, ticket.orderId, 1);
+    if (ticket.orderId) {
+      await this.releaseTickets(ticket.ticketTypeId, ticket.orderId, 1);
+    }
 
     const updatedTicket = await this.prisma.ticket.update({
       where: { id },
       data: { status: 'CANCELLED' },
     });
 
-    const remainingValid = await this.prisma.ticket.count({
-      where: { orderId: ticket.orderId, status: 'VALID' },
-    });
-    if (remainingValid === 0) {
-      await this.prisma.order.update({
-        where: { id: ticket.orderId },
-        data: { status: 'CANCELLED' },
+    if (ticket.orderId) {
+      const remainingValid = await this.prisma.ticket.count({
+        where: { orderId: ticket.orderId, status: 'VALID' },
       });
+      if (remainingValid === 0) {
+        await this.prisma.order.update({
+          where: { id: ticket.orderId },
+          data: { status: 'CANCELLED' },
+        });
+      }
     }
 
     return updatedTicket;
@@ -391,9 +395,29 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
     return { originalPrice: totalPrice, discount, finalPrice: totalPrice - discount };
   }
 
+  async lookupTicket(qrCodeToken: string) {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { qrCodeToken },
+      include: {
+        user: { select: { id: true, fullName: true, email: true } },
+        ticketType: { select: { name: true, event: { select: { title: true, startTime: true, location: true } } } },
+      },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException('Vé không tồn tại');
+    }
+
+    return ticket;
+  }
+
   async checkIn(qrCodeToken: string) {
     const ticket = await this.prisma.ticket.findUnique({
       where: { qrCodeToken },
+      include: {
+        user: { select: { id: true, fullName: true, email: true } },
+        ticketType: { select: { name: true, event: { select: { title: true, startTime: true, location: true } } } },
+      },
     });
 
     if (!ticket) {
@@ -414,6 +438,10 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
     return this.prisma.ticket.update({
       where: { id: ticket.id },
       data: { status: 'CHECKED_IN', checkedInAt: new Date() },
+      include: {
+        user: { select: { id: true, fullName: true, email: true } },
+        ticketType: { select: { name: true, event: { select: { title: true, startTime: true, location: true } } } },
+      },
     });
   }
 }

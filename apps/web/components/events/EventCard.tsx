@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { MapPin, Calendar, Clock } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '@/lib/utils'
+import { formatDate, formatCurrency, getStatusColor, getStatusLabel, bannerUrl as bu } from '@/lib/utils'
 import type { Event } from '@/types'
 
 interface EventCardProps {
@@ -20,7 +20,7 @@ export default function EventCard({ event }: EventCardProps) {
         <div className="relative aspect-[16/9] overflow-hidden bg-gray-100">
           {event.bannerUrl ? (
             <img
-              src={event.bannerUrl}
+              src={bu(event.bannerUrl)!}
               alt={event.title}
               className="h-full w-full object-cover transition-transform group-hover:scale-105"
             />

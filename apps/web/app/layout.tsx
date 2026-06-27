@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Providers } from "./providers";
+import { HtmlLang } from "./HtmlLang";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TicketHub - Đặt vé sự kiện trực tuyến",
-  description: "Nền tảng đặt vé sự kiện trực tuyến hàng đầu Việt Nam",
+  title: "TicketHub - Online Event Ticketing",
+  description: "Vietnam's leading online event ticketing platform",
 };
 
 export default function RootLayout({
@@ -32,6 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-gray-50">
         <Providers>
+          <HtmlLang />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />

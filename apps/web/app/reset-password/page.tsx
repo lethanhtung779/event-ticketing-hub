@@ -75,6 +75,7 @@ export default function ResetPasswordPage(props: { searchParams: Promise<{ token
             type="password"
             placeholder="••••••••"
             error={errors.newPassword?.message}
+            showPasswordToggle
             {...register('newPassword')}
           />
           <Input
@@ -83,6 +84,7 @@ export default function ResetPasswordPage(props: { searchParams: Promise<{ token
             type="password"
             placeholder="••••••••"
             error={errors.confirmPassword?.message}
+            showPasswordToggle
             {...register('confirmPassword')}
           />
           <Button type="submit" loading={loading} className="w-full" size="lg">

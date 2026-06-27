@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
-import { User, Lock } from 'lucide-react'
+import { User, Lock, Mail, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Card, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -19,19 +20,27 @@ const profileSchema = z.object({
   fullName: z.string().min(2, 'Tên phải có ít nhất 2 ký tự').max(100),
 })
 
+type ProfileForm = z.infer<typeof profileSchema>
+
+interface PasswordForm {
+  currentPassword: string
+  newPassword: string
+  confirmNewPassword: string
+}
+
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Vui lòng nhập mật khẩu hiện tại'),
   newPassword: z.string().min(6, 'Mật khẩu mới phải có ít nhất 6 ký tự'),
+  confirmNewPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu mới'),
 })
 
-type ProfileForm = z.infer<typeof profileSchema>
-type PasswordForm = z.infer<typeof passwordSchema>
-
 export default function ProfilePage() {
+  const { t } = useTranslation()
   const { user, setUser, isLoading } = useAuthStore()
   const router = useRouter()
   const [profileLoading, setProfileLoading] = useState(false)
   const [passwordLoading, setPasswordLoading] = useState(false)
+  const [verifying, setVerifying] = useState(false)
 
   const profileForm = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -41,6 +50,8 @@ export default function ProfilePage() {
   const passwordForm = useForm<PasswordForm>({
     resolver: zodResolver(passwordSchema),
   })
+
+  const { setError } = passwordForm
 
   const onProfileSubmit = async (data: ProfileForm) => {
     setProfileLoading(true)
@@ -56,9 +67,14 @@ export default function ProfilePage() {
   }
 
   const onPasswordSubmit = async (data: PasswordForm) => {
+    if (data.newPassword !== data.confirmNewPassword) {
+      setError('confirmNewPassword', { message: 'Mật khẩu xác nhận không khớp' })
+      return
+    }
     setPasswordLoading(true)
     try {
-      await authApi.changePassword(data)
+      const { confirmNewPassword: _, ...payload } = data
+      await authApi.changePassword(payload)
       toast.success('Đổi mật khẩu thành công!')
       passwordForm.reset()
     } catch (err: unknown) {
@@ -76,24 +92,58 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Hồ sơ của tôi</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">{t('profile.title')}</h1>
 
       <div className="space-y-6">
         <Card>
           <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5 text-indigo-600" />
+            Email
+          </CardTitle>
+          <div className="mt-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-900">{user.email}</p>
+              {user.isVerified ? (
+                <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                  <CheckCircle2 className="h-3 w-3" /> Đã xác thực
+                </p>
+              ) : (
+                <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
+                  <AlertCircle className="h-3 w-3" /> Chưa xác thực
+                </p>
+              )}
+            </div>
+            {!user.isVerified && (
+              <Button size="sm" variant="outline" loading={verifying} onClick={async () => {
+                setVerifying(true)
+                try {
+                  await authApi.sendVerification()
+                  toast.success('Email xác thực đã được gửi!')
+                } catch (err) {
+                  toast.error(getErrorMessage(err, 'Gửi email thất bại'))
+                } finally { setVerifying(false) }
+              }}>
+                Gửi lại xác thực
+              </Button>
+            )}
+          </div>
+        </Card>
+
+        <Card>
+          <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5 text-indigo-600" />
-            Thông tin cá nhân
+            {t('profile.personalInfo')}
           </CardTitle>
           <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="mt-4 space-y-4">
-            <Input label="Email" value={user.email} disabled />
+            <Input label={t('auth.email')} value={user.email} disabled />
             <Input
               id="fullName"
-              label="Họ tên"
+              label={t('auth.fullName')}
               error={profileForm.formState.errors.fullName?.message}
               {...profileForm.register('fullName')}
             />
             <Button type="submit" loading={profileLoading}>
-              Lưu thay đổi
+              {t('profile.save')}
             </Button>
           </form>
         </Card>
@@ -101,25 +151,35 @@ export default function ProfilePage() {
         <Card>
           <CardTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5 text-indigo-600" />
-            Đổi mật khẩu
+            {t('profile.changePassword')}
           </CardTitle>
           <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="mt-4 space-y-4">
             <Input
               id="currentPassword"
-              label="Mật khẩu hiện tại"
+              label={t('profile.currentPassword')}
               type="password"
+              showPasswordToggle
               error={passwordForm.formState.errors.currentPassword?.message}
               {...passwordForm.register('currentPassword')}
             />
             <Input
               id="newPassword"
-              label="Mật khẩu mới"
+              label={t('profile.newPassword')}
               type="password"
+              showPasswordToggle
               error={passwordForm.formState.errors.newPassword?.message}
               {...passwordForm.register('newPassword')}
             />
+            <Input
+              id="confirmNewPassword"
+              label={t('profile.confirmNewPassword')}
+              type="password"
+              showPasswordToggle
+              error={passwordForm.formState.errors.confirmNewPassword?.message}
+              {...passwordForm.register('confirmNewPassword')}
+            />
             <Button type="submit" loading={passwordLoading}>
-              Đổi mật khẩu
+              {t('profile.changePassword')}
             </Button>
           </form>
         </Card>

@@ -25,14 +25,29 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
   const [targetEmail, setTargetEmail] = useState('')
   const [transferring, setTransferring] = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [qrSrc, setQrSrc] = useState('')
 
   useEffect(() => {
+    let cancelled = false
     ticketApi
       .getById(params.id)
-      .then(({ data }) => setTicket(data))
-      .catch(() => router.push('/my-tickets'))
-      .finally(() => setLoading(false))
+      .then(({ data }) => {
+        if (cancelled) return
+        setTicket(data)
+      })
+      .catch(() => { if (!cancelled) router.push('/my-tickets') })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [params.id, router])
+
+  useEffect(() => {
+    if (!ticket?.qrCodeToken) return
+    import('qrcode').then(mod => {
+      mod.default.toDataURL(ticket.qrCodeToken, {
+        width: 200, margin: 2, color: { dark: '#1e1e2e', light: '#ffffff' },
+      }).then(url => setQrSrc(url))
+    })
+  }, [ticket?.qrCodeToken])
 
   const handleCopy = () => {
     if (ticket?.qrCodeToken) {
@@ -99,18 +114,16 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
 
         <div className="flex justify-center mb-6">
           <div className="relative">
-            <div className="h-48 w-48 rounded-xl bg-white border-2 border-gray-200 p-3 flex items-center justify-center">
-              <div className="text-center">
-                <div className="font-mono text-2xl tracking-widest text-gray-800 mb-2">
-                  {ticket.qrCodeToken.slice(0, 16)}
-                </div>
-                <div className="text-[10px] text-gray-400 leading-tight">
-                  {ticket.qrCodeToken.slice(16)}
-                </div>
+            {qrSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={qrSrc} alt="QR Code" className="h-48 w-48 rounded-xl border-2 border-gray-200" />
+            ) : (
+              <div className="h-48 w-48 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-400 text-sm">
+                Đang tạo QR...
               </div>
-            </div>
+            )}
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-              <Badge className="bg-indigo-100 text-indigo-800 text-xs">QR Token</Badge>
+              <Badge className="bg-indigo-100 text-indigo-800 text-xs">QR Code</Badge>
             </div>
           </div>
         </div>

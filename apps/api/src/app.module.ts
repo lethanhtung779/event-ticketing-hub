@@ -17,6 +17,7 @@ import { AuditLogModule } from './audit-log/audit-log.module';
 import { VnpayModule } from './payment-vnpay/vnpay.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { OrganizerModule } from './organizer/organizer.module';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AuditLogModule, PrismaModule, RedisModule, EmailModule,
     AuthModule, EventModule, TicketModule, PaymentModule,
     UserModule, AdminModule, CategoryModule, ReviewModule,
-    VnpayModule, WebsocketModule, NotificationsModule,
+    VnpayModule, WebsocketModule, NotificationsModule, OrganizerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

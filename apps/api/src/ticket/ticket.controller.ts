@@ -58,6 +58,13 @@ export class TicketController {
     return this.ticketService.applyPromoCode(body.code, body.totalPrice);
   }
 
+  @Post('check-in/lookup')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'STAFF')
+  async lookupTicket(@Body() body: CheckInDto) {
+    return this.ticketService.lookupTicket(body.qrCodeToken);
+  }
+
   @Post('check-in')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'STAFF')

@@ -4,7 +4,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
 })
 
 api.interceptors.request.use((config) => {
@@ -12,6 +11,12 @@ api.interceptors.request.use((config) => {
     const token = localStorage.getItem('access_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    const lang = localStorage.getItem('i18nextLng') || 'vi'
+    if (config.params) {
+      config.params.lang = lang
+    } else {
+      config.params = { lang }
     }
   }
   return config
@@ -79,9 +84,7 @@ export const eventApi = {
   getById: (id: string) =>
     api.get(`/events/${id}`),
   create: (data: FormData | Record<string, unknown>) =>
-    api.post('/events', data, data instanceof FormData ? {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    } : undefined),
+    api.post('/events', data),
   update: (id: string, data: Record<string, unknown>) =>
     api.patch(`/events/${id}`, data),
   delete: (id: string) =>
@@ -91,13 +94,13 @@ export const eventApi = {
   cancel: (id: string) =>
     api.post(`/events/${id}/cancel`),
   uploadBanner: (id: string, formData: FormData) =>
-    api.post(`/events/${id}/banner`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    api.post(`/events/${id}/banner`, formData),
   createTicketType: (eventId: string, data: Record<string, unknown>) =>
     api.post(`/events/${eventId}/ticket-types`, data),
   updateTicketType: (eventId: string, ticketTypeId: string, data: Record<string, unknown>) =>
     api.patch(`/events/${eventId}/ticket-types/${ticketTypeId}`, data),
+  deleteTicketType: (eventId: string, ticketTypeId: string) =>
+    api.delete(`/events/${eventId}/ticket-types/${ticketTypeId}`),
 }
 
 export const categoryApi = {
@@ -115,6 +118,8 @@ export const ticketApi = {
     api.post('/tickets/waiting-list', data),
   validatePromo: (data: { code: string; totalPrice: number }) =>
     api.post('/tickets/validate-promo', data),
+  lookupTicket: (qrCodeToken: string) =>
+    api.post('/tickets/check-in/lookup', { qrCodeToken }),
   checkIn: (qrCodeToken: string) =>
     api.post('/tickets/check-in', { qrCodeToken }),
   cancelTicket: (id: string) =>
@@ -133,7 +138,7 @@ export const reviewApi = {
 export const paymentApi = {
   createVnpay: (data: { orderId: string }) =>
     api.post('/payments/vnpay/create', data),
-  refund: (data: { paymentId: string; amount: number; reason: string }) =>
+  refund: (data: { orderId: string; reason: string }) =>
     api.post('/payments/vnpay/refund', data),
 }
 
@@ -160,4 +165,54 @@ export const adminApi = {
     api.patch(`/admin/promo-codes/${id}`, data),
   deletePromoCode: (id: string) =>
     api.delete(`/admin/promo-codes/${id}`),
+
+  // Orders
+  getOrders: (params?: Record<string, string>) =>
+    api.get('/admin/orders', { params }),
+  getOrder: (id: string) =>
+    api.get(`/admin/orders/${id}`),
+
+  // Reviews
+  getReviews: (params?: Record<string, string>) =>
+    api.get('/admin/reviews', { params }),
+  deleteReview: (id: string) =>
+    api.delete(`/admin/reviews/${id}`),
+
+  // Waiting list
+  getWaitingList: (eventId: string) =>
+    api.get(`/admin/events/${eventId}/waiting-list`),
+
+  // Export
+  exportEvents: () => api.get('/admin/export/events', { responseType: 'blob' }),
+  exportUsers: () => api.get('/admin/export/users', { responseType: 'blob' }),
+
+  // Bulk
+  bulkPublishEvents: (ids: string[]) =>
+    api.post('/admin/events/bulk/publish', { ids }),
+  bulkCancelEvents: (ids: string[]) =>
+    api.post('/admin/events/bulk/cancel', { ids }),
+
+  // Analytics
+  getAnalytics: () => api.get('/admin/analytics'),
+
+  // Notifications
+  sendNotification: (data: { userIds?: string[]; allUsers?: boolean; subject: string; message: string }) =>
+    api.post('/admin/notifications/send', data),
+
+  // Event report
+  getEventReport: (id: string) =>
+    api.get(`/admin/events/${id}/report`),
+
+  // Translations
+  upsertEventTranslation: (id: string, data: { language: string; title?: string; description?: string; location?: string }) =>
+    api.post(`/admin/translations/events/${id}`, data),
+  upsertCategoryTranslation: (id: string, data: { language: string; name: string }) =>
+    api.post(`/admin/translations/categories/${id}`, data),
+  upsertTicketTypeTranslation: (id: string, data: { language: string; name: string }) =>
+    api.post(`/admin/translations/ticket-types/${id}`, data),
+}
+
+// Organizer API
+export const organizerApi = {
+  getStats: () => api.get('/organizer/stats'),
 }

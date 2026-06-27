@@ -21,7 +21,7 @@ export class VerificationService {
       data: { verificationToken: token },
     });
 
-    const verifyUrl = `${process.env.BACKEND_URL || 'http://localhost:3000'}/auth/verify-email?token=${token}`;
+    const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/verify-email?token=${token}`;
 
     await this.email.send(
       user.email,

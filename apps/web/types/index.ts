@@ -54,6 +54,22 @@ export interface Event {
   status: EventStatus
   startTime: string
   endTime: string
+  isOnline: boolean
+  googleMapsLink: string | null
+  agenda: Record<string, any> | null
+  eventType: string | null
+  organizerId: string | null
+  organizerName: string | null
+  organizerInfo: string | null
+  organizerLogo: string | null
+  venueName: string | null
+  province: string | null
+  district: string | null
+  streetAddress: string | null
+  bankName: string | null
+  bankAccountNumber: string | null
+  bankAccountHolder: string | null
+  paymentInfo: string | null
   createdAt: string
   updatedAt: string
   ticketTypes: TicketType[]
@@ -154,9 +170,12 @@ export interface AdminStats {
   totalUsers: number
   totalEvents: number
   totalOrders: number
-  totalRevenue: number
-  recentOrders: number
-  activePromoCodes: number
+  revenue: number
+  totalTickets: number
+  checkedInTickets: number
+  totalCategories: number
+  recentUsers: Array<{ id: string; fullName: string; email: string; role: string; createdAt: string }>
+  recentOrders: Array<Record<string, unknown>>
 }
 
 export interface RevenueReport {

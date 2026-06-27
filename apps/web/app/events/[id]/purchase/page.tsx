@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Minus, Plus, Ticket } from 'lucide-react'
 import Link from 'next/link'
@@ -14,6 +15,7 @@ import { eventApi, ticketApi } from '@/lib/api'
 import type { Event, TicketType } from '@/types'
 
 export default function PurchasePage(props: { params: Promise<{ id: string }> }) {
+  const { t } = useTranslation()
   const params = use(props.params)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -123,11 +125,11 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
         className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
-        Quay lại chi tiết sự kiện
+        {t('purchase.backToEvent')}
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Mua vé</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('purchase.title')}</h1>
         <p className="mt-1 text-gray-600">{event.title}</p>
       </div>
 
@@ -142,7 +144,7 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
                   <div>
                     <h3 className="font-medium text-gray-900">{tt.name}</h3>
                     <p className="text-sm text-gray-500">
-                      Còn {available} vé · {formatCurrency(tt.price)} / vé
+                      {t('eventDetail.available', { count: available })} · {formatCurrency(tt.price)} / {t('eventDetail.ticketTypes')}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -170,7 +172,7 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
 
         <div className="space-y-4">
           <Card>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Tổng cộng</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('purchase.summary')}</h3>
 
             <div className="space-y-2 text-sm">
               {selectedTypes.map((tt) => (
@@ -182,17 +184,17 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
                 </div>
               ))}
               <div className="border-t pt-2 flex justify-between font-medium text-gray-900">
-                <span>Tạm tính</span>
+                <span>{t('purchase.subtotal')}</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               {promoDiscount > 0 && (
                 <div className="flex justify-between text-green-600">
-                  <span>Giảm giá ({promoApplied})</span>
+                  <span>{t('purchase.discount')} ({promoApplied})</span>
                   <span>-{formatCurrency(promoDiscount)}</span>
                 </div>
               )}
               <div className="border-t pt-2 flex justify-between font-bold text-lg text-indigo-600">
-                <span>Thành tiền</span>
+                <span>{t('purchase.total')}</span>
                 <span>{formatCurrency(total)}</span>
               </div>
             </div>
@@ -201,7 +203,7 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
               <div className="mt-4 space-y-2">
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Mã giảm giá"
+                    placeholder={t('purchase.promoPlaceholder')}
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                     className="!h-9 text-sm"
@@ -213,7 +215,7 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
                     disabled={!promoCode.trim()}
                     className="shrink-0"
                   >
-                    Áp dụng
+                    {t('purchase.applyPromo')}
                   </Button>
                 </div>
               </div>
@@ -227,7 +229,7 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
               disabled={selectedTypes.length === 0}
             >
               <Ticket className="h-5 w-5" />
-              Xác nhận đặt vé
+              {t('purchase.confirm')}
             </Button>
           </Card>
         </div>

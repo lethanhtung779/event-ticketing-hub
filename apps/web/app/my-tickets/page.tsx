@@ -3,19 +3,21 @@
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import { CreditCard, QrCode, Ticket as TicketIcon } from 'lucide-react'
-import { Card, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { PageSpinner } from '@/components/ui/Spinner'
 import toast from 'react-hot-toast'
-import { formatDate, formatCurrency, getStatusColor, getStatusLabel, unwrapList } from '@/lib/utils'
+import { formatDate, formatCurrency, getStatusColor, unwrapList } from '@/lib/utils'
 import { ticketApi } from '@/lib/api'
 import type { Ticket } from '@/types'
 
 type TicketSection = { label: string; icon: React.ReactNode; filter: (t: Ticket) => boolean }
 
 function MyTicketsContent() {
+  const { t } = useTranslation()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [tickets, setTickets] = useState<Ticket[]>([])
@@ -24,11 +26,11 @@ function MyTicketsContent() {
   useEffect(() => {
     const payment = searchParams.get('payment')
     if (payment === 'success') {
-      toast.success('Thanh toán thành công!')
+      toast.success(t('payment.success'))
     } else if (payment === 'failure') {
-      toast.error('Thanh toán thất bại!')
+      toast.error(t('payment.failure'))
     }
-  }, [searchParams])
+  }, [searchParams, t])
 
   useEffect(() => {
     ticketApi
@@ -39,10 +41,10 @@ function MyTicketsContent() {
   }, [])
 
   const sections: TicketSection[] = [
-    { label: 'Chưa thanh toán', icon: <CreditCard className="h-5 w-5" />, filter: (t) => t.order?.status === 'PENDING' },
-    { label: 'Hợp lệ', icon: <TicketIcon className="h-5 w-5" />, filter: (t) => t.status === 'VALID' },
-    { label: 'Đã sử dụng', icon: <QrCode className="h-5 w-5" />, filter: (t) => t.status === 'CHECKED_IN' },
-    { label: 'Đã huỷ / Đã chuyển', icon: <TicketIcon className="h-5 w-5" />, filter: (t) => t.status === 'CANCELLED' || t.status === 'TRANSFERRED' },
+    { label: t('myTickets.unpaid'), icon: <CreditCard className="h-5 w-5" />, filter: (t) => t.order?.status === 'PENDING' },
+    { label: t('myTickets.valid'), icon: <TicketIcon className="h-5 w-5" />, filter: (t) => t.status === 'VALID' },
+    { label: t('myTickets.used'), icon: <QrCode className="h-5 w-5" />, filter: (t) => t.status === 'CHECKED_IN' },
+    { label: t('myTickets.cancelled'), icon: <TicketIcon className="h-5 w-5" />, filter: (t) => t.status === 'CANCELLED' || t.status === 'TRANSFERRED' },
   ]
 
   if (loading) return <PageSpinner />
@@ -52,16 +54,16 @@ function MyTicketsContent() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Vé của tôi</h1>
-        <p className="mt-1 text-gray-600">Quản lý tất cả vé bạn đã mua</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('myTickets.title')}</h1>
+        <p className="mt-1 text-gray-600">{t('myTickets.subtitle')}</p>
       </div>
 
       {!hasTickets ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-500">
           <TicketIcon className="h-16 w-16 mb-4" />
-          <p className="text-lg font-medium">Bạn chưa có vé nào</p>
+          <p className="text-lg font-medium">{t('myTickets.empty')}</p>
           <Link href="/events" className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-700">
-            Khám phá sự kiện
+            {t('myTickets.exploreEvents')}
           </Link>
         </div>
       ) : (
@@ -83,7 +85,7 @@ function MyTicketsContent() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge className={getStatusColor(ticket.status)}>
-                              {getStatusLabel(ticket.status)}
+                              {t(`status.${ticket.status}`)}
                             </Badge>
                             {ticket.ticketType?.event?.startTime && (
                               <span className="text-xs text-gray-500">
@@ -99,20 +101,20 @@ function MyTicketsContent() {
                           </Link>
 
                           <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-500">
-                            <span>Loại: {ticket.ticketType?.name}</span>
-                            <span>Giá: {formatCurrency(ticket.ticketType?.price || 0)}</span>
-                            <span>Mua: {formatDate(ticket.createdAt)}</span>
+                            <span>{t('myTickets.type')}: {ticket.ticketType?.name}</span>
+                            <span>{t('myTickets.price')}: {formatCurrency(ticket.ticketType?.price || 0)}</span>
+                            <span>{t('myTickets.purchased')}: {formatDate(ticket.createdAt)}</span>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          {section.label === 'Chưa thanh toán' && (
+                          {section.label === t('myTickets.unpaid') && (
                             <Button
                               size="sm"
                               onClick={() => router.push(`/payments/${ticket.order!.id}`)}
                             >
                               <CreditCard className="h-4 w-4 mr-1" />
-                              Thanh toán
+                              {t('myTickets.pay')}
                             </Button>
                           )}
                           <Link

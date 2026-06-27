@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { MapPin, Calendar, Clock, Star, Bell } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
@@ -10,12 +11,13 @@ import Input from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { PageSpinner } from '@/components/ui/Spinner'
-import { formatDate, formatCurrency, getStatusColor, getStatusLabel, unwrapList, getErrorMessage } from '@/lib/utils'
+import { formatDate, formatCurrency, getStatusColor, unwrapList, getErrorMessage, bannerUrl as bu } from '@/lib/utils'
 import { eventApi, reviewApi, ticketApi } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
 import type { Event, Review } from '@/types'
 
 export default function EventDetailPage(props: { params: Promise<{ id: string }> }) {
+  const { t } = useTranslation()
   const params = use(props.params)
   const { isAuthenticated, user } = useAuthStore()
   const [event, setEvent] = useState<Event | null>(null)
@@ -70,7 +72,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
 
   if (loading) return <PageSpinner />
   if (!event) {
-    return <div className="flex h-96 items-center justify-center text-gray-500">Không tìm thấy sự kiện</div>
+    return <div className="flex h-96 items-center justify-center text-gray-500">{t('common.noData')}</div>
   }
 
   const avgRating = reviews.length > 0
@@ -83,7 +85,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
         <div className="lg:col-span-2 space-y-6">
           <div className="relative aspect-[2/1] overflow-hidden rounded-xl bg-gray-100">
             {event.bannerUrl ? (
-              <img src={event.bannerUrl} alt={event.title} className="h-full w-full object-cover" />
+              <img src={bu(event.bannerUrl)!} alt={event.title} className="h-full w-full object-cover" />
             ) : (
               <div className="flex h-full items-center justify-center text-gray-400 text-lg">Không có ảnh banner</div>
             )}
@@ -91,7 +93,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
 
           <div>
             <div className="flex flex-wrap items-center gap-3 mb-3">
-              <Badge className={getStatusColor(event.status)}>{getStatusLabel(event.status)}</Badge>
+              <Badge className={getStatusColor(event.status)}>{t(`status.${event.status}`)}</Badge>
               {event.category && <Badge className="bg-indigo-100 text-indigo-800">{event.category.name}</Badge>}
             </div>
             <h1 className="text-3xl font-bold text-gray-900">{event.title}</h1>
@@ -101,35 +103,35 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
             <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4">
               <Calendar className="h-5 w-5 text-indigo-600" />
               <div>
-                <p className="text-xs text-gray-500">Ngày diễn ra</p>
+                <p className="text-xs text-gray-500">{t('eventDetail.date')}</p>
                 <p className="text-sm font-medium text-gray-900">{formatDate(event.startTime, 'EEEE, dd/MM/yyyy')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4">
               <Clock className="h-5 w-5 text-indigo-600" />
               <div>
-                <p className="text-xs text-gray-500">Thời gian</p>
+                <p className="text-xs text-gray-500">{t('eventDetail.date')}</p>
                 <p className="text-sm font-medium text-gray-900">{formatDate(event.startTime, 'HH:mm')} - {formatDate(event.endTime, 'HH:mm')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4">
               <MapPin className="h-5 w-5 text-indigo-600" />
               <div>
-                <p className="text-xs text-gray-500">Địa điểm</p>
+                <p className="text-xs text-gray-500">{t('eventDetail.location')}</p>
                 <p className="text-sm font-medium text-gray-900">{event.location}</p>
               </div>
             </div>
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Mô tả</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">{t('eventDetail.overview')}</h2>
             <p className="text-gray-700 leading-relaxed whitespace-pre-line">{event.description}</p>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-gray-900">Đánh giá</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('eventDetail.reviews')}</h2>
                 {reviews.length > 0 && (
                   <div className="flex items-center gap-1 text-amber-500">
                     <Star className="h-4 w-4 fill-current" />
@@ -140,13 +142,13 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
               </div>
               {isAuthenticated && (
                 <Button size="sm" variant="outline" onClick={() => setReviewModal(true)}>
-                  <Star className="h-4 w-4" /> Đánh giá
+                  <Star className="h-4 w-4" /> {t('eventDetail.reviews')}
                 </Button>
               )}
             </div>
 
             {reviews.length === 0 ? (
-              <p className="text-sm text-gray-500">Chưa có đánh giá nào</p>
+              <p className="text-sm text-gray-500">{t('eventDetail.noReviews')}</p>
             ) : (
               <div className="space-y-4">
                 {reviews.map((review) => (
@@ -170,7 +172,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
 
         <div className="space-y-6">
           <Card>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Chọn vé</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('eventDetail.ticketTypes')}</h3>
             {event.ticketTypes && event.ticketTypes.length > 0 ? (
               <div className="space-y-3">
                 {event.ticketTypes.map((tt) => {
@@ -183,11 +185,11 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
                         <span className="font-bold text-lg text-indigo-600">{formatCurrency(tt.price)}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">{soldOut ? 'Đã hết vé' : `Còn ${available} vé`}</span>
+                        <span className="text-xs text-gray-500">{soldOut ? t('eventDetail.soldOut') : t('eventDetail.available', { count: available })}</span>
                       </div>
                       {!soldOut && isAuthenticated && event.status === 'PUBLISHED' && (
                         <Link href={`/events/${event.id}/purchase?ticketTypeId=${tt.id}`}>
-                          <Button size="sm" className="mt-3 w-full">Mua ngay</Button>
+                          <Button size="sm" className="mt-3 w-full">{t('eventDetail.buyTickets')}</Button>
                         </Link>
                       )}
                       {soldOut && isAuthenticated && event.status === 'PUBLISHED' && (

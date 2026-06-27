@@ -1,49 +1,63 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Ticket, Menu, X, User, LogOut, Settings } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Search, Ticket, Menu, X, User, LogOut, Settings, Plus, Calendar } from 'lucide-react'
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/auth-store'
-
-const navLinks = [
-  { href: '/', label: 'Trang chủ' },
-  { href: '/events', label: 'Sự kiện' },
-]
+import LanguageSwitcher from './LanguageSwitcher'
 
 export default function Header() {
+  const { t } = useTranslation()
+  const router = useRouter()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const { user, isAuthenticated, logout } = useAuthStore()
 
-  if (pathname.startsWith('/admin')) return null
+  if (pathname.startsWith('/admin') || pathname.startsWith('/organizer')) return null
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/events?search=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery('')
+    }
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl text-indigo-600">
-          <Ticket className="h-6 w-6" />
-          TicketHub
-        </Link>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link href="/" className="flex items-center gap-2 font-bold text-xl text-indigo-600">
+            <Ticket className="h-6 w-6" />
+            TicketHub
+          </Link>
+        </div>
 
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                'text-sm font-medium transition-colors hover:text-indigo-600',
-                pathname === link.href ? 'text-indigo-600' : 'text-gray-600'
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2 lg:gap-3">
+          <form onSubmit={handleSearch} className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Tìm kiếm sự kiện..."
+              className="w-40 lg:w-56 rounded-lg border border-gray-300 pl-8 pr-3 py-1.5 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            />
+          </form>
+          {isAuthenticated && (
+            <>
+              <Link href="/my-tickets" className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">
+                {t('nav.myTickets')}
+              </Link>
+              <Link href="/organizer/events/new" target="_blank" rel="noopener noreferrer" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors flex items-center gap-1.5">
+                <Plus className="h-4 w-4" /> Tạo sự kiện
+              </Link>
+            </>
+          )}
           {isAuthenticated ? (
             <div className="relative">
               <button
@@ -65,12 +79,23 @@ export default function Header() {
                       <p className="text-xs text-gray-500">{user?.email}</p>
                     </div>
                     <Link
+                      href="/organizer/events"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Sự kiện của tôi
+                    </Link>
+                    <hr className="my-1 border-gray-100" />
+                    <Link
                       href="/my-tickets"
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
                       <Ticket className="h-4 w-4" />
-                      Vé của tôi
+                      {t('nav.myTickets')}
                     </Link>
                     <Link
                       href="/profile"
@@ -78,7 +103,7 @@ export default function Header() {
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
                       <User className="h-4 w-4" />
-                      Hồ sơ
+                      {t('nav.profile')}
                     </Link>
                     {(user?.role === 'ADMIN' || user?.role === 'STAFF') && (
                       <Link
@@ -87,7 +112,7 @@ export default function Header() {
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       >
                         <Settings className="h-4 w-4" />
-                        Quản trị
+                        {t('nav.admin')}
                       </Link>
                     )}
                     <hr className="my-1 border-gray-100" />
@@ -96,7 +121,7 @@ export default function Header() {
                       className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                       <LogOut className="h-4 w-4" />
-                      Đăng xuất
+                      {t('nav.logout')}
                     </button>
                   </div>
                 </>
@@ -108,16 +133,18 @@ export default function Header() {
                 href="/login"
                 className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
               >
-                Đăng nhập
+                {t('nav.login')}
               </Link>
               <Link
                 href="/register"
                 className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
               >
-                Đăng ký
+                {t('nav.register')}
               </Link>
             </>
           )}
+          <div className="hidden sm:block w-px h-6 bg-gray-200" />
+          <LanguageSwitcher />
         </div>
 
         <button
@@ -130,36 +157,49 @@ export default function Header() {
 
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white px-4 py-4 space-y-3">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                'block text-sm font-medium',
-                pathname === link.href ? 'text-indigo-600' : 'text-gray-600'
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+          <div className="flex items-center justify-between">
+            <LanguageSwitcher />
+            <button onClick={() => setMobileOpen(false)} className="p-1 text-gray-600">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <form onSubmit={handleSearch} className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Tìm kiếm sự kiện..."
+              className="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            />
+          </form>
           <hr className="border-gray-100" />
           {isAuthenticated ? (
             <>
+              <Link href="/organizer/events" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-600">
+                Sự kiện của tôi
+              </Link>
+              <Link href="/organizer/reports" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-600">
+                Quản lý báo cáo
+              </Link>
+              <Link href="/organizer/terms" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-600">
+                Điều khoản BTC
+              </Link>
+              <hr className="border-gray-100" />
               <Link href="/my-tickets" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-600">
-                Vé của tôi
+                {t('nav.myTickets')}
               </Link>
               <button onClick={() => { logout(); setMobileOpen(false) }} className="block text-sm font-medium text-red-600">
-                Đăng xuất
+                {t('nav.logout')}
               </button>
             </>
           ) : (
             <>
               <Link href="/login" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-600">
-                Đăng nhập
+                {t('nav.login')}
               </Link>
               <Link href="/register" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-indigo-600">
-                Đăng ký
+                {t('nav.register')}
               </Link>
             </>
           )}

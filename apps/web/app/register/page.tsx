@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { Ticket } from 'lucide-react'
 import Button from '@/components/ui/Button'
@@ -14,10 +15,10 @@ import { authApi } from '@/lib/api'
 import { getErrorMessage } from '@/lib/utils'
 
 const registerSchema = z.object({
-  fullName: z.string().min(2, 'Tên phải có ít nhất 2 ký tự').max(100),
+  fullName: z.string().min(1, 'Vui lòng nhập họ tên'),
   email: z.string().email('Email không hợp lệ'),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự').max(100),
-  confirmPassword: z.string(),
+  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Mật khẩu không khớp',
   path: ['confirmPassword'],
@@ -26,6 +27,7 @@ const registerSchema = z.object({
 type RegisterForm = z.infer<typeof registerSchema>
 
 export default function RegisterPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -45,11 +47,10 @@ export default function RegisterPage() {
         password: data.password,
         fullName: data.fullName,
       })
-      toast.success('Đăng ký thành công! Vui lòng đăng nhập.')
+      toast.success(t('auth.registerSuccess'))
       router.push('/login')
     } catch (err: unknown) {
-      console.error('Register error:', err)
-      toast.error(getErrorMessage(err, 'Đăng ký thất bại'))
+      toast.error(getErrorMessage(err, t('auth.registerFailure')))
     } finally {
       setLoading(false)
     }
@@ -61,13 +62,13 @@ export default function RegisterPage() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl text-indigo-600">
             <Ticket className="h-8 w-8" />
-            TicketHub
+            {t('app.name')}
           </Link>
-          <h1 className="mt-6 text-2xl font-bold text-gray-900">Tạo tài khoản</h1>
+          <h1 className="mt-6 text-2xl font-bold text-gray-900">{t('auth.register')}</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Đã có tài khoản?{' '}
+            {t('auth.hasAccount')}{' '}
             <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-700">
-              Đăng nhập
+              {t('auth.loginNow')}
             </Link>
           </p>
         </div>
@@ -75,14 +76,14 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
           <Input
             id="fullName"
-            label="Họ tên"
-            placeholder="Nguyễn Văn A"
+            label={t('auth.fullName')}
+            placeholder="Nguyen Van A"
             error={errors.fullName?.message}
             {...register('fullName')}
           />
           <Input
             id="email"
-            label="Email"
+            label={t('auth.email')}
             type="email"
             placeholder="you@example.com"
             error={errors.email?.message}
@@ -90,24 +91,29 @@ export default function RegisterPage() {
           />
           <Input
             id="password"
-            label="Mật khẩu"
+            label={t('auth.password')}
             type="password"
             placeholder="••••••••"
             error={errors.password?.message}
+            showPasswordToggle
             {...register('password')}
           />
           <Input
             id="confirmPassword"
-            label="Xác nhận mật khẩu"
+            label={t('auth.confirmPassword')}
             type="password"
             placeholder="••••••••"
             error={errors.confirmPassword?.message}
+            showPasswordToggle
             {...register('confirmPassword')}
           />
 
           <Button type="submit" loading={loading} className="w-full" size="lg">
-            Đăng ký
+            {t('auth.register')}
           </Button>
+          <p className="text-center text-xs text-gray-400">
+            Bằng cách đăng ký, bạn đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của chúng tôi.
+          </p>
         </form>
       </div>
     </div>

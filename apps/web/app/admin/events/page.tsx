@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Edit, Trash2, MoreHorizontal } from 'lucide-react'
+import { Plus, Edit, Trash2, MoreHorizontal, Download, CheckSquare } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Card } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -13,7 +13,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { Modal } from '@/components/ui/Modal'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { formatDate, formatCurrency, getStatusColor, getStatusLabel, unwrapList, unwrapMeta, getErrorMessage } from '@/lib/utils'
-import { eventApi, categoryApi } from '@/lib/api'
+import { eventApi, categoryApi, adminApi } from '@/lib/api'
 import type { Event, Category } from '@/types'
 
 export default function AdminEventsPage() {
@@ -29,6 +29,11 @@ export default function AdminEventsPage() {
     title: '', description: '', location: '', categoryId: '',
     startTime: '', endTime: '', status: 'DRAFT',
   })
+  const [bannerFile, setBannerFile] = useState<File | null>(null)
+  const [confirmAction, setConfirmAction] = useState<{ type: 'publish' | 'cancel' | 'delete'; event: Event } | null>(null)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkAction, setBulkAction] = useState<'publish' | 'cancel' | null>(null)
+  const [bulking, setBulking] = useState(false)
 
   const fetchEvents = async () => {
     setLoading(true)
@@ -49,6 +54,7 @@ export default function AdminEventsPage() {
   const openCreate = () => {
     setEditingEvent(null)
     setForm({ title: '', description: '', location: '', categoryId: '', startTime: '', endTime: '', status: 'DRAFT' })
+    setBannerFile(null)
     setModalOpen(true)
   }
 
@@ -63,6 +69,7 @@ export default function AdminEventsPage() {
       endTime: event.endTime.slice(0, 16),
       status: event.status,
     })
+    setBannerFile(null)
     setModalOpen(true)
   }
 
@@ -70,13 +77,20 @@ export default function AdminEventsPage() {
     setSaving(true)
     try {
       const payload = { ...form }
+      let eventId = editingEvent?.id
       if (editingEvent) {
         await eventApi.update(editingEvent.id, payload)
-        toast.success('Cập nhật sự kiện thành công!')
       } else {
-        await eventApi.create(payload)
-        toast.success('Tạo sự kiện thành công!')
+        const { status: _, ...createPayload } = payload
+        const { data } = await eventApi.create(createPayload)
+        eventId = (data as { id: string }).id
       }
+      if (bannerFile && eventId) {
+        const fd = new FormData()
+        fd.append('file', bannerFile)
+        await eventApi.uploadBanner(eventId, fd)
+      }
+      toast.success(editingEvent ? 'Cập nhật sự kiện thành công!' : 'Tạo sự kiện thành công!')
       setModalOpen(false)
       fetchEvents()
     } catch (err: unknown) {
@@ -84,38 +98,53 @@ export default function AdminEventsPage() {
     } finally { setSaving(false) }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Xoá sự kiện này?')) return
+  const handleConfirmAction = async () => {
+    if (!confirmAction) return
+    const { type, event } = confirmAction
     try {
-      await eventApi.delete(id)
-      toast.success('Đã xoá sự kiện')
+      if (type === 'publish') {
+        await eventApi.publish(event.id)
+        toast.success(`Đã xuất bản "${event.title}"!`)
+      } else if (type === 'cancel') {
+        await eventApi.cancel(event.id)
+        toast.success(`Đã huỷ "${event.title}"`)
+      } else {
+        await eventApi.delete(event.id)
+        toast.success(`Đã xoá "${event.title}"`)
+      }
+      setConfirmAction(null)
       fetchEvents()
     } catch {
-      toast.error('Xoá thất bại')
+      toast.error(type === 'publish' ? 'Xuất bản thất bại' : type === 'cancel' ? 'Huỷ thất bại' : 'Xoá thất bại')
     }
-  }
-
-  const handlePublish = async (id: string) => {
-    try {
-      await eventApi.publish(id)
-      toast.success('Đã xuất bản sự kiện!')
-      fetchEvents()
-    } catch { toast.error('Xuất bản thất bại') }
-  }
-
-  const handleCancel = async (id: string) => {
-    try {
-      await eventApi.cancel(id)
-      toast.success('Đã huỷ sự kiện')
-      fetchEvents()
-    } catch { toast.error('Huỷ thất bại') }
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Quản lý sự kiện</h1>
-        <Button onClick={openCreate}><Plus className="h-4 w-4" /> Tạo sự kiện</Button>
+        <div className="flex items-center gap-2">
+          {selected.size > 0 && (
+            <div className="flex items-center gap-1 mr-2">
+              <span className="text-sm text-gray-500">Đã chọn {selected.size}</span>
+              <Button size="sm" variant="outline" onClick={async () => { setBulkAction('publish'); setBulking(true); try { const res = await adminApi.bulkPublishEvents(Array.from(selected)); const d = res.data as {count: number}; toast.success(`Đã xuất bản ${d.count} sự kiện`); setSelected(new Set()); setBulkAction(null) } catch { toast.error('Thất bại') } finally { setBulking(false) } }} loading={bulking && bulkAction === 'publish'}>Xuất bản</Button>
+              <Button size="sm" variant="outline" onClick={async () => { setBulkAction('cancel'); setBulking(true); try { const res = await adminApi.bulkCancelEvents(Array.from(selected)); const d = res.data as {count: number}; toast.success(`Đã huỷ ${d.count} sự kiện`); setSelected(new Set()); setBulkAction(null) } catch { toast.error('Thất bại') } finally { setBulking(false) } }} loading={bulking && bulkAction === 'cancel'}>Huỷ</Button>
+            </div>
+          )}
+          <Button variant="outline" size="sm" onClick={async () => {
+            try {
+              const res = await adminApi.exportEvents()
+              const blob = new Blob([res.data as BlobPart], { type: 'text/csv' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url; a.download = 'events.csv'; a.click()
+              URL.revokeObjectURL(url)
+            } catch { toast.error('Xuất CSV thất bại') }
+          }}>
+            <Download className="h-4 w-4" /> Xuất CSV
+          </Button>
+          <Button onClick={openCreate}><Plus className="h-4 w-4" /> Tạo sự kiện</Button>
+        </div>
       </div>
 
       <Card className="!p-0 overflow-hidden">
@@ -123,6 +152,11 @@ export default function AdminEventsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input type="checkbox" checked={selected.size === events.length && events.length > 0}
+                    onChange={() => setSelected(selected.size === events.length ? new Set() : new Set(events.map(e => e.id)))}
+                    className="rounded" />
+                </th>
                 <th className="px-4 py-3 font-medium text-gray-500">Tên sự kiện</th>
                 <th className="px-4 py-3 font-medium text-gray-500">Danh mục</th>
                 <th className="px-4 py-3 font-medium text-gray-500">Thời gian</th>
@@ -132,11 +166,16 @@ export default function AdminEventsPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-12"><PageSpinner /></td></tr>
+                <tr><td colSpan={6} className="px-4 py-12"><PageSpinner /></td></tr>
               ) : events.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-500">Chưa có sự kiện nào</td></tr>
+                <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500">Chưa có sự kiện nào</td></tr>
               ) : events.map((event) => (
                 <tr key={event.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <input type="checkbox" checked={selected.has(event.id)}
+                      onChange={() => { const next = new Set(selected); next.has(event.id) ? next.delete(event.id) : next.add(event.id); setSelected(next) }}
+                      className="rounded" />
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Link href={`/admin/events/${event.id}`} className="font-medium text-gray-900 hover:text-indigo-600">
@@ -159,16 +198,16 @@ export default function AdminEventsPage() {
                         <Edit className="h-4 w-4" />
                       </Button>
                       {event.status === 'DRAFT' && (
-                        <Button variant="ghost" size="sm" onClick={() => handlePublish(event.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => setConfirmAction({ type: 'publish', event })}>
                           Xuất bản
                         </Button>
                       )}
                       {(event.status === 'PUBLISHED' || event.status === 'DRAFT') && (
-                        <Button variant="ghost" size="sm" onClick={() => handleCancel(event.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => setConfirmAction({ type: 'cancel', event })}>
                           Huỷ
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(event.id)}>
+                      <Button variant="ghost" size="sm" onClick={() => setConfirmAction({ type: 'delete', event })}>
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
@@ -219,6 +258,15 @@ export default function AdminEventsPage() {
               { value: 'COMPLETED', label: 'Hoàn thành' },
             ]}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh banner</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setBannerFile(e.target.files?.[0] || null)}
+              className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            />
+          </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="secondary" onClick={() => setModalOpen(false)}>Huỷ</Button>
             <Button loading={saving} onClick={handleSave}>
@@ -226,6 +274,60 @@ export default function AdminEventsPage() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        open={!!confirmAction}
+        onClose={() => setConfirmAction(null)}
+        title={
+          confirmAction?.type === 'publish' ? 'Xuất bản sự kiện' :
+          confirmAction?.type === 'cancel' ? 'Huỷ sự kiện' : 'Xoá sự kiện'
+        }
+      >
+        {confirmAction && (
+          <div>
+            <p className="text-sm text-gray-600 mb-4">
+              {confirmAction.type === 'publish'
+                ? `Bạn có chắc muốn xuất bản sự kiện này?`
+                : confirmAction.type === 'cancel'
+                ? `Bạn có chắc muốn huỷ sự kiện này?`
+                : `Bạn có chắc muốn xoá sự kiện này? Hành động này không thể hoàn tác.`}
+            </p>
+            <div className="rounded-lg bg-gray-50 p-3 space-y-2 text-sm mb-6">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Tên</span>
+                <span className="font-medium text-gray-900">{confirmAction.event.title}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Địa điểm</span>
+                <span className="text-gray-900">{confirmAction.event.location}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Thời gian</span>
+                <span className="text-gray-900">{formatDate(confirmAction.event.startTime, 'dd/MM/yyyy')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Trạng thái</span>
+                <Badge className={getStatusColor(confirmAction.event.status)}>
+                  {getStatusLabel(confirmAction.event.status)}
+                </Badge>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="secondary" onClick={() => setConfirmAction(null)}>Huỷ</Button>
+              <Button
+                onClick={handleConfirmAction}
+                className={
+                  confirmAction.type === 'delete' ? 'bg-red-600 hover:bg-red-700' :
+                  confirmAction.type === 'cancel' ? 'bg-amber-600 hover:bg-amber-700' : ''
+                }
+              >
+                {confirmAction.type === 'publish' ? 'Xuất bản' :
+                 confirmAction.type === 'cancel' ? 'Xác nhận huỷ' : 'Xác nhận xoá'}
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

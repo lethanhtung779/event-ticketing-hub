@@ -25,6 +25,7 @@ model User {
   auditLogs           AuditLog[]
   payments            Payment[]
   orders              Order[]
+  organizedEvents     Event[]       @relation("OrganizedEvents")
 
   @@index([email])
   @@index([role])
@@ -40,28 +41,48 @@ model Category {
   id     String  @id @default(uuid())
   name   String  @unique
   events Event[]
+  translations CategoryTranslation[]
 }
 
 model Event {
-  id          String       @id @default(uuid())
-  title       String
-  description String
-  location    String
-  bannerUrl   String?
-  categoryId  String?
-  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  status      EventStatus  @default(DRAFT)
-  startTime   DateTime
-  endTime     DateTime
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  ticketTypes TicketType[]
-  reviews     Review[]
+  id             String       @id @default(uuid())
+  title          String
+  description    String
+  location       String
+  bannerUrl      String?
+  categoryId     String?
+  category       Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  status         EventStatus  @default(DRAFT)
+  startTime      DateTime
+  endTime        DateTime
+  isOnline       Boolean      @default(false)
+  googleMapsLink String?
+  agenda         Json?
+  eventType      String?
+  organizerId    String?
+  organizer      User?        @relation("OrganizedEvents", fields: [organizerId], references: [id])
+  organizerName  String?
+  organizerInfo  String?
+  organizerLogo  String?
+  venueName      String?
+  province       String?
+  district       String?
+  streetAddress  String?
+  bankName       String?
+  bankAccountNumber String?
+  bankAccountHolder String?
+  paymentInfo    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  ticketTypes    TicketType[]
+  reviews        Review[]
   waitingListEntries WaitingListEntry[]
+  translations   EventTranslation[]
 
   @@index([status])
   @@index([startTime])
   @@index([categoryId])
+  @@index([organizerId])
 }
 
 enum EventStatus {
@@ -99,6 +120,7 @@ model TicketType {
   saleEndTime    DateTime?
   createdAt      DateTime  @default(now())
   tickets        Ticket[]
+  translations   TicketTypeTranslation[]
 
   @@index([eventId])
   @@index([saleStartTime, saleEndTime])
@@ -220,6 +242,41 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   CANCELLED
+}
+
+model EventTranslation {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  language    String   // "en", "vi"
+  title       String
+  description String
+  location    String
+
+  @@unique([eventId, language])
+  @@index([eventId])
+}
+
+model CategoryTranslation {
+  id         String   @id @default(uuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  language   String
+  name       String
+
+  @@unique([categoryId, language])
+  @@index([categoryId])
+}
+
+model TicketTypeTranslation {
+  id           String     @id @default(uuid())
+  ticketTypeId String
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
+  language     String
+  name         String
+
+  @@unique([ticketTypeId, language])
+  @@index([ticketTypeId])
 }
 
 model AuditLog {

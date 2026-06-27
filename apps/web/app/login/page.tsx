@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { Ticket } from 'lucide-react'
 import Button from '@/components/ui/Button'
@@ -22,6 +23,7 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const login = useAuthStore((s) => s.login)
   const [loading, setLoading] = useState(false)
@@ -49,10 +51,10 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(user))
       useAuthStore.setState({ user, isAuthenticated: true, isLoading: false })
 
-      toast.success('Đăng nhập thành công!')
+      toast.success(t('auth.loginSuccess'))
       router.push('/')
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Đăng nhập thất bại'))
+      toast.error(getErrorMessage(err, t('auth.loginFailure')))
     } finally {
       setLoading(false)
     }
@@ -64,13 +66,13 @@ export default function LoginPage() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl text-indigo-600">
             <Ticket className="h-8 w-8" />
-            TicketHub
+            {t('app.name')}
           </Link>
-          <h1 className="mt-6 text-2xl font-bold text-gray-900">Đăng nhập</h1>
+          <h1 className="mt-6 text-2xl font-bold text-gray-900">{t('auth.login')}</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Chưa có tài khoản?{' '}
+            {t('auth.noAccount')}{' '}
             <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-700">
-              Đăng ký ngay
+              {t('auth.registerNow')}
             </Link>
           </p>
         </div>
@@ -78,7 +80,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
           <Input
             id="email"
-            label="Email"
+            label={t('auth.email')}
             type="email"
             placeholder="you@example.com"
             error={errors.email?.message}
@@ -86,21 +88,22 @@ export default function LoginPage() {
           />
           <Input
             id="password"
-            label="Mật khẩu"
+            label={t('auth.password')}
             type="password"
             placeholder="••••••••"
             error={errors.password?.message}
+            showPasswordToggle
             {...register('password')}
           />
 
           <div className="flex items-center justify-end">
             <Link href="/forgot-password" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-              Quên mật khẩu?
+              {t('auth.forgotPassword')}
             </Link>
           </div>
 
           <Button type="submit" loading={loading} className="w-full" size="lg">
-            Đăng nhập
+            {t('auth.login')}
           </Button>
         </form>
       </div>

@@ -1,14 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Languages } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Card } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
 import { PageSpinner } from '@/components/ui/Spinner'
+import { Modal } from '@/components/ui/Modal'
 import { unwrapList, getErrorMessage } from '@/lib/utils'
-import { categoryApi } from '@/lib/api'
+import { adminApi, categoryApi } from '@/lib/api'
 import type { Category } from '@/types'
 
 export default function AdminCategoriesPage() {
@@ -16,6 +18,11 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(true)
   const [newName, setNewName] = useState('')
   const [creating, setCreating] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Category | null>(null)
+  const [transTarget, setTransTarget] = useState<Category | null>(null)
+  const [transLang, setTransLang] = useState('en')
+  const [transName, setTransName] = useState('')
+  const [savingTrans, setSavingTrans] = useState(false)
 
   const fetchCategories = async () => {
     try {
@@ -40,13 +47,32 @@ export default function AdminCategoriesPage() {
     } finally { setCreating(false) }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Xoá danh mục này?')) return
+  const handleDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await categoryApi.delete(id)
-      toast.success('Đã xoá danh mục')
+      await categoryApi.delete(deleteTarget.id)
+      toast.success(`Đã xoá danh mục "${deleteTarget.name}"`)
+      setDeleteTarget(null)
       fetchCategories()
     } catch { toast.error('Xoá thất bại') }
+  }
+
+  const openTrans = (cat: Category) => {
+    setTransTarget(cat)
+    setTransLang('en')
+    setTransName('')
+  }
+
+  const handleSaveTrans = async () => {
+    if (!transTarget || !transName.trim()) return
+    setSavingTrans(true)
+    try {
+      await adminApi.upsertCategoryTranslation(transTarget.id, { language: transLang, name: transName })
+      toast.success('Đã lưu bản dịch!')
+      setTransTarget(null)
+    } catch {
+      toast.error('Lưu thất bại')
+    } finally { setSavingTrans(false) }
   }
 
   if (loading) return <PageSpinner />
@@ -84,8 +110,11 @@ export default function AdminCategoriesPage() {
               <tr key={cat.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">{cat.name}</td>
                 <td className="px-4 py-3 text-gray-600">{cat._count?.events ?? 0}</td>
-                <td className="px-4 py-3">
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(cat.id)}>
+                <td className="px-4 py-3 flex items-center gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => openTrans(cat)} title="Dịch thuật">
+                    <Languages className="h-4 w-4 text-blue-500" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(cat)}>
                     <Trash2 className="h-4 w-4 text-red-500" />
                   </Button>
                 </td>
@@ -94,6 +123,47 @@ export default function AdminCategoriesPage() {
           </tbody>
         </table>
       </Card>
+
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá danh mục">
+        {deleteTarget && (
+          <div>
+            <p className="text-sm text-gray-600 mb-4">
+              Bạn có chắc muốn xoá danh mục <strong>"{deleteTarget.name}"</strong>?
+              {deleteTarget._count?.events ? (
+                <span className="text-amber-600 block mt-1">
+                  Danh mục này đang có {deleteTarget._count.events} sự kiện.
+                </span>
+              ) : null}
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Huỷ</Button>
+              <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Xác nhận xoá</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal open={!!transTarget} onClose={() => setTransTarget(null)} title="Dịch danh mục">
+        {transTarget && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">Đang dịch: <strong>{transTarget.name}</strong></p>
+            <Select
+              label="Ngôn ngữ"
+              value={transLang}
+              onChange={(e) => setTransLang(e.target.value)}
+              options={[
+                { value: 'en', label: 'English' },
+                { value: 'vi', label: 'Tiếng Việt' },
+              ]}
+            />
+            <Input label="Tên danh mục" value={transName} onChange={(e) => setTransName(e.target.value)} placeholder="Nhập tên dịch..." />
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="secondary" onClick={() => setTransTarget(null)}>Huỷ</Button>
+              <Button loading={savingTrans} onClick={handleSaveTrans}>Lưu bản dịch</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

@@ -22,6 +22,7 @@ export default function AdminPromoCodesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<PromoCode | null>(null)
   const [saving, setSaving] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<PromoCode | null>(null)
   const [form, setForm] = useState({
     code: '', discountPct: '', maxUses: '', expiresAt: '', isActive: true,
   })
@@ -82,11 +83,12 @@ export default function AdminPromoCodesPage() {
     } finally { setSaving(false) }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Xoá mã giảm giá này?')) return
+  const handleDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await adminApi.deletePromoCode(id)
-      toast.success('Đã xoá mã giảm giá')
+      await adminApi.deletePromoCode(deleteTarget.id)
+      toast.success(`Đã xoá mã "${deleteTarget.code}"`)
+      setDeleteTarget(null)
       fetch()
     } catch { toast.error('Xoá thất bại') }
   }
@@ -129,7 +131,7 @@ export default function AdminPromoCodesPage() {
                 <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <Button variant="ghost" size="sm" onClick={() => openEdit(p)}><Edit className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(p)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
                   </div>
                 </td>
               </tr>
@@ -161,6 +163,32 @@ export default function AdminPromoCodesPage() {
             <Button loading={saving} onClick={handleSave}>{editing ? 'Cập nhật' : 'Tạo mới'}</Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá mã giảm giá">
+        {deleteTarget && (
+          <div>
+            <p className="text-sm text-gray-600 mb-4">
+              Bạn có chắc muốn xoá mã <strong>"{deleteTarget.code}"</strong> ({deleteTarget.discountPct}%)?
+            </p>
+            <div className="rounded-lg bg-gray-50 p-3 space-y-2 text-sm mb-6">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Đã dùng</span>
+                <span className="font-medium text-gray-900">{deleteTarget.usedCount}/{deleteTarget.maxUses}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Trạng thái</span>
+                <Badge className={deleteTarget.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                  {deleteTarget.isActive ? 'Hoạt động' : 'Tắt'}
+                </Badge>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Huỷ</Button>
+              <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Xác nhận xoá</Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )
