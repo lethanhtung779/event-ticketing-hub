@@ -2,7 +2,6 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import vi from './locales/vi.json'
-import en from './locales/en.json'
 
 i18n
   .use(LanguageDetector)
@@ -10,7 +9,6 @@ i18n
   .init({
     resources: {
       vi: { common: vi },
-      en: { common: en },
     },
     ns: ['common'],
     defaultNS: 'common',
@@ -24,5 +22,12 @@ i18n
       escapeValue: false,
     },
   })
+
+export async function loadLocale(lng: string) {
+  if (lng === 'vi') return
+  if (i18n.hasResourceBundle(lng, 'common')) return
+  const mod = await import('./locales/en.json')
+  i18n.addResourceBundle(lng, 'common', mod.default)
+}
 
 export default i18n
