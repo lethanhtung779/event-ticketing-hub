@@ -2,8 +2,8 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { EmailService } from '../email/email.service';
+import { TicketPdfService } from '../ticket/ticket-pdf.service';
 import { buildVnpayPayUrl, verifyVnpayCallback } from './vnpay.util';
-import * as QRCode from 'qrcode';
 
 const BOOKING_KEY = (id: string) => `booking:${id}`;
 
@@ -13,6 +13,7 @@ export class VnpayService {
     private prisma: PrismaService,
     private redis: RedisService,
     private email: EmailService,
+    private ticketPdf: TicketPdfService,
   ) {}
 
   private get config() {
@@ -155,8 +156,33 @@ export class VnpayService {
 
     await this.redis.del(BOOKING_KEY(orderId));
 
-    const qrDataUrl = await QRCode.toDataURL(order.tickets[0].qrCodeToken);
-    await this.email.sendTicketConfirmation(user.email, user.fullName, event.title, qrDataUrl);
+    // Generate PDF ticket and send via email
+    const eventDate = event.startTime.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const eventTime = event.startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+    const pdfBuffer = await this.ticketPdf.generateTicketPdf({
+      eventTitle: event.title,
+      eventLocation: event.location,
+      eventDate,
+      eventTime,
+      ticketTypeName: order.tickets[0].ticketType.name,
+      buyerName: user.fullName,
+      buyerEmail: user.email,
+      orderId: order.id,
+      tickets: order.tickets.map(t => ({ id: t.id, qrCodeToken: t.qrCodeToken })),
+    });
+
+    await this.email.send(
+      user.email,
+      `Xác nhận đặt vé - ${event.title}`,
+      `<h2>Chào ${user.fullName},</h2>
+       <p>Bạn đã đặt vé thành công cho sự kiện <strong>${event.title}</strong>.</p>
+       <p><strong>Thời gian:</strong> ${eventDate} lúc ${eventTime}</p>
+       <p><strong>Địa điểm:</strong> ${event.location}</p>
+       <p>File PDF vé đính kèm email này. Vui lòng xuất trình mã QR tại cửa vào.</p>
+       <p>Trân trọng,<br/>TicketHub</p>`,
+      [{ filename: `ve-${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }],
+    );
   }
 
   async refund(orderId: string, reason: string) {

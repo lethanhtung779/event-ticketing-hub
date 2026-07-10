@@ -28,33 +28,33 @@ export default function AdminAnalyticsPage() {
   }, [])
 
   if (loading) return <PageSpinner />
-  if (!data) return <p className="text-gray-500 text-center py-12">Không có dữ liệu</p>
+  if (!data) return <p className="text-gray-500 dark:text-gray-400 text-center py-12">Không có dữ liệu</p>
 
   return (
     <div>
-      <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-4">
+      <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-4">
         <ArrowLeft className="h-4 w-4" /> Dashboard
       </Link>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
         <BarChart3 className="h-6 w-6 text-indigo-600" /> Thống kê nâng cao
       </h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
         <Card className="!p-4">
-          <p className="text-xs text-gray-500">Tổng doanh thu</p>
-          <p className="text-xl font-bold text-gray-900">{formatCurrency(data.totalRevenue)}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Tổng doanh thu</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(data.totalRevenue)}</p>
         </Card>
         <Card className="!p-4">
-          <p className="text-xs text-gray-500">Đơn đã thanh toán</p>
-          <p className="text-xl font-bold text-gray-900">{data.totalPaidOrders}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Đơn đã thanh toán</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-white">{data.totalPaidOrders}</p>
         </Card>
         <Card className="!p-4">
-          <p className="text-xs text-gray-500">Top sự kiện (vé bán)</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Top sự kiện (vé bán)</p>
           <p className="text-xl font-bold text-indigo-600">{data.topEvents?.[0]?.totalSold || 0}</p>
         </Card>
         <Card className="!p-4">
-          <p className="text-xs text-gray-500">Danh mục</p>
-          <p className="text-xl font-bold text-gray-900">{data.revenueByCategory?.length || 0}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Danh mục</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-white">{data.revenueByCategory?.length || 0}</p>
         </Card>
       </div>
 
@@ -148,21 +148,21 @@ export default function AdminAnalyticsPage() {
         </CardTitle>
         <div className="overflow-x-auto mt-4">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+            <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-500">Loại vé</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Sự kiện</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Giá</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Đã bán</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Doanh thu</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Loại vé</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Sự kiện</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Giá</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Đã bán</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Doanh thu</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {(data.ticketTypePerformance || []).map((tt: any, i: number) => (
-                <tr key={i} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{tt.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{tt.eventTitle}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatCurrency(tt.price)}</td>
+                <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{tt.name}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{tt.eventTitle}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatCurrency(tt.price)}</td>
                   <td className="px-4 py-3 font-medium text-indigo-600">{tt.soldQuantity}</td>
                   <td className="px-4 py-3 font-medium text-green-600">{formatCurrency(tt.price * tt.soldQuantity)}</td>
                 </tr>

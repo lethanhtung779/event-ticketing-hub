@@ -43,13 +43,13 @@ export default function AdminUserDetailPage(props: { params: Promise<{ id: strin
 
   return (
     <div>
-      <Link href="/admin/users" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-4">
+      <Link href="/admin/users" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-4">
         <ArrowLeft className="h-4 w-4" /> Quản lý người dùng
       </Link>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{user.fullName}</h1>
-        <p className="text-sm text-gray-500">{user.email}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user.fullName}</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -60,16 +60,16 @@ export default function AdminUserDetailPage(props: { params: Promise<{ id: strin
           </CardTitle>
           <div className="mt-4 space-y-4">
             <div className="flex items-center gap-3">
-              <Mail className="h-4 w-4 text-gray-400" />
+              <Mail className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               <div>
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="text-sm font-medium text-gray-900">{user.email}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{user.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Shield className="h-4 w-4 text-gray-400" />
+              <Shield className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               <div>
-                <p className="text-sm text-gray-500">Vai trò</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Vai trò</p>
                 <Select
                   value={user.role}
                   onChange={(e) => handleRoleChange(e.target.value)}
@@ -82,14 +82,14 @@ export default function AdminUserDetailPage(props: { params: Promise<{ id: strin
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Calendar className="h-4 w-4 text-gray-400" />
+              <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               <div>
-                <p className="text-sm text-gray-500">Ngày tham gia</p>
-                <p className="text-sm font-medium text-gray-900">{formatDate(user.createdAt, 'dd/MM/yyyy')}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Ngày tham gia</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(user.createdAt, 'dd/MM/yyyy')}</p>
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Trạng thái email</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Trạng thái email</p>
               <Badge className={user.isVerified ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}>
                 {user.isVerified ? 'Đã xác thực' : 'Chưa xác thực'}
               </Badge>
@@ -104,12 +104,12 @@ export default function AdminUserDetailPage(props: { params: Promise<{ id: strin
           </CardTitle>
           <div className="mt-4 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Vé đã mua</span>
-              <span className="text-lg font-bold text-gray-900">{user._count?.tickets ?? 0}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Vé đã mua</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-white">{user._count?.tickets ?? 0}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Đánh giá</span>
-              <span className="text-lg font-bold text-gray-900">{user._count?.reviews ?? 0}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Đánh giá</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-white">{user._count?.reviews ?? 0}</span>
             </div>
           </div>
         </Card>

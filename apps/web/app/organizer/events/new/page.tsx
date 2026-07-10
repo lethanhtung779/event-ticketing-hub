@@ -1,18 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Save, Upload, AlertTriangle, X, Image, Plus, Edit, Trash2, Check, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Save, Upload, AlertTriangle, X, Plus, Edit, Trash2, Check, ChevronRight } from 'lucide-react'
 import { Card, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import { Modal } from '@/components/ui/Modal'
-import { getErrorMessage } from '@/lib/utils'
-import { eventApi } from '@/lib/api'
-import { useAuthStore } from '@/stores/auth-store'
+import { PageSpinner } from '@/components/ui/Spinner'
+import { getErrorMessage, bannerUrl } from '@/lib/utils'
+import { eventApi, organizerApi } from '@/lib/api'
 
 const GENRES = ['Âm nhạc', 'Thể thao', 'Nghệ thuật', 'Hội nghị', 'Giáo dục', 'Hội thảo', 'Sân khấu', 'Triển lãm', 'Workshop', 'Gây quỹ', 'Khác']
 const PROVINCES = ['Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ', 'An Giang', 'Bà Rịa - Vũng Tàu', 'Bắc Giang', 'Bắc Kạn', 'Bạc Liêu', 'Bắc Ninh', 'Bến Tre', 'Bình Định', 'Bình Dương', 'Bình Phước', 'Bình Thuận', 'Cà Mau', 'Cao Bằng', 'Đắk Lắk', 'Đắk Nông', 'Điện Biên', 'Đồng Nai', 'Đồng Tháp', 'Gia Lai', 'Hà Giang', 'Hà Nam', 'Hà Tĩnh', 'Hải Dương', 'Hậu Giang', 'Hoà Bình', 'Hưng Yên', 'Khánh Hoà', 'Kiên Giang', 'Kon Tum', 'Lai Châu', 'Lâm Đồng', 'Lạng Sơn', 'Lào Cai', 'Long An', 'Nam Định', 'Nghệ An', 'Ninh Bình', 'Ninh Thuận', 'Phú Thọ', 'Phú Yên', 'Quảng Bình', 'Quảng Nam', 'Quảng Ngãi', 'Quảng Ninh', 'Quảng Trị', 'Sóc Trăng', 'Sơn La', 'Tây Ninh', 'Thái Bình', 'Thái Nguyên', 'Thanh Hoá', 'Thừa Thiên Huế', 'Tiền Giang', 'Trà Vinh', 'Tuyên Quang', 'Vĩnh Long', 'Vĩnh Phúc', 'Yên Bái']
@@ -38,8 +38,8 @@ const STEPS = [
 
 export default function CreateEventPage() {
   const router = useRouter()
-  const { user } = useAuthStore()
   const [step, setStep] = useState(1)
+  const [checkingOrg, setCheckingOrg] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showNotice, setShowNotice] = useState(true)
 
@@ -49,10 +49,8 @@ export default function CreateEventPage() {
   const [description, setDescription] = useState('')
   const [bannerFile, setBannerFile] = useState<File | null>(null)
   const [bannerPreview, setBannerPreview] = useState('')
-  const [logoFile, setLogoFile] = useState<File | null>(null)
-  const [logoPreview, setLogoPreview] = useState('')
-  const [organizerName, setOrganizerName] = useState(user?.fullName || '')
-  const [organizerInfo, setOrganizerInfo] = useState('')
+  const [orgName, setOrgName] = useState('')
+  const [orgLogo, setOrgLogo] = useState('')
 
   // Step 2
   const [startTime, setStartTime] = useState('')
@@ -75,6 +73,20 @@ export default function CreateEventPage() {
   const [bankAccountNumber, setBankAccountNumber] = useState('')
   const [bankAccountHolder, setBankAccountHolder] = useState('')
   const [paymentInfo, setPaymentInfo] = useState('')
+
+  useEffect(() => {
+    organizerApi.getProfile()
+      .then(({ data }) => {
+        setOrgName(data.name ?? '')
+        setOrgLogo(data.logo ?? '')
+      })
+      .catch(() => {
+        router.replace('/organizer/setup')
+      })
+      .finally(() => setCheckingOrg(false))
+  }, [router])
+
+  if (checkingOrg) return <PageSpinner />
 
   const validateStep = (s: number): boolean => {
     if (s === 1) {
@@ -122,8 +134,7 @@ export default function CreateEventPage() {
         province: province || undefined,
         district: district || undefined,
         streetAddress: streetAddress || undefined,
-        organizerName: organizerName || undefined,
-        organizerInfo: organizerInfo || undefined,
+
         bankName: bankName || undefined,
         bankAccountNumber: bankAccountNumber || undefined,
         bankAccountHolder: bankAccountHolder || undefined,
@@ -141,14 +152,6 @@ export default function CreateEventPage() {
         }
       }
 
-      if (logoFile) {
-        try {
-          const fd = new FormData()
-          fd.append('file', logoFile)
-          await eventApi.uploadBanner(event.id, fd)
-        } catch { /* ignore */ }
-      }
-
       for (const tt of ticketTypes) {
         const payload: Record<string, unknown> = {
           name: tt.name,
@@ -162,7 +165,7 @@ export default function CreateEventPage() {
         await eventApi.createTicketType(event.id, payload)
       }
 
-      toast.success('Tạo sự kiện thành công!')
+      toast.success('Tạo sự kiện thành công! Sự kiện đang chờ admin duyệt.')
       router.push(`/organizer/events/${event.id}`)
     } catch (err) {
       toast.error(getErrorMessage(err, 'Tạo sự kiện thất bại'))
@@ -176,14 +179,6 @@ export default function CreateEventPage() {
     if (file) {
       setBannerFile(file)
       setBannerPreview(URL.createObjectURL(file))
-    }
-  }
-
-  const handleLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setLogoFile(file)
-      setLogoPreview(URL.createObjectURL(file))
     }
   }
 
@@ -220,23 +215,23 @@ export default function CreateEventPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <Link href="/organizer/events" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-4">
+      <Link href="/organizer/events" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-4">
         <ArrowLeft className="h-4 w-4" /> Sự kiện của tôi
       </Link>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Tạo sự kiện mới</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Tạo sự kiện mới</h1>
 
       {/* Step indicator */}
       <div className="flex items-center justify-center mb-8">
         {STEPS.map((s, i) => (
           <div key={s.id} className="flex items-center">
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              step === s.id ? 'bg-indigo-600 text-white' : step > s.id ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+              step === s.id ? 'bg-indigo-600 text-white' : step > s.id ? 'bg-green-100 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
             }`}>
               {step > s.id ? <Check className="h-4 w-4" /> : <span className="flex items-center justify-center h-5 w-5 rounded-full text-xs font-bold border-2 border-current">{s.id}</span>}
               <span className="hidden sm:inline">{s.label}</span>
             </div>
-            {i < STEPS.length - 1 && <ChevronRight className="h-4 w-4 mx-2 text-gray-300" />}
+            {i < STEPS.length - 1 && <ChevronRight className="h-4 w-4 mx-2 text-gray-300 dark:text-gray-600" />}
           </div>
         ))}
       </div>
@@ -272,13 +267,13 @@ export default function CreateEventPage() {
             <CardTitle>Hình ảnh & Mô tả</CardTitle>
             <div className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Banner sự kiện</label>
-                <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Banner sự kiện</label>
+                <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
                   {bannerPreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={bannerPreview} alt="Preview" className="h-full object-contain" />
                   ) : (
-                    <div className="text-center text-gray-400">
+                    <div className="text-center text-gray-400 dark:text-gray-500">
                       <Upload className="h-8 w-8 mx-auto mb-2" />
                       <span className="text-sm">Chọn ảnh banner (1200x600px khuyến nghị)</span>
                     </div>
@@ -287,37 +282,25 @@ export default function CreateEventPage() {
                 </label>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả chi tiết *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Mô tả chi tiết *</label>
                 <textarea value={description} onChange={e => setDescription(e.target.value)} rows={5}
                   placeholder="Mô tả sự kiện, thông tin nghệ sĩ/diễn giả, lịch trình chương trình..."
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" />
+                  className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" />
               </div>
             </div>
           </Card>
           <Card>
             <CardTitle>Thông tin Ban Tổ chức</CardTitle>
             <div className="mt-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo Ban Tổ chức</label>
-                <label className="flex flex-col items-center justify-center h-32 w-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
-                  {logoPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={logoPreview} alt="Logo preview" className="h-full object-contain" />
-                  ) : (
-                    <div className="text-center text-gray-400">
-                      <Image className="h-6 w-6 mx-auto mb-1" />
-                      <span className="text-xs">Chọn logo</span>
-                    </div>
-                  )}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleLogo} />
-                </label>
-              </div>
-              <Input label="Tên Ban Tổ chức" value={organizerName} onChange={e => setOrganizerName(e.target.value)} placeholder="Tên đơn vị tổ chức" />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Thông tin Ban Tổ chức</label>
-                <textarea value={organizerInfo} onChange={e => setOrganizerInfo(e.target.value)} rows={3}
-                  placeholder="Giới thiệu ngắn về Ban Tổ chức..."
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" />
+              <div className="flex items-center gap-4">
+                {orgLogo && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={bannerUrl(orgLogo) ?? ''} alt={orgName} className="h-16 w-16 rounded-xl object-cover border border-gray-200 dark:border-gray-700" />
+                )}
+                <div>
+                  <Input label="Tên Ban Tổ chức" value={orgName} disabled placeholder="Tên đơn vị tổ chức" />
+                  <p className="text-xs text-gray-400 mt-2 dark:text-gray-500">Thông tin ban tổ chức được quản lý trong <Link href="/organizer/profile" className="text-indigo-500 hover:text-indigo-600">hồ sơ của bạn</Link>.</p>
+                </div>
               </div>
             </div>
           </Card>
@@ -339,14 +322,14 @@ export default function CreateEventPage() {
               <Button size="sm" onClick={openCreateTT}><Plus className="h-4 w-4" /> Thêm loại vé</Button>
             </div>
             {ticketTypes.length === 0 ? (
-              <p className="text-sm text-gray-500 py-4">Chưa có loại vé nào. Thêm ít nhất một loại vé để tiếp tục.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 py-4">Chưa có loại vé nào. Thêm ít nhất một loại vé để tiếp tục.</p>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
                 {ticketTypes.map((tt, i) => (
                   <div key={i} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="font-medium text-gray-900">{tt.name}</p>
-                      <p className="text-sm text-gray-500">{Number(tt.price).toLocaleString()}đ &middot; {tt.totalQuantity} vé</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{tt.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{Number(tt.price).toLocaleString()}đ &middot; {tt.totalQuantity} vé</p>
                     </div>
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="sm" onClick={() => openEditTT(i)}><Edit className="h-4 w-4" /></Button>
@@ -365,8 +348,8 @@ export default function CreateEventPage() {
           <CardTitle>Cài đặt sự kiện</CardTitle>
           <div className="mt-4 space-y-4">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={isOnline} onChange={e => setIsOnline(e.target.checked)} className="rounded border-gray-300" />
-              <span className="text-sm text-gray-700">Sự kiện trực tuyến (Online / Webinar)</span>
+              <input type="checkbox" checked={isOnline} onChange={e => setIsOnline(e.target.checked)} className="rounded border-gray-300 dark:border-gray-600" />
+              <span className="text-sm text-gray-700 dark:text-gray-200">Sự kiện trực tuyến (Online / Webinar)</span>
             </label>
             {!isOnline && (
               <>
@@ -390,7 +373,7 @@ export default function CreateEventPage() {
       {step === 4 && (
         <Card>
           <CardTitle>Thông tin thanh toán</CardTitle>
-          <p className="mt-1 text-sm text-gray-500">Thông tin tài khoản ngân hàng để nhận tiền bán vé.</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Thông tin tài khoản ngân hàng để nhận tiền bán vé.</p>
           <div className="mt-4 space-y-4">
             <Input label="Tên ngân hàng" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="Ví dụ: Vietcombank, Techcombank..." />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -398,10 +381,10 @@ export default function CreateEventPage() {
               <Input label="Chủ tài khoản" value={bankAccountHolder} onChange={e => setBankAccountHolder(e.target.value)} placeholder="NGUYEN VAN A" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Thông tin thêm</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Thông tin thêm</label>
               <textarea value={paymentInfo} onChange={e => setPaymentInfo(e.target.value)} rows={3}
                 placeholder="Ghi chú thêm về thanh toán (nếu có)..."
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" />
+                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" />
             </div>
           </div>
         </Card>

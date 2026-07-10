@@ -35,7 +35,7 @@ export default function AdminDashboard() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
         <Link href="/admin/revenue" className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
           Xem báo cáo <ArrowUpRight className="h-3 w-3" />
         </Link>
@@ -50,8 +50,8 @@ export default function AdminDashboard() {
                   <card.icon className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">{card.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{card.label}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{card.value}</p>
                 </div>
               </div>
             </Card>
@@ -63,46 +63,46 @@ export default function AdminDashboard() {
         <Card>
           <CardTitle>Đơn hàng gần đây</CardTitle>
           {stats?.recentOrders?.length ? (
-            <div className="mt-4 divide-y divide-gray-100">
+            <div className="mt-4 divide-y divide-gray-100 dark:divide-gray-800">
               {stats.recentOrders.map((o: any) => (
-                <Link key={o.id} href={`/admin/orders/${o.id}`} className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-6 px-6 transition-colors">
+                <Link key={o.id} href={`/admin/orders/${o.id}`} className="flex items-center justify-between py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 -mx-6 px-6 transition-colors">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">#{o.id.slice(0, 8)}</p>
-                    <p className="text-xs text-gray-400">{o.user?.fullName}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">#{o.id.slice(0, 8)}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{o.user?.fullName}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{formatCurrency(o.finalAmount)}</p>
-                    <p className="text-xs text-gray-400">{o.paidAt ? formatDate(o.paidAt, 'dd/MM HH:mm') : ''}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{formatCurrency(o.finalAmount)}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{o.paidAt ? formatDate(o.paidAt, 'dd/MM HH:mm') : ''}</p>
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 py-4">Chưa có đơn hàng nào</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 py-4">Chưa có đơn hàng nào</p>
           )}
         </Card>
 
         <Card>
           <CardTitle>Người dùng mới</CardTitle>
           {stats?.recentUsers?.length ? (
-            <div className="mt-4 divide-y divide-gray-100">
+            <div className="mt-4 divide-y divide-gray-100 dark:divide-gray-800">
               {stats.recentUsers.map((u: any) => (
-                <Link key={u.id} href={`/admin/users/${u.id}`} className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-6 px-6 transition-colors">
+                <Link key={u.id} href={`/admin/users/${u.id}`} className="flex items-center justify-between py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 -mx-6 px-6 transition-colors">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{u.fullName}</p>
-                    <p className="text-xs text-gray-400">{u.email}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{u.fullName}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{u.email}</p>
                   </div>
                   <div className="text-right">
-                    <Badge className={u.role === 'ADMIN' ? 'bg-red-100 text-red-800' : u.role === 'STAFF' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}>
+                    <Badge className={u.role === 'ADMIN' ? 'bg-red-100 text-red-800' : u.role === 'STAFF' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100'}>
                       {u.role}
                     </Badge>
-                    <p className="text-xs text-gray-400 mt-1">{formatDate(u.createdAt, 'dd/MM')}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(u.createdAt, 'dd/MM')}</p>
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 py-4">Chưa có người dùng mới</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 py-4">Chưa có người dùng mới</p>
           )}
         </Card>
       </div>

@@ -11,6 +11,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { authApi } from '@/lib/api'
 import { getErrorMessage } from '@/lib/utils'
+import SeoHead from '@/components/SeoHead'
 
 const forgotSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
@@ -45,14 +46,15 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4">
+      <SeoHead title="Quên mật khẩu" />
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl text-indigo-600">
             <Ticket className="h-8 w-8" />
             TicketHub
           </Link>
-          <h1 className="mt-6 text-2xl font-bold text-gray-900">Quên mật khẩu</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="mt-6 text-2xl font-bold text-gray-900 dark:text-white">Quên mật khẩu</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
             Nhập email của bạn để nhận liên kết khôi phục mật khẩu
           </p>
         </div>

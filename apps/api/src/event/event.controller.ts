@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, Req, BadRequestException } from '@nestjs/common';
 import { EventService } from './event.service';
+import { UploadService } from '../common/services/upload.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -7,15 +8,14 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { QueryEventDto } from './dto/query-event.dto';
 import multer from 'multer';
-import { extname, join } from 'path';
-import * as fs from 'fs';
 import type { Request } from 'express';
-
-const UPLOAD_DIR = join(process.cwd(), 'uploads');
 
 @Controller('events')
 export class EventController {
-  constructor(private eventService: EventService) {}
+  constructor(
+    private eventService: EventService,
+    private uploadService: UploadService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -45,6 +45,20 @@ export class EventController {
     return this.eventService.publishEvent(req.user.sub, id);
   }
 
+  @Post(':id/approve')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  approveEvent(@Req() req: any, @Param('id') id: string) {
+    return this.eventService.approveEvent(req.user.sub, id);
+  }
+
+  @Post(':id/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  rejectEvent(@Req() req: any, @Param('id') id: string) {
+    return this.eventService.rejectEvent(req.user.sub, id);
+  }
+
   @Post(':id/cancel')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'STAFF', 'USER')
@@ -57,11 +71,12 @@ export class EventController {
   @Roles('ADMIN', 'STAFF', 'USER')
   async uploadBanner(@Req() req: any, @Param('id') id: string) {
     const upload = multer({
-      storage: multer.diskStorage({
-        destination: (_r, _f, cb) => { if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true }); cb(null, UPLOAD_DIR); },
-        filename: (_r, file, cb) => { cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`); },
-      }),
-      fileFilter: (_r, file, cb) => { file.mimetype.startsWith('image/') ? cb(null, true) : cb(new Error('Only images')); },
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_r, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) cb(new Error('Only images allowed'));
+        else cb(null, true);
+      },
     }).single('file');
 
     await new Promise<void>((resolve, reject) => {
@@ -74,7 +89,8 @@ export class EventController {
     const file = (req as any).file;
     if (!file) throw new BadRequestException('No file uploaded');
 
-    return this.eventService.updateEvent(req.user.sub, id, { bannerUrl: `/uploads/${file.filename}` });
+    const url = await this.uploadService.validateAndResize(file);
+    return this.eventService.updateEvent(req.user.sub, id, { bannerUrl: url });
   }
 
   @Post(':id/ticket-types')

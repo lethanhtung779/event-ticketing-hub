@@ -3,13 +3,18 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
 
 @Injectable()
 export class AuthService {
+  private googleClient: OAuth2Client;
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) {
+    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '');
+  }
 
   async register(body: any) {
     const { email, password, fullName } = body;
@@ -78,6 +83,60 @@ export class AuthService {
     });
 
     return { message: 'Đổi mật khẩu thành công!' };
+  }
+
+  async googleLogin(idToken: string) {
+    let payload: { sub: string; email?: string; name?: string; picture?: string };
+    try {
+      const audiences = [
+        process.env.GOOGLE_CLIENT_ID || '',
+        process.env.GOOGLE_ANDROID_CLIENT_ID || '',
+      ].filter(Boolean)
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken,
+        audience: audiences,
+      });
+      payload = ticket.getPayload() as any;
+    } catch (err: any) {
+      console.error('Google verify error:', err.message);
+      throw new UnauthorizedException('Token Google không hợp lệ');
+    }
+
+    if (!payload.email) {
+      throw new BadRequestException('Không thể lấy email từ tài khoản Google');
+    }
+
+    let user = await this.prisma.user.findUnique({ where: { email: payload.email } });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email: payload.email,
+          fullName: payload.name || payload.email.split('@')[0],
+          password: crypto.randomBytes(32).toString('hex'),
+          isVerified: true,
+          avatar: payload.picture,
+        },
+      });
+    } else {
+      const updateData: any = {};
+      if (payload.name && payload.name !== user.fullName) updateData.fullName = payload.name;
+      if (payload.picture && payload.picture !== user.avatar) updateData.avatar = payload.picture;
+      if (!user.isVerified) updateData.isVerified = true;
+      if (Object.keys(updateData).length > 0) {
+        user = await this.prisma.user.update({ where: { id: user.id }, data: updateData });
+      }
+    }
+
+    const jwtPayload = { sub: user.id, email: user.email, role: user.role };
+    const accessToken = await this.jwtService.signAsync(jwtPayload, { expiresIn: '15m' });
+    const refreshToken = await this.generateRefreshToken(user.id);
+
+    return {
+      message: 'Đăng nhập với Google thành công!',
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
   }
 
   private async generateRefreshToken(userId: string) {

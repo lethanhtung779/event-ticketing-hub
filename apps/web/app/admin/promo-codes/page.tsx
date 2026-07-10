@@ -98,31 +98,31 @@ export default function AdminPromoCodesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Mã giảm giá</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mã giảm giá</h1>
         <Button onClick={openCreate}><Plus className="h-4 w-4" /> Tạo mã</Button>
       </div>
 
       <Card className="!p-0 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left">
+          <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
             <tr>
-              <th className="px-4 py-3 font-medium text-gray-500">Mã</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Giảm</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Đã dùng</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Hết hạn</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Trạng thái</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Hành động</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Mã</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Giảm</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Đã dùng</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hết hạn</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Trạng thái</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {promos.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500">Chưa có mã giảm giá</td></tr>
+              <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Chưa có mã giảm giá</td></tr>
             ) : promos.map((p) => (
-              <tr key={p.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-mono font-medium text-gray-900">{p.code}</td>
-                <td className="px-4 py-3 text-gray-600">{p.discountPct}%</td>
-                <td className="px-4 py-3 text-gray-600">{p.usedCount}/{p.maxUses}</td>
-                <td className="px-4 py-3 text-gray-600">{p.expiresAt ? formatDate(p.expiresAt, 'dd/MM/yyyy') : '---'}</td>
+              <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
+                <td className="px-4 py-3 font-mono font-medium text-gray-900 dark:text-white">{p.code}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{p.discountPct}%</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{p.usedCount}/{p.maxUses}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{p.expiresAt ? formatDate(p.expiresAt, 'dd/MM/yyyy') : '---'}</td>
                 <td className="px-4 py-3">
                   <Badge className={p.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                     {p.isActive ? 'Hoạt động' : 'Tắt'}
@@ -168,16 +168,16 @@ export default function AdminPromoCodesPage() {
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá mã giảm giá">
         {deleteTarget && (
           <div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Bạn có chắc muốn xoá mã <strong>"{deleteTarget.code}"</strong> ({deleteTarget.discountPct}%)?
             </p>
-            <div className="rounded-lg bg-gray-50 p-3 space-y-2 text-sm mb-6">
+            <div className="rounded-lg bg-gray-50 dark:bg-gray-800/50 p-3 space-y-2 text-sm mb-6">
               <div className="flex justify-between">
-                <span className="text-gray-500">Đã dùng</span>
-                <span className="font-medium text-gray-900">{deleteTarget.usedCount}/{deleteTarget.maxUses}</span>
+                <span className="text-gray-500 dark:text-gray-400">Đã dùng</span>
+                <span className="font-medium text-gray-900 dark:text-white">{deleteTarget.usedCount}/{deleteTarget.maxUses}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Trạng thái</span>
+                <span className="text-gray-500 dark:text-gray-400">Trạng thái</span>
                 <Badge className={deleteTarget.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                   {deleteTarget.isActive ? 'Hoạt động' : 'Tắt'}
                 </Badge>

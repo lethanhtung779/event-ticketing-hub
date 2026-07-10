@@ -17,15 +17,18 @@ import { AuditLogModule } from './audit-log/audit-log.module';
 import { VnpayModule } from './payment-vnpay/vnpay.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { FollowModule } from './follow/follow.module';
 import { OrganizerModule } from './organizer/organizer.module';
+import { WishlistModule } from './wishlist/wishlist.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
-    AuditLogModule, PrismaModule, RedisModule, EmailModule,
+    CommonModule, AuditLogModule, PrismaModule, RedisModule, EmailModule,
     AuthModule, EventModule, TicketModule, PaymentModule,
     UserModule, AdminModule, CategoryModule, ReviewModule,
-    VnpayModule, WebsocketModule, NotificationsModule, OrganizerModule,
+    VnpayModule, WebsocketModule, NotificationsModule, OrganizerModule, FollowModule, WishlistModule,
   ],
   controllers: [AppController],
   providers: [AppService],

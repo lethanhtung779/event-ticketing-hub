@@ -122,11 +122,11 @@ export default function AdminEventsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Quản lý sự kiện</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý sự kiện</h1>
         <div className="flex items-center gap-2">
           {selected.size > 0 && (
             <div className="flex items-center gap-1 mr-2">
-              <span className="text-sm text-gray-500">Đã chọn {selected.size}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Đã chọn {selected.size}</span>
               <Button size="sm" variant="outline" onClick={async () => { setBulkAction('publish'); setBulking(true); try { const res = await adminApi.bulkPublishEvents(Array.from(selected)); const d = res.data as {count: number}; toast.success(`Đã xuất bản ${d.count} sự kiện`); setSelected(new Set()); setBulkAction(null) } catch { toast.error('Thất bại') } finally { setBulking(false) } }} loading={bulking && bulkAction === 'publish'}>Xuất bản</Button>
               <Button size="sm" variant="outline" onClick={async () => { setBulkAction('cancel'); setBulking(true); try { const res = await adminApi.bulkCancelEvents(Array.from(selected)); const d = res.data as {count: number}; toast.success(`Đã huỷ ${d.count} sự kiện`); setSelected(new Set()); setBulkAction(null) } catch { toast.error('Thất bại') } finally { setBulking(false) } }} loading={bulking && bulkAction === 'cancel'}>Huỷ</Button>
             </div>
@@ -150,27 +150,27 @@ export default function AdminEventsPage() {
       <Card className="!p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+            <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
               <tr>
                 <th className="px-4 py-3 w-10">
                   <input type="checkbox" checked={selected.size === events.length && events.length > 0}
                     onChange={() => setSelected(selected.size === events.length ? new Set() : new Set(events.map(e => e.id)))}
                     className="rounded" />
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-500">Tên sự kiện</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Danh mục</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Thời gian</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Trạng thái</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Hành động</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Tên sự kiện</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Danh mục</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Thời gian</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Trạng thái</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {loading ? (
                 <tr><td colSpan={6} className="px-4 py-12"><PageSpinner /></td></tr>
               ) : events.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500">Chưa có sự kiện nào</td></tr>
+                <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Chưa có sự kiện nào</td></tr>
               ) : events.map((event) => (
-                <tr key={event.id} className="hover:bg-gray-50">
+                <tr key={event.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
                   <td className="px-4 py-3">
                     <input type="checkbox" checked={selected.has(event.id)}
                       onChange={() => { const next = new Set(selected); next.has(event.id) ? next.delete(event.id) : next.add(event.id); setSelected(next) }}
@@ -178,17 +178,17 @@ export default function AdminEventsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Link href={`/admin/events/${event.id}`} className="font-medium text-gray-900 hover:text-indigo-600">
+                      <Link href={`/admin/events/${event.id}`} className="font-medium text-gray-900 dark:text-white hover:text-indigo-600">
                         {event.title}
                       </Link>
-                      <Link href={`/events/${event.id}`} className="text-xs text-gray-400 hover:text-indigo-500" target="_blank">
+                      <Link href={`/events/${event.id}`} className="text-xs text-gray-400 dark:text-gray-500 hover:text-indigo-500" target="_blank">
                         Xem
                       </Link>
                     </div>
-                    <p className="text-xs text-gray-400">{event.location}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{event.location}</p>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{event.category?.name || '---'}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatDate(event.startTime, 'dd/MM/yyyy')}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{event.category?.name || '---'}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(event.startTime, 'dd/MM/yyyy')}</td>
                   <td className="px-4 py-3">
                     <Badge className={getStatusColor(event.status)}>{getStatusLabel(event.status)}</Badge>
                   </td>
@@ -197,6 +197,16 @@ export default function AdminEventsPage() {
                       <Button variant="ghost" size="sm" onClick={() => openEdit(event)}>
                         <Edit className="h-4 w-4" />
                       </Button>
+                      {event.status === 'PENDING' && (
+                        <>
+                          <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700" onClick={async () => { try { await eventApi.approve(event.id); toast.success('Đã phê duyệt!'); fetchEvents() } catch { toast.error('Thất bại') } }}>
+                            Phê duyệt
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={async () => { try { await eventApi.reject(event.id); toast.success('Đã từ chối'); fetchEvents() } catch { toast.error('Thất bại') } }}>
+                            Từ chối
+                          </Button>
+                        </>
+                      )}
                       {event.status === 'DRAFT' && (
                         <Button variant="ghost" size="sm" onClick={() => setConfirmAction({ type: 'publish', event })}>
                           Xuất bản
@@ -227,9 +237,9 @@ export default function AdminEventsPage() {
         <div className="space-y-4">
           <Input label="Tiêu đề" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Mô tả</label>
             <textarea
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               rows={3}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -253,18 +263,20 @@ export default function AdminEventsPage() {
             onChange={(e) => setForm({ ...form, status: e.target.value })}
             options={[
               { value: 'DRAFT', label: 'Nháp' },
+              { value: 'PENDING', label: 'Chờ duyệt' },
               { value: 'PUBLISHED', label: 'Đã xuất bản' },
+              { value: 'REJECTED', label: 'Bị từ chối' },
               { value: 'CANCELLED', label: 'Đã huỷ' },
               { value: 'COMPLETED', label: 'Hoàn thành' },
             ]}
           />
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh banner</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Ảnh banner</label>
             <input
               type="file"
               accept="image/*"
               onChange={(e) => setBannerFile(e.target.files?.[0] || null)}
-              className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
@@ -286,28 +298,28 @@ export default function AdminEventsPage() {
       >
         {confirmAction && (
           <div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               {confirmAction.type === 'publish'
                 ? `Bạn có chắc muốn xuất bản sự kiện này?`
                 : confirmAction.type === 'cancel'
                 ? `Bạn có chắc muốn huỷ sự kiện này?`
                 : `Bạn có chắc muốn xoá sự kiện này? Hành động này không thể hoàn tác.`}
             </p>
-            <div className="rounded-lg bg-gray-50 p-3 space-y-2 text-sm mb-6">
+            <div className="rounded-lg bg-gray-50 dark:bg-gray-800/50 p-3 space-y-2 text-sm mb-6">
               <div className="flex justify-between">
-                <span className="text-gray-500">Tên</span>
-                <span className="font-medium text-gray-900">{confirmAction.event.title}</span>
+                <span className="text-gray-500 dark:text-gray-400">Tên</span>
+                <span className="font-medium text-gray-900 dark:text-white">{confirmAction.event.title}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Địa điểm</span>
-                <span className="text-gray-900">{confirmAction.event.location}</span>
+                <span className="text-gray-500 dark:text-gray-400">Địa điểm</span>
+                <span className="text-gray-900 dark:text-white">{confirmAction.event.location}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Thời gian</span>
-                <span className="text-gray-900">{formatDate(confirmAction.event.startTime, 'dd/MM/yyyy')}</span>
+                <span className="text-gray-500 dark:text-gray-400">Thời gian</span>
+                <span className="text-gray-900 dark:text-white">{formatDate(confirmAction.event.startTime, 'dd/MM/yyyy')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Trạng thái</span>
+                <span className="text-gray-500 dark:text-gray-400">Trạng thái</span>
                 <Badge className={getStatusColor(confirmAction.event.status)}>
                   {getStatusLabel(confirmAction.event.status)}
                 </Badge>

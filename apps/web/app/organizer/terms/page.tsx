@@ -51,10 +51,10 @@ export default function TermsPage() {
     <div className="max-w-4xl">
       <div className="flex items-center gap-3 mb-6">
         <FileText className="h-7 w-7 text-indigo-600" />
-        <h1 className="text-2xl font-bold text-gray-900">Điều khoản cho Ban Tổ chức</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Điều khoản cho Ban Tổ chức</h1>
       </div>
 
-      <p className="text-gray-500 mb-8">
+      <p className="text-gray-500 dark:text-gray-400 mb-8">
         Các điều khoản và quy định dành cho Ban Tổ chức (BTC) khi sử dụng nền tảng để tạo và quản lý sự kiện.
       </p>
 
@@ -69,7 +69,7 @@ export default function TermsPage() {
                 <CardTitle>{section.title}</CardTitle>
                 <ul className="mt-3 space-y-2">
                   {section.items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
                       <span className="text-indigo-400 mt-1 shrink-0">•</span>
                       {item}
                     </li>

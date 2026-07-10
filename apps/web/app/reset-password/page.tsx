@@ -12,6 +12,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { authApi } from '@/lib/api'
 import { getErrorMessage } from '@/lib/utils'
+import SeoHead from '@/components/SeoHead'
 
 const resetSchema = z.object({
   newPassword: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
@@ -58,14 +59,15 @@ export default function ResetPasswordPage(props: { searchParams: Promise<{ token
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4">
+      <SeoHead title="Đặt lại mật khẩu" />
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl text-indigo-600">
             <Ticket className="h-8 w-8" />
             TicketHub
           </Link>
-          <h1 className="mt-6 text-2xl font-bold text-gray-900">Đặt lại mật khẩu</h1>
-          <p className="mt-2 text-sm text-gray-600">Nhập mật khẩu mới của bạn</p>
+          <h1 className="mt-6 text-2xl font-bold text-gray-900 dark:text-white">Đặt lại mật khẩu</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Nhập mật khẩu mới của bạn</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">

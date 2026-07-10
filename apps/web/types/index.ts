@@ -1,6 +1,6 @@
 export type Role = 'USER' | 'STAFF' | 'ADMIN'
 
-export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED' | 'COMPLETED'
+export type EventStatus = 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED'
 
 export type OrderStatus = 'PENDING' | 'PAID' | 'CANCELLED' | 'REFUNDED'
 
@@ -14,6 +14,7 @@ export interface User {
   fullName: string
   role: Role
   isVerified: boolean
+  avatar: string | null
   createdAt: string
   updatedAt: string
 }
@@ -59,9 +60,16 @@ export interface Event {
   agenda: Record<string, any> | null
   eventType: string | null
   organizerId: string | null
-  organizerName: string | null
-  organizerInfo: string | null
-  organizerLogo: string | null
+  organizer: {
+    id: string
+    name: string
+    description: string | null
+    logo: string | null
+    email: string | null
+    phone: string | null
+    website: string | null
+    _count?: { follows: number }
+  } | null
   venueName: string | null
   province: string | null
   district: string | null
@@ -73,8 +81,7 @@ export interface Event {
   createdAt: string
   updatedAt: string
   ticketTypes: TicketType[]
-  reviews?: Review[]
-  _count?: { reviews: number; ticketTypes: number }
+  avgRating: number | null
 }
 
 export interface Review {

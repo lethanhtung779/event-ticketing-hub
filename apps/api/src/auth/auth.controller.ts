@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import type { Request } from 'express';
 
@@ -23,6 +24,11 @@ export class AuthController {
   @Post('refresh')
   refresh(@Body() body: { refresh_token: string }) {
     return this.authService.refresh(body.refresh_token);
+  }
+
+  @Post('google')
+  googleLogin(@Body() body: GoogleLoginDto) {
+    return this.authService.googleLogin(body.idToken);
   }
 
   @Post('change-password')

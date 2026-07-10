@@ -287,9 +287,11 @@ export class AdminService {
 
   // Bulk
   async bulkPublishEvents(ids: string[]) {
-    const events = await this.prisma.event.findMany({ where: { id: { in: ids }, status: 'DRAFT' } });
+    const events = await this.prisma.event.findMany({
+      where: { id: { in: ids }, status: { in: ['DRAFT', 'PENDING'] } },
+    });
     const updated = await this.prisma.event.updateMany({
-      where: { id: { in: ids }, status: 'DRAFT' },
+      where: { id: { in: ids }, status: { in: ['DRAFT', 'PENDING'] } },
       data: { status: 'PUBLISHED' },
     });
     return { count: updated.count, events: events.map(e => ({ id: e.id, title: e.title })) };
@@ -493,6 +495,42 @@ export class AdminService {
       totalRevenue: totalStats._sum.finalAmount || 0,
       totalPaidOrders: totalStats._count,
     }
+  }
+
+  // Organizer management
+  async getOrganizers(page: number, limit: number, search?: string, verified?: string) {
+    const where: any = {}
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ]
+    }
+    if (verified === 'true') where.verified = true
+    else if (verified === 'false') where.verified = false
+
+    const skip = (page - 1) * limit
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.organizer.findMany({
+        where, skip, take: limit, orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { id: true, email: true, fullName: true, role: true } },
+          _count: { select: { events: true, follows: true } },
+        },
+      }),
+      this.prisma.organizer.count({ where }),
+    ])
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } }
+  }
+
+  async verifyOrganizer(id: string, verified: boolean) {
+    const organizer = await this.prisma.organizer.findUnique({ where: { id } })
+    if (!organizer) throw new NotFoundException('Organizer not found')
+    return this.prisma.organizer.update({
+      where: { id },
+      data: { verified },
+      include: { user: { select: { id: true, email: true, fullName: true } } },
+    })
   }
 
   // Audit log with filters

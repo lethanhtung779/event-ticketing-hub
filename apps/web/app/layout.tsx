@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Providers } from "./providers";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HtmlLang } from "./HtmlLang";
 
 const geistSans = Geist({
@@ -31,11 +32,11 @@ export default function RootLayout({
       lang="vi"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gray-50">
+      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-black">
         <Providers>
           <HtmlLang />
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1"><ErrorBoundary>{children}</ErrorBoundary></main>
           <Footer />
         </Providers>
       </body>

@@ -19,8 +19,10 @@ import type { Event } from '@/types'
 
 const STATUS_TABS = [
   { value: '', label: 'Tất cả' },
+  { value: 'PENDING', label: 'Chờ duyệt' },
   { value: 'PUBLISHED', label: 'Đã xuất bản' },
   { value: 'DRAFT', label: 'Nháp' },
+  { value: 'REJECTED', label: 'Bị từ chối' },
   { value: 'CANCELLED', label: 'Đã huỷ' },
   { value: 'COMPLETED', label: 'Hoàn thành' },
 ] as const
@@ -93,7 +95,7 @@ export default function OrganizerEventsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Sự kiện của tôi</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sự kiện của tôi</h1>
         <Button onClick={() => setShowNotesModal(true)}>
           <Plus className="h-4 w-4" /> Tạo sự kiện
         </Button>
@@ -102,14 +104,14 @@ export default function OrganizerEventsPage() {
       <Card className="mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Tìm kiếm sự kiện..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="block w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 pl-10 pr-3 py-2 text-sm shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 dark:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -120,7 +122,7 @@ export default function OrganizerEventsPage() {
                 className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
                   statusFilter === tab.value
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
                 }`}
               >
                 {tab.label}
@@ -133,7 +135,7 @@ export default function OrganizerEventsPage() {
       {events.length === 0 ? (
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">Không tìm thấy sự kiện nào</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">Không tìm thấy sự kiện nào</p>
             <Link href="/organizer/events/new">
               <Button><Plus className="h-4 w-4" /> Tạo sự kiện đầu tiên</Button>
             </Link>
@@ -141,32 +143,32 @@ export default function OrganizerEventsPage() {
         </Card>
       ) : (
         <>
-          <div className="text-sm text-gray-500 mb-3">Tổng số: {total} sự kiện</div>
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">Tổng số: {total} sự kiện</div>
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Sự kiện</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Thời gian</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Trạng thái</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Đã bán</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-600">Doanh thu</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Thao tác</th>
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                  <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Sự kiện</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Thời gian</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Trạng thái</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Đã bán</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Doanh thu</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {events.map((event) => {
                   const { totalSold, revenue } = calcStats(event)
                   return (
-                    <tr key={event.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={event.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-14 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                          <div className="w-14 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0">
                             {event.bannerUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={bu(event.bannerUrl)!} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-300">
+                              <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600">
                                 <Calendar className="h-5 w-5" />
                               </div>
                             )}
@@ -174,11 +176,11 @@ export default function OrganizerEventsPage() {
                           <div className="min-w-0">
                             <Link
                               href={`/organizer/events/${event.id}`}
-                              className="font-medium text-gray-900 hover:text-indigo-600 line-clamp-1"
+                              className="font-medium text-gray-900 dark:text-white hover:text-indigo-600 line-clamp-1"
                             >
                               {event.title}
                             </Link>
-                            <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                            <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                               <MapPin className="h-3 w-3" />
                               <span className="truncate">{event.location}</span>
                               {event.eventType && (
@@ -191,9 +193,9 @@ export default function OrganizerEventsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-gray-600 whitespace-nowrap">
+                      <td className="py-3 px-4 text-gray-600 dark:text-gray-300 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                          <Calendar className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
                           {formatDate(event.startTime, 'dd/MM/yyyy HH:mm')}
                         </div>
                       </td>
@@ -204,16 +206,16 @@ export default function OrganizerEventsPage() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-1.5">
-                          <Ticket className="h-3.5 w-3.5 text-gray-400" />
-                          <span className={totalSold > 0 ? 'font-medium text-gray-900' : 'text-gray-500'}>
+                          <Ticket className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                          <span className={totalSold > 0 ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}>
                             {totalSold}
                           </span>
                         </div>
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <DollarSign className="h-3.5 w-3.5 text-gray-400" />
-                          <span className={revenue > 0 ? 'font-medium text-gray-900' : 'text-gray-500'}>
+                          <DollarSign className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                          <span className={revenue > 0 ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}>
                             {formatCurrency(revenue)}
                           </span>
                         </div>
@@ -238,14 +240,14 @@ export default function OrganizerEventsPage() {
             </table>
           </div>
           <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-gray-500">Trang {page}/{totalPages}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Trang {page}/{totalPages}</div>
             <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         </>
       )}
 
       <Modal open={showNotesModal} onClose={() => setShowNotesModal(false)} title="LƯU Ý KHI ĐĂNG TẢI SỰ KIỆN" className="max-w-xl">
-        <div className="space-y-3 text-sm text-gray-700">
+        <div className="space-y-3 text-sm text-gray-700 dark:text-gray-200">
           <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
             <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
             <div>
@@ -269,7 +271,7 @@ export default function OrganizerEventsPage() {
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá sự kiện">
         {deleteTarget && (
           <div>
-            <p className="text-sm text-gray-600">Bạn có chắc muốn xoá <strong>"{deleteTarget.title}"</strong>?</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Bạn có chắc muốn xoá <strong>"{deleteTarget.title}"</strong>?</p>
             <div className="flex justify-end gap-3 mt-6">
               <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Huỷ</Button>
               <Button loading={deleting} onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Xoá</Button>

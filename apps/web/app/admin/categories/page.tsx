@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Languages } from 'lucide-react'
+import { Plus, Pencil, Trash2, Languages } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Card } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -20,6 +20,9 @@ export default function AdminCategoriesPage() {
   const [creating, setCreating] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null)
   const [transTarget, setTransTarget] = useState<Category | null>(null)
+  const [editTarget, setEditTarget] = useState<Category | null>(null)
+  const [editName, setEditName] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
   const [transLang, setTransLang] = useState('en')
   const [transName, setTransName] = useState('')
   const [savingTrans, setSavingTrans] = useState(false)
@@ -57,6 +60,24 @@ export default function AdminCategoriesPage() {
     } catch { toast.error('Xoá thất bại') }
   }
 
+  const openEdit = (cat: Category) => {
+    setEditTarget(cat)
+    setEditName(cat.name)
+  }
+
+  const handleEdit = async () => {
+    if (!editTarget || !editName.trim()) return
+    setSavingEdit(true)
+    try {
+      await categoryApi.update(editTarget.id, editName.trim())
+      toast.success('Cập nhật danh mục thành công!')
+      setEditTarget(null)
+      fetchCategories()
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Cập nhật thất bại'))
+    } finally { setSavingEdit(false) }
+  }
+
   const openTrans = (cat: Category) => {
     setTransTarget(cat)
     setTransLang('en')
@@ -79,7 +100,7 @@ export default function AdminCategoriesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Quản lý danh mục</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quản lý danh mục</h1>
 
       <div className="flex gap-3 mb-6">
         <Input
@@ -96,23 +117,26 @@ export default function AdminCategoriesPage() {
 
       <Card className="!p-0 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left">
+          <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
             <tr>
-              <th className="px-4 py-3 font-medium text-gray-500">Tên</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Số sự kiện</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Hành động</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Tên</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Số sự kiện</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {categories.length === 0 ? (
-              <tr><td colSpan={3} className="px-4 py-12 text-center text-gray-500">Chưa có danh mục nào</td></tr>
+              <tr><td colSpan={3} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Chưa có danh mục nào</td></tr>
             ) : categories.map((cat) => (
-              <tr key={cat.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">{cat.name}</td>
-                <td className="px-4 py-3 text-gray-600">{cat._count?.events ?? 0}</td>
+              <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
+                <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{cat.name}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{cat._count?.events ?? 0}</td>
                 <td className="px-4 py-3 flex items-center gap-1">
                   <Button variant="ghost" size="sm" onClick={() => openTrans(cat)} title="Dịch thuật">
                     <Languages className="h-4 w-4 text-blue-500" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => openEdit(cat)} title="Sửa tên">
+                    <Pencil className="h-4 w-4 text-indigo-500" />
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(cat)}>
                     <Trash2 className="h-4 w-4 text-red-500" />
@@ -124,10 +148,23 @@ export default function AdminCategoriesPage() {
         </table>
       </Card>
 
+      <Modal open={!!editTarget} onClose={() => setEditTarget(null)} title="Sửa tên danh mục">
+        {editTarget && (
+          <div className="space-y-4">
+            <Input label="Tên danh mục" value={editName} onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleEdit()} placeholder="Nhập tên mới..." />
+            <div className="flex justify-end gap-3">
+              <Button variant="secondary" onClick={() => setEditTarget(null)}>Huỷ</Button>
+              <Button loading={savingEdit} onClick={handleEdit} disabled={!editName.trim()}>Lưu</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá danh mục">
         {deleteTarget && (
           <div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Bạn có chắc muốn xoá danh mục <strong>"{deleteTarget.name}"</strong>?
               {deleteTarget._count?.events ? (
                 <span className="text-amber-600 block mt-1">
@@ -146,7 +183,7 @@ export default function AdminCategoriesPage() {
       <Modal open={!!transTarget} onClose={() => setTransTarget(null)} title="Dịch danh mục">
         {transTarget && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500">Đang dịch: <strong>{transTarget.name}</strong></p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Đang dịch: <strong>{transTarget.name}</strong></p>
             <Select
               label="Ngôn ngữ"
               value={transLang}

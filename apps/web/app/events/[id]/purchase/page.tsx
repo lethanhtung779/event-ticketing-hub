@@ -122,15 +122,15 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
         href={`/events/${event.id}`}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
         {t('purchase.backToEvent')}
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">{t('purchase.title')}</h1>
-        <p className="mt-1 text-gray-600">{event.title}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('purchase.title')}</h1>
+        <p className="mt-1 text-gray-600 dark:text-gray-300">{event.title}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -142,8 +142,8 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
               <Card key={tt.id} className={`!p-4 ${qty > 0 ? 'ring-2 ring-indigo-500' : ''}`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium text-gray-900">{tt.name}</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="font-medium text-gray-900 dark:text-white">{tt.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {t('eventDetail.available', { count: available })} · {formatCurrency(tt.price)} / {t('eventDetail.ticketTypes')}
                     </p>
                   </div>
@@ -172,18 +172,18 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
 
         <div className="space-y-4">
           <Card>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('purchase.summary')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('purchase.summary')}</h3>
 
             <div className="space-y-2 text-sm">
               {selectedTypes.map((tt) => (
-                <div key={tt.id} className="flex justify-between text-gray-600">
+                <div key={tt.id} className="flex justify-between text-gray-600 dark:text-gray-300">
                   <span>
                     {tt.name} x{quantities[tt.id]}
                   </span>
                   <span>{formatCurrency(tt.price * (quantities[tt.id] || 0))}</span>
                 </div>
               ))}
-              <div className="border-t pt-2 flex justify-between font-medium text-gray-900">
+              <div className="border-t pt-2 flex justify-between font-medium text-gray-900 dark:text-white">
                 <span>{t('purchase.subtotal')}</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>

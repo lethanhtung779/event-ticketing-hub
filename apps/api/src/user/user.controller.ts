@@ -28,4 +28,10 @@ export class UserController {
   getMyTickets(@Req() req: RequestWithUser) {
     return this.userService.getMyTickets(req.user.sub);
   }
+
+  @Get('me/orders')
+  @UseGuards(JwtAuthGuard)
+  getMyOrders(@Req() req: RequestWithUser) {
+    return this.userService.getMyOrders(req.user.sub);
+  }
 }

@@ -44,38 +44,38 @@ export default function AdminReviewsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Quản lý đánh giá</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quản lý đánh giá</h1>
 
       <Card className="!p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+            <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-500">Người dùng</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Sự kiện</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Đánh giá</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Nội dung</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Ngày tạo</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Hành động</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Người dùng</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Sự kiện</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Đánh giá</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Nội dung</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Ngày tạo</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {loading ? (
                 <tr><td colSpan={6} className="px-4 py-12"><PageSpinner /></td></tr>
               ) : reviews.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500">Chưa có đánh giá nào</td></tr>
+                <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Chưa có đánh giá nào</td></tr>
               ) : reviews.map((r) => (
-                <tr key={r.id} className="hover:bg-gray-50">
+                <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{r.user?.fullName}</p>
-                    <p className="text-xs text-gray-400">{r.user?.email}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{r.user?.fullName}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{r.user?.email}</p>
                   </td>
-                  <td className="px-4 py-3 text-gray-900">{r.event?.title}</td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">{r.event?.title}</td>
                   <td className="px-4 py-3">
                     <span className="text-amber-500">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{r.comment || '---'}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatDate(r.createdAt, 'dd/MM/yyyy')}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300 max-w-xs truncate">{r.comment || '---'}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(r.createdAt, 'dd/MM/yyyy')}</td>
                   <td className="px-4 py-3">
                     <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(r)}>
                       <Trash2 className="h-4 w-4 text-red-500" />
@@ -95,7 +95,7 @@ export default function AdminReviewsPage() {
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá đánh giá">
         {deleteTarget && (
           <div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Xoá đánh giá của <strong>{deleteTarget.user?.fullName}</strong> cho sự kiện <strong>{deleteTarget.event?.title}</strong>?
             </p>
             <div className="flex justify-end gap-3">

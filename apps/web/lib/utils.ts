@@ -22,31 +22,32 @@ export function formatRelative(date: string | Date) {
 
 export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    DRAFT: 'bg-gray-100 text-gray-800',
-    PUBLISHED: 'bg-green-100 text-green-800',
-    CANCELLED: 'bg-red-100 text-red-800',
-    COMPLETED: 'bg-blue-100 text-blue-800',
-    PENDING: 'bg-yellow-100 text-yellow-800',
-    PAID: 'bg-green-100 text-green-800',
-    REFUNDED: 'bg-purple-100 text-purple-800',
-    VALID: 'bg-green-100 text-green-800',
-    CHECKED_IN: 'bg-blue-100 text-blue-800',
-    TRANSFERRED: 'bg-orange-100 text-orange-800',
-    FAILED: 'bg-red-100 text-red-800',
-    USER: 'bg-gray-100 text-gray-800',
-    STAFF: 'bg-blue-100 text-blue-800',
-    ADMIN: 'bg-purple-100 text-purple-800',
+    DRAFT: 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-200',
+    PUBLISHED: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    CANCELLED: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    COMPLETED: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    PENDING: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    PAID: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    REFUNDED: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    VALID: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    CHECKED_IN: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    TRANSFERRED: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    FAILED: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    USER: 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-200',
+    STAFF: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    ADMIN: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   }
-  return colors[status] || 'bg-gray-100 text-gray-800'
+  return colors[status] || 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-200'
 }
 
 export function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
     DRAFT: 'Nháp',
+    PENDING: 'Chờ duyệt',
     PUBLISHED: 'Đã xuất bản',
+    REJECTED: 'Bị từ chối',
     CANCELLED: 'Đã huỷ',
     COMPLETED: 'Hoàn thành',
-    PENDING: 'Chờ xử lý',
     PAID: 'Đã thanh toán',
     REFUNDED: 'Đã hoàn tiền',
     VALID: 'Hợp lệ',

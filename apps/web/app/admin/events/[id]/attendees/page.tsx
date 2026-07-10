@@ -54,7 +54,7 @@ export default function AttendeesPage(props: { params: Promise<{ id: string }> }
     <div>
       <Link
         href={`/admin/events/${params.id}`}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-4"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-4"
       >
         <ArrowLeft className="h-4 w-4" /> Chi tiết sự kiện
       </Link>
@@ -62,8 +62,8 @@ export default function AttendeesPage(props: { params: Promise<{ id: string }> }
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Users className="h-6 w-6 text-indigo-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Danh sách check-in</h1>
-          <span className="text-sm text-gray-400">({attendees.length})</span>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Danh sách check-in</h1>
+          <span className="text-sm text-gray-400 dark:text-gray-500">({attendees.length})</span>
         </div>
         <Button variant="outline" size="sm" onClick={handleExportCsv}>
           <Download className="h-4 w-4" /> Xuất CSV
@@ -73,29 +73,29 @@ export default function AttendeesPage(props: { params: Promise<{ id: string }> }
       <Card className="!p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+            <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-500">STT</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Họ tên</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Email</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Loại vé</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Thời gian check-in</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">STT</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Họ tên</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Email</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Loại vé</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Thời gian check-in</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {attendees.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={5} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                     Chưa có ai check-in
                   </td>
                 </tr>
               ) : attendees.map((a, i) => (
-                <tr key={a.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-600">{i + 1}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">{a.user.fullName}</td>
-                  <td className="px-4 py-3 text-gray-600">{a.user.email}</td>
-                  <td className="px-4 py-3 text-gray-600">{a.ticketType.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatDate(a.checkedInAt, 'dd/MM/yyyy HH:mm')}</td>
+                <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{i + 1}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{a.user.fullName}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{a.user.email}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{a.ticketType.name}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(a.checkedInAt, 'dd/MM/yyyy HH:mm')}</td>
                 </tr>
               ))}
             </tbody>

@@ -24,12 +24,12 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
   }
 
   const btn =
-    'inline-flex items-center justify-center h-9 w-9 rounded-lg text-sm font-medium transition-colors'
+    'inline-flex items-center justify-center h-9 w-9 rounded-lg text-sm font-medium transition-all duration-200'
 
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-center gap-1.5">
       <button
-        className={cn(btn, 'text-gray-500 hover:bg-gray-100', page <= 1 && 'opacity-50 pointer-events-none')}
+        className={cn(btn, 'text-slate-500 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-white/10', page <= 1 && 'opacity-40 pointer-events-none')}
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
       >
@@ -38,7 +38,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
 
       {pages.map((p, i) =>
         typeof p === 'string' ? (
-          <span key={`ellipsis-${i}`} className={cn(btn, 'cursor-default')}>
+          <span key={`ellipsis-${i}`} className={cn(btn, 'cursor-default text-slate-300 dark:text-gray-500')}>
             ...
           </span>
         ) : (
@@ -47,8 +47,8 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
             className={cn(
               btn,
               p === page
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-gray-200 dark:hover:bg-white/10'
             )}
             onClick={() => onPageChange(p)}
           >
@@ -58,7 +58,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
       )}
 
       <button
-        className={cn(btn, 'text-gray-500 hover:bg-gray-100', page >= totalPages && 'opacity-50 pointer-events-none')}
+        className={cn(btn, 'text-slate-500 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-white/10', page >= totalPages && 'opacity-40 pointer-events-none')}
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
       >

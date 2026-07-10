@@ -16,6 +16,7 @@ model User {
   verificationToken   String?
   resetPasswordToken  String?
   resetPasswordExpires DateTime?
+  avatar              String?
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   tickets             Ticket[]
@@ -25,10 +26,44 @@ model User {
   auditLogs           AuditLog[]
   payments            Payment[]
   orders              Order[]
-  organizedEvents     Event[]       @relation("OrganizedEvents")
+  organizer           Organizer?
+  follows             Follow[]
+  savedEvents         SavedEvent[]
 
   @@index([email])
   @@index([role])
+}
+
+model SavedEvent {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Organizer {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  logo        String?
+  email       String?
+  phone       String?
+  website     String?
+  verified    Boolean  @default(false)
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  events      Event[]
+  follows     Follow[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
 }
 
 enum Role {
@@ -60,10 +95,7 @@ model Event {
   agenda         Json?
   eventType      String?
   organizerId    String?
-  organizer      User?        @relation("OrganizedEvents", fields: [organizerId], references: [id])
-  organizerName  String?
-  organizerInfo  String?
-  organizerLogo  String?
+  organizer      Organizer?   @relation(fields: [organizerId], references: [id])
   venueName      String?
   province       String?
   district       String?
@@ -78,6 +110,7 @@ model Event {
   reviews        Review[]
   waitingListEntries WaitingListEntry[]
   translations   EventTranslation[]
+  savedBy        SavedEvent[]
 
   @@index([status])
   @@index([startTime])
@@ -87,7 +120,9 @@ model Event {
 
 enum EventStatus {
   DRAFT
+  PENDING
   PUBLISHED
+  REJECTED
   CANCELLED
   COMPLETED
 }
@@ -292,6 +327,19 @@ model AuditLog {
   @@index([userId])
   @@index([entity, entityId])
   @@index([createdAt])
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizerId String
+  organizer   Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, organizerId])
+  @@index([userId])
+  @@index([organizerId])
 }
 
 model RefreshToken {

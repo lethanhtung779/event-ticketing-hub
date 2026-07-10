@@ -163,36 +163,36 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
 
   return (
     <div>
-      <Link href="/admin/events" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-4">
+      <Link href="/admin/events" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-4">
         <ArrowLeft className="h-4 w-4" /> Quản lý sự kiện
       </Link>
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{event.title}</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{event.title}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {event.location} &middot; {formatDate(event.startTime, 'dd/MM/yyyy HH:mm')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={openReport}
-            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 transition-colors"
           >
             <BarChart3 className="h-4 w-4" /> Báo cáo
           </button>
           <button onClick={openEventTrans}
-            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 transition-colors"
           >
             <Languages className="h-4 w-4" /> Dịch
           </button>
           <button onClick={openWaitingList}
-            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 transition-colors"
           >
             <Clock className="h-4 w-4" /> Chờ
           </button>
           <Link
             href={`/admin/events/${event.id}/attendees`}
-            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 transition-colors"
           >
             <Users className="h-4 w-4" /> Check-in
           </Link>
@@ -207,14 +207,14 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
         </div>
 
         {event.ticketTypes?.length ? (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {event.ticketTypes.map((tt) => {
               const available = tt.totalQuantity - tt.soldQuantity
               return (
                 <div key={tt.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="font-medium text-gray-900">{tt.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-gray-900 dark:text-white">{tt.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatCurrency(tt.price)} &middot; {tt.soldQuantity}/{tt.totalQuantity} đã bán &middot; còn {available}
                     </p>
                   </div>
@@ -245,7 +245,7 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
             })}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 py-4">Chưa có loại vé nào</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-4">Chưa có loại vé nào</p>
         )}
       </Card>
 
@@ -277,18 +277,18 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
 
       <Modal open={waitingOpen} onClose={() => setWaitingOpen(false)} title="Danh sách chờ">
         {waitingList.length === 0 ? (
-          <p className="text-sm text-gray-500 py-4 text-center">Chưa có ai đăng ký chờ</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">Chưa có ai đăng ký chờ</p>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {waitingList.map((w: any) => (
               <div key={w.id} className="flex items-center justify-between py-3">
                 <div>
-                  <p className="font-medium text-gray-900">{w.user?.fullName}</p>
-                  <p className="text-xs text-gray-400">{w.user?.email}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{w.user?.fullName}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{w.user?.email}</p>
                 </div>
                 <div className="text-right text-sm">
-                  <p className="text-gray-500">SL: {w.quantity}</p>
-                  <p className="text-xs text-gray-400">{formatDate(w.createdAt, 'dd/MM')}</p>
+                  <p className="text-gray-500 dark:text-gray-400">SL: {w.quantity}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(w.createdAt, 'dd/MM')}</p>
                 </div>
               </div>
             ))}
@@ -299,44 +299,44 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
       {/* Report Modal */}
       <Modal open={reportModal} onClose={() => setReportModal(false)} title="Báo cáo sự kiện" className="!max-w-2xl">
         {reportLoading ? (
-          <p className="text-center text-gray-500 py-8">Đang tải...</p>
+          <p className="text-center text-gray-500 dark:text-gray-400 py-8">Đang tải...</p>
         ) : reportData ? (
           <div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
               <Card className="!p-4">
-                <p className="text-xs text-gray-500">Đã bán</p>
-                <p className="text-xl font-bold text-gray-900">{reportData.totalSold}/{reportData.totalCapacity}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Đã bán</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{reportData.totalSold}/{reportData.totalCapacity}</p>
               </Card>
               <Card className="!p-4">
-                <p className="text-xs text-gray-500">Tỷ lệ lấp đầy</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Tỷ lệ lấp đầy</p>
                 <p className="text-xl font-bold text-indigo-600">{reportData.fillRate}%</p>
               </Card>
               <Card className="!p-4">
-                <p className="text-xs text-gray-500">Đánh giá TB</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Đánh giá TB</p>
                 <p className="text-xl font-bold text-amber-500 flex items-center gap-1">
                   {reportData.avgRating ? reportData.avgRating.toFixed(1) : 'N/A'}
                   {reportData.avgRating && <Star className="h-4 w-4" />}
                 </p>
               </Card>
               <Card className="!p-4">
-                <p className="text-xs text-gray-500">DS chờ</p>
-                <p className="text-xl font-bold text-gray-900">{reportData._count?.waitingListEntries || 0}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">DS chờ</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{reportData._count?.waitingListEntries || 0}</p>
               </Card>
             </div>
 
-            <h4 className="font-semibold text-sm text-gray-700 mb-2">Chi tiết loại vé</h4>
+            <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-200 mb-2">Chi tiết loại vé</h4>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left">
+                <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
                   <tr>
-                    <th className="px-3 py-2 font-medium text-gray-500">Tên</th>
-                    <th className="px-3 py-2 font-medium text-gray-500">Giá</th>
-                    <th className="px-3 py-2 font-medium text-gray-500">SL</th>
-                    <th className="px-3 py-2 font-medium text-gray-500">Đã bán</th>
-                    <th className="px-3 py-2 font-medium text-gray-500">Tỷ lệ</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Tên</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Giá</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">SL</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Đã bán</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Tỷ lệ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {reportData.ticketTypes?.map((tt: any) => (
                     <tr key={tt.id}>
                       <td className="px-3 py-2 font-medium">{tt.name}</td>
@@ -355,7 +355,7 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
             </div>
           </div>
         ) : (
-          <p className="text-center text-gray-500 py-8">Không có dữ liệu</p>
+          <p className="text-center text-gray-500 dark:text-gray-400 py-8">Không có dữ liệu</p>
         )}
       </Modal>
 
@@ -367,7 +367,7 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ngôn ngữ</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Ngôn ngữ</label>
             <Select
               value={transLang}
               onChange={(e) => setTransLang(e.target.value)}
@@ -381,19 +381,19 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
             <>
               <Input label="Tiêu đề" value={transTitle} onChange={(e) => setTransTitle(e.target.value)} placeholder="Dịch tiêu đề..." />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Mô tả</label>
                 <textarea
                   value={transDesc}
                   onChange={(e) => setTransDesc(e.target.value)}
                   rows={3}
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm"
                 />
               </div>
               <Input label="Địa điểm" value={transLoc} onChange={(e) => setTransLoc(e.target.value)} placeholder="Dịch địa điểm..." />
             </>
           ) : (
             <>
-              <p className="text-sm text-gray-500">Đang dịch: <strong>{transModal?.name}</strong></p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Đang dịch: <strong>{transModal?.name}</strong></p>
               <Input label="Tên loại vé" value={transName} onChange={(e) => setTransName(e.target.value)} placeholder="Dịch tên loại vé..." />
             </>
           )}

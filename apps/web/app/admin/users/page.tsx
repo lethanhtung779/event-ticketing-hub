@@ -47,7 +47,7 @@ export default function AdminUsersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Quản lý người dùng</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý người dùng</h1>
         <Button variant="outline" size="sm" onClick={async () => {
           try {
             const res = await adminApi.exportUsers()
@@ -63,40 +63,40 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="relative max-w-xs mb-6">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
         <input
           type="text"
           placeholder="Tìm kiếm người dùng..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          className="block w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-2 pl-10 pr-3 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 dark:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
 
       <Card className="!p-0 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left">
+          <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
             <tr>
-              <th className="px-4 py-3 font-medium text-gray-500">Họ tên</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Email</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Vai trò</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Xác thực</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Ngày tạo</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Họ tên</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Email</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Vai trò</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Xác thực</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Ngày tạo</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {loading ? (
               <tr><td colSpan={5} className="px-4 py-12"><PageSpinner /></td></tr>
             ) : users.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-500">Không tìm thấy người dùng</td></tr>
+              <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Không tìm thấy người dùng</td></tr>
             ) : users.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50">
+              <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/users/${user.id}`} className="font-medium text-gray-900 hover:text-indigo-600">
+                  <Link href={`/admin/users/${user.id}`} className="font-medium text-gray-900 dark:text-white hover:text-indigo-600">
                     {user.fullName}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-gray-600">{user.email}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{user.email}</td>
                 <td className="px-4 py-3">
                   <Select
                     value={user.role}
@@ -114,7 +114,7 @@ export default function AdminUsersPage() {
                     {user.isVerified ? 'Đã xác thực' : 'Chưa xác thực'}
                   </Badge>
                 </td>
-                <td className="px-4 py-3 text-gray-600">{formatDate(user.createdAt, 'dd/MM/yyyy')}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(user.createdAt, 'dd/MM/yyyy')}</td>
               </tr>
             ))}
           </tbody>

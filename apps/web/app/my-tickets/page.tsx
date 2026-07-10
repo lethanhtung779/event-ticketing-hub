@@ -13,6 +13,7 @@ import toast from 'react-hot-toast'
 import { formatDate, formatCurrency, getStatusColor, unwrapList } from '@/lib/utils'
 import { ticketApi } from '@/lib/api'
 import type { Ticket } from '@/types'
+import SeoHead from '@/components/SeoHead'
 
 type TicketSection = { label: string; icon: React.ReactNode; filter: (t: Ticket) => boolean }
 
@@ -54,12 +55,12 @@ function MyTicketsContent() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">{t('myTickets.title')}</h1>
-        <p className="mt-1 text-gray-600">{t('myTickets.subtitle')}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('myTickets.title')}</h1>
+        <p className="mt-1 text-gray-600 dark:text-gray-300">{t('myTickets.subtitle')}</p>
       </div>
 
       {!hasTickets ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+        <div className="flex flex-col items-center justify-center py-20 text-gray-500 dark:text-gray-400">
           <TicketIcon className="h-16 w-16 mb-4" />
           <p className="text-lg font-medium">{t('myTickets.empty')}</p>
           <Link href="/events" className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-700">
@@ -73,10 +74,10 @@ function MyTicketsContent() {
             if (filtered.length === 0) return null
             return (
               <div key={section.label}>
-                <div className="flex items-center gap-2 mb-4 text-gray-700">
+                <div className="flex items-center gap-2 mb-4 text-gray-700 dark:text-gray-300">
                   {section.icon}
                   <h2 className="text-lg font-semibold">{section.label}</h2>
-                  <span className="text-sm text-gray-400">({filtered.length})</span>
+                  <span className="text-sm text-gray-400 dark:text-gray-400">({filtered.length})</span>
                 </div>
                 <div className="space-y-3">
                   {filtered.map((ticket) => (
@@ -88,19 +89,19 @@ function MyTicketsContent() {
                               {t(`status.${ticket.status}`)}
                             </Badge>
                             {ticket.ticketType?.event?.startTime && (
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {formatDate(ticket.ticketType.event.startTime, 'dd/MM/yyyy')}
                               </span>
                             )}
                           </div>
 
                           <Link href={`/my-tickets/${ticket.id}`}>
-                            <h3 className="text-lg font-semibold text-gray-900 hover:text-indigo-600 transition-colors">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-indigo-600 transition-colors">
                               {ticket.ticketType?.event?.title || 'Sự kiện'}
                             </h3>
                           </Link>
 
-                          <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-500">
+                          <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
                             <span>{t('myTickets.type')}: {ticket.ticketType?.name}</span>
                             <span>{t('myTickets.price')}: {formatCurrency(ticket.ticketType?.price || 0)}</span>
                             <span>{t('myTickets.purchased')}: {formatDate(ticket.createdAt)}</span>
@@ -139,8 +140,11 @@ function MyTicketsContent() {
 
 export default function MyTicketsPage() {
   return (
-    <Suspense fallback={<PageSpinner />}>
-      <MyTicketsContent />
-    </Suspense>
+    <>
+      <SeoHead title="Vé của tôi" />
+      <Suspense fallback={<PageSpinner />}>
+        <MyTicketsContent />
+      </Suspense>
+    </>
   )
 }

@@ -14,11 +14,17 @@ export class EmailService {
     });
   }
 
-  async send(to: string, subject: string, html: string) {
+  async send(to: string, subject: string, html: string, attachments?: Array<{ filename: string; content: Buffer; contentType?: string }>) {
     if (process.env.NODE_ENV === 'test') return;
     console.log(`[EMAIL] To: ${to}, Subject: ${subject}`);
     try {
-      await this.transporter.sendMail({ from: process.env.SMTP_FROM || 'noreply@ticketing.com', to, subject, html });
+      await this.transporter.sendMail({
+        from: process.env.SMTP_FROM || 'noreply@ticketing.com',
+        to,
+        subject,
+        html,
+        attachments,
+      });
     } catch {
       console.log('[EMAIL] Failed to send (SMTP not available)');
     }

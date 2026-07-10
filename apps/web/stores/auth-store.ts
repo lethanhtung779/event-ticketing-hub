@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { User } from '@/types'
+import { userApi } from '@/lib/api'
 
 interface AuthState {
   user: User | null
@@ -34,11 +35,23 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   hydrate: () => {
     try {
-      const userStr = localStorage.getItem('user')
       const token = localStorage.getItem('access_token')
-      if (userStr && token) {
-        const user = JSON.parse(userStr) as User
-        set({ user, isAuthenticated: true, isLoading: false })
+      if (token) {
+        userApi.getProfile()
+          .then((res) => {
+            const user = res.data as User
+            localStorage.setItem('user', JSON.stringify(user))
+            set({ user, isAuthenticated: true, isLoading: false })
+          })
+          .catch(() => {
+            const userStr = localStorage.getItem('user')
+            if (userStr) {
+              const user = JSON.parse(userStr) as User
+              set({ user, isAuthenticated: true, isLoading: false })
+            } else {
+              set({ isLoading: false })
+            }
+          })
       } else {
         set({ isLoading: false })
       }

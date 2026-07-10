@@ -52,17 +52,7 @@ export class CreateEventDto {
   @IsString()
   streetAddress?: string;
 
-  @IsOptional()
-  @IsString()
-  organizerName?: string;
 
-  @IsOptional()
-  @IsString()
-  organizerInfo?: string;
-
-  @IsOptional()
-  @IsString()
-  organizerLogo?: string;
 
   @IsOptional()
   @IsString()

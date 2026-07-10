@@ -130,7 +130,7 @@ export default function RevenuePage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Báo cáo doanh thu</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Báo cáo doanh thu</h1>
         <Button variant="secondary" size="sm" onClick={() => window.print()} className="flex items-center gap-2">
           <Printer className="h-4 w-4" /> In / Xuất PDF
         </Button>
@@ -154,8 +154,8 @@ export default function RevenuePage() {
                 <card.icon className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">{card.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{card.label}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{card.value}</p>
               </div>
             </div>
           </Card>
@@ -231,26 +231,26 @@ export default function RevenuePage() {
           Lịch sử giao dịch
         </CardTitle>
         {payments.length === 0 ? (
-          <p className="text-sm text-gray-500 py-8 text-center">Chưa có giao dịch nào</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Chưa có giao dịch nào</p>
         ) : (
           <div className="overflow-x-auto mt-4">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-left">
+              <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium text-gray-500">Ngày</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Doanh thu</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Phương thức</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Mã đơn</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Hành động</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Ngày</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Doanh thu</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Phương thức</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Mã đơn</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {payments.map((p, i) => (
-                  <tr key={i} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-900">{formatDate(p.paidAt, 'dd/MM/yyyy')}</td>
+                  <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
+                    <td className="px-4 py-3 text-gray-900 dark:text-white">{formatDate(p.paidAt, 'dd/MM/yyyy')}</td>
                     <td className="px-4 py-3 font-medium text-green-600">{formatCurrency(p.amount)}</td>
-                    <td className="px-4 py-3 text-gray-600">{p.method}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-500">{p.orderId.slice(0, 8)}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{p.method}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">{p.orderId.slice(0, 8)}</td>
                     <td className="px-4 py-3">
                       <Button variant="ghost" size="sm" onClick={() => openRefund(p.orderId)}>
                         <RotateCcw className="h-4 w-4 text-red-500" />
@@ -265,7 +265,7 @@ export default function RevenuePage() {
       </Card>
 
       <Modal open={refundModal} onClose={() => setRefundModal(false)} title="Hoàn tiền">
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
           Xác nhận hoàn tiền cho đơn hàng <span className="font-mono font-medium">{refundOrderId.slice(0, 8)}</span>?
         </p>
         <Input

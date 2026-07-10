@@ -174,6 +174,24 @@ export class AdminController {
     return this.adminService.getEventReport(id);
   }
 
+  // Organizers
+  @Get('organizers')
+  getOrganizers(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('verified') verified?: string,
+  ) {
+    return this.adminService.getOrganizers(
+      parseInt(page || '1'), parseInt(limit || '20'), search, verified,
+    )
+  }
+
+  @Patch('organizers/:id/verify')
+  verifyOrganizer(@Param('id') id: string, @Body('verified') verified: boolean) {
+    return this.adminService.verifyOrganizer(id, verified)
+  }
+
   // Translations
   @Post('translations/events/:id')
   upsertEventTranslation(

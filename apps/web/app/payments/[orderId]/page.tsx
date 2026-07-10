@@ -45,7 +45,7 @@ export default function PaymentPage(props: { params: Promise<{ orderId: string }
 
   return (
     <div className="mx-auto max-w-lg px-4 py-8">
-      <Link href="/my-tickets" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-6">
+      <Link href="/my-tickets" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-6">
         <ArrowLeft className="h-4 w-4" /> {t('ticketDetail.back')}
       </Link>
 
@@ -56,8 +56,8 @@ export default function PaymentPage(props: { params: Promise<{ orderId: string }
           </div>
         </div>
 
-        <h1 className="text-xl font-bold text-gray-900 mb-2">{t('payment.title')}</h1>
-        <p className="text-sm text-gray-500 mb-6">{t('payment.orderId')}: <span className="font-mono font-medium">{params.orderId.slice(0, 8)}</span></p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('payment.title')}</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{t('payment.orderId')}: <span className="font-mono font-medium">{params.orderId.slice(0, 8)}</span></p>
 
         <div className="space-y-3">
           <Button className="w-full" size="lg" loading={creating} onClick={handleVnpay}>

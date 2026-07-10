@@ -58,7 +58,7 @@ export default function CheckInPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Check-in vé</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Check-in vé</h1>
 
       <Card className="mb-6">
         <CardTitle className="flex items-center gap-2">
@@ -92,39 +92,39 @@ export default function CheckInPage() {
             <span className="font-semibold text-amber-800">Xác minh danh tính</span>
           </div>
 
-          <div className="space-y-3 text-sm border rounded-lg p-4 bg-gray-50 mb-4">
+          <div className="space-y-3 text-sm border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50 mb-4">
             <div className="flex justify-between">
-              <span className="text-gray-500">Họ tên</span>
-              <span className="font-semibold text-gray-900 text-base">{ticket.user?.fullName}</span>
+              <span className="text-gray-500 dark:text-gray-400">Họ tên</span>
+              <span className="font-semibold text-gray-900 dark:text-white text-base">{ticket.user?.fullName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Email</span>
-              <span className="font-medium text-gray-900">{ticket.user?.email}</span>
+              <span className="text-gray-500 dark:text-gray-400">Email</span>
+              <span className="font-medium text-gray-900 dark:text-white">{ticket.user?.email}</span>
             </div>
             <div className="border-t pt-3 mt-3">
               <div className="flex justify-between">
-                <span className="text-gray-500">Sự kiện</span>
-                <span className="font-medium text-gray-900 text-right max-w-[200px]">{ticket.ticketType?.event?.title}</span>
+                <span className="text-gray-500 dark:text-gray-400">Sự kiện</span>
+                <span className="font-medium text-gray-900 dark:text-white text-right max-w-[200px]">{ticket.ticketType?.event?.title}</span>
               </div>
               <div className="flex justify-between mt-1">
-                <span className="text-gray-500">Loại vé</span>
-                <span className="font-medium text-gray-900">{ticket.ticketType?.name}</span>
+                <span className="text-gray-500 dark:text-gray-400">Loại vé</span>
+                <span className="font-medium text-gray-900 dark:text-white">{ticket.ticketType?.name}</span>
               </div>
               <div className="flex justify-between mt-1">
-                <span className="text-gray-500">Giá vé</span>
-                <span className="font-medium text-gray-900">{formatCurrency(ticket.ticketType?.price || 0)}</span>
+                <span className="text-gray-500 dark:text-gray-400">Giá vé</span>
+                <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(ticket.ticketType?.price || 0)}</span>
               </div>
               <div className="flex justify-between mt-1">
-                <span className="text-gray-500">Thời gian</span>
-                <span className="font-medium text-gray-900">{ticket.ticketType?.event?.startTime ? formatDate(ticket.ticketType.event.startTime, 'dd/MM/yyyy HH:mm') : '---'}</span>
+                <span className="text-gray-500 dark:text-gray-400">Thời gian</span>
+                <span className="font-medium text-gray-900 dark:text-white">{ticket.ticketType?.event?.startTime ? formatDate(ticket.ticketType.event.startTime, 'dd/MM/yyyy HH:mm') : '---'}</span>
               </div>
               <div className="flex justify-between mt-1">
-                <span className="text-gray-500">Địa điểm</span>
-                <span className="font-medium text-gray-900">{ticket.ticketType?.event?.location}</span>
+                <span className="text-gray-500 dark:text-gray-400">Địa điểm</span>
+                <span className="font-medium text-gray-900 dark:text-white">{ticket.ticketType?.event?.location}</span>
               </div>
             </div>
             <div className="flex justify-between pt-2 border-t">
-              <span className="text-gray-500">Trạng thái</span>
+              <span className="text-gray-500 dark:text-gray-400">Trạng thái</span>
               <Badge className={getStatusColor(ticket.status)}>{getStatusLabel(ticket.status)}</Badge>
             </div>
           </div>
@@ -150,14 +150,14 @@ export default function CheckInPage() {
             <CheckCircle className="h-10 w-10 text-green-500" />
             <div>
               <p className="font-semibold text-green-700 text-lg">Check-in thành công!</p>
-              <p className="text-sm text-gray-500">{ticket.user?.fullName} &middot; {formatDate(new Date().toISOString())}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{ticket.user?.fullName} &middot; {formatDate(new Date().toISOString())}</p>
             </div>
           </div>
           <div className="space-y-2 text-sm border-t pt-4">
-            <div className="flex justify-between"><span className="text-gray-500">Sự kiện</span><span className="font-medium">{ticket.ticketType?.event?.title}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Loại vé</span><span className="font-medium">{ticket.ticketType?.name}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Người dùng</span><span className="font-medium">{ticket.user?.fullName} ({ticket.user?.email})</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Trạng thái</span><Badge className={getStatusColor(ticket.status)}>{getStatusLabel(ticket.status)}</Badge></div>
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Sự kiện</span><span className="font-medium">{ticket.ticketType?.event?.title}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Loại vé</span><span className="font-medium">{ticket.ticketType?.name}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Người dùng</span><span className="font-medium">{ticket.user?.fullName} ({ticket.user?.email})</span></div>
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Trạng thái</span><Badge className={getStatusColor(ticket.status)}>{getStatusLabel(ticket.status)}</Badge></div>
           </div>
         </Card>
       )}

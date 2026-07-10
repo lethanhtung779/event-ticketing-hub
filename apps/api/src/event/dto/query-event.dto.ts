@@ -52,4 +52,8 @@ export class QueryEventDto {
   @IsOptional()
   @IsString()
   organizerId?: string;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
 }

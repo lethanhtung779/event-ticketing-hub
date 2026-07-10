@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { authApi } from '@/lib/api'
+import SeoHead from '@/components/SeoHead'
 
 function VerifyEmailContent() {
   const { t } = useTranslation()
@@ -39,13 +40,13 @@ function VerifyEmailContent() {
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
-            <p className="text-gray-600">Đang xác thực...</p>
+            <p className="text-gray-600 dark:text-gray-300">Đang xác thực...</p>
           </div>
         )}
         {status === 'success' && (
           <div className="flex flex-col items-center gap-4">
             <CheckCircle2 className="h-12 w-12 text-green-500" />
-            <h1 className="text-xl font-bold text-gray-900">{message}</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{message}</h1>
             <Link href="/login" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
               Đăng nhập ngay
             </Link>
@@ -54,7 +55,7 @@ function VerifyEmailContent() {
         {status === 'error' && (
           <div className="flex flex-col items-center gap-4">
             <XCircle className="h-12 w-12 text-red-500" />
-            <h1 className="text-xl font-bold text-gray-900">{message}</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{message}</h1>
             <Link href="/" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
               Về trang chủ
             </Link>
@@ -67,8 +68,11 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={null}>
-      <VerifyEmailContent />
-    </Suspense>
+    <>
+      <SeoHead title="Xác thực email" />
+      <Suspense fallback={null}>
+        <VerifyEmailContent />
+      </Suspense>
+    </>
   )
 }

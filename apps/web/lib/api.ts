@@ -57,6 +57,8 @@ export const authApi = {
     api.post('/auth/register', data),
   login: (data: { email: string; password: string }) =>
     api.post('/auth/login', data),
+  googleLogin: (idToken: string) =>
+    api.post('/auth/google', { idToken }),
   refresh: (refreshToken: string) =>
     api.post('/auth/refresh', { refresh_token: refreshToken }),
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
@@ -76,6 +78,7 @@ export const userApi = {
   updateProfile: (data: { fullName?: string }) =>
     api.patch('/users/me', data),
   getMyTickets: () => api.get('/users/me/tickets'),
+  getMyOrders: () => api.get('/users/me/orders'),
 }
 
 export const eventApi = {
@@ -91,6 +94,10 @@ export const eventApi = {
     api.delete(`/events/${id}`),
   publish: (id: string) =>
     api.post(`/events/${id}/publish`),
+  approve: (id: string) =>
+    api.post(`/events/${id}/approve`),
+  reject: (id: string) =>
+    api.post(`/events/${id}/reject`),
   cancel: (id: string) =>
     api.post(`/events/${id}/cancel`),
   uploadBanner: (id: string, formData: FormData) =>
@@ -106,6 +113,7 @@ export const eventApi = {
 export const categoryApi = {
   getAll: () => api.get('/categories'),
   create: (name: string) => api.post('/categories', { name }),
+  update: (id: string, name: string) => api.patch(`/categories/${id}`, { name }),
   delete: (id: string) => api.delete(`/categories/${id}`),
 }
 
@@ -203,6 +211,12 @@ export const adminApi = {
   getEventReport: (id: string) =>
     api.get(`/admin/events/${id}/report`),
 
+  // Organizers
+  getOrganizers: (params?: Record<string, string>) =>
+    api.get('/admin/organizers', { params }),
+  verifyOrganizer: (id: string, verified: boolean) =>
+    api.patch(`/admin/organizers/${id}/verify`, { verified }),
+
   // Translations
   upsertEventTranslation: (id: string, data: { language: string; title?: string; description?: string; location?: string }) =>
     api.post(`/admin/translations/events/${id}`, data),
@@ -212,7 +226,30 @@ export const adminApi = {
     api.post(`/admin/translations/ticket-types/${id}`, data),
 }
 
+// Follow API
+export const followApi = {
+  follow: (organizerId: string) => api.post(`/follow/${organizerId}`),
+  unfollow: (organizerId: string) => api.delete(`/follow/${organizerId}`),
+  getMyFollows: () => api.get('/follow'),
+  check: (organizerId: string) => api.get(`/follow/check/${organizerId}`),
+}
+
+// Wishlist API
+export const wishlistApi = {
+  save: (eventId: string) => api.post(`/wishlist/${eventId}`),
+  unsave: (eventId: string) => api.delete(`/wishlist/${eventId}`),
+  getMyWishlist: () => api.get('/wishlist'),
+  check: (eventId: string) => api.get(`/wishlist/check/${eventId}`),
+}
+
 // Organizer API
 export const organizerApi = {
+  create: (data: { name: string; description?: string; email?: string; phone?: string; website?: string }) =>
+    api.post('/organizer', data),
+  getProfile: () => api.get('/organizer/profile'),
+  updateProfile: (data: { name?: string; description?: string; email?: string; phone?: string; website?: string }) =>
+    api.patch('/organizer/profile', data),
+  uploadLogo: (formData: FormData) =>
+    api.post('/organizer/logo', formData),
   getStats: () => api.get('/organizer/stats'),
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Copy, Check, Send } from 'lucide-react'
+import { ArrowLeft, Copy, Check, Send, Download } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
@@ -89,6 +89,54 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
     }
   }
 
+  const handleDownload = async () => {
+    if (!ticket) return
+    const mod = await import('qrcode')
+    const qrDataUrl = await mod.default.toDataURL(ticket.qrCodeToken, {
+      width: 400, margin: 2, color: { dark: '#1e1e2e', light: '#ffffff' },
+    })
+
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+    const padding = 40
+    const qrSize = 280
+    const lineHeight = 24
+    const infoHeight = 200
+    canvas.width = qrSize + padding * 2
+    canvas.height = qrSize + padding * 2 + infoHeight
+
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    ctx.fillStyle = '#1e1e2e'
+    ctx.font = 'bold 20px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(ticket.ticketType?.event?.title || 'Vé sự kiện', canvas.width / 2, 30)
+
+    const img = new Image()
+    img.src = qrDataUrl
+    await new Promise((resolve) => { img.onload = resolve })
+    ctx.drawImage(img, padding, 50, qrSize, qrSize)
+
+    ctx.fillStyle = '#374151'
+    ctx.font = '14px sans-serif'
+    ctx.textAlign = 'center'
+    const lines = [
+      `Loại vé: ${ticket.ticketType?.name || '---'}`,
+      `Địa điểm: ${ticket.ticketType?.event?.location || '---'}`,
+      `Thời gian: ${ticket.ticketType?.event?.startTime ? formatDate(ticket.ticketType.event.startTime, 'dd/MM/yyyy HH:mm') : '---'}`,
+      `Mã vé: ${ticket.qrCodeToken.slice(0, 16)}...`,
+    ]
+    lines.forEach((line, i) => {
+      ctx.fillText(line, canvas.width / 2, qrSize + 80 + i * lineHeight)
+    })
+
+    const link = document.createElement('a')
+    link.download = `ve-${ticket.id.slice(0, 8)}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  }
+
   if (loading) return <PageSpinner />
   if (!ticket) return null
 
@@ -99,7 +147,7 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
         href="/my-tickets"
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
         Quay lại vé của tôi
@@ -118,7 +166,7 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
               // eslint-disable-next-line @next/next/no-img-element
               <img src={qrSrc} alt="QR Code" className="h-48 w-48 rounded-xl border-2 border-gray-200" />
             ) : (
-              <div className="h-48 w-48 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-400 text-sm">
+              <div className="h-48 w-48 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-400 dark:text-gray-400 text-sm">
                 Đang tạo QR...
               </div>
             )}
@@ -128,47 +176,52 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
           </div>
         </div>
 
-        <Button variant="outline" size="sm" onClick={handleCopy} className="mb-6">
-          {copied ? (
-            <><Check className="h-4 w-4" /> Đã sao chép</>
-          ) : (
-            <><Copy className="h-4 w-4" /> Sao chép mã vé</>
-          )}
-        </Button>
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <Button variant="outline" size="sm" onClick={handleCopy}>
+            {copied ? (
+              <><Check className="h-4 w-4" /> Đã sao chép</>
+            ) : (
+              <><Copy className="h-4 w-4" /> Sao chép mã vé</>
+            )}
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleDownload}>
+            <Download className="h-4 w-4" /> Tải vé
+          </Button>
+        </div>
 
         <div className="space-y-3 text-left border-t pt-6">
-          <h2 className="text-xl font-bold text-gray-900 text-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white text-center">
             {ticket.ticketType?.event?.title}
           </h2>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-gray-500">Loại vé</p>
-              <p className="font-medium text-gray-900">{ticket.ticketType?.name}</p>
+              <p className="text-gray-500 dark:text-gray-400">Loại vé</p>
+              <p className="font-medium text-gray-900 dark:text-white">{ticket.ticketType?.name}</p>
             </div>
             <div>
-              <p className="text-gray-500">Giá vé</p>
-              <p className="font-medium text-gray-900">{formatCurrency(ticket.ticketType?.price || 0)}</p>
+              <p className="text-gray-500 dark:text-gray-400">Giá vé</p>
+              <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(ticket.ticketType?.price || 0)}</p>
             </div>
             <div>
-              <p className="text-gray-500">Địa điểm</p>
-              <p className="font-medium text-gray-900">{ticket.ticketType?.event?.location}</p>
+              <p className="text-gray-500 dark:text-gray-400">Địa điểm</p>
+              <p className="font-medium text-gray-900 dark:text-white">{ticket.ticketType?.event?.location}</p>
             </div>
             <div>
-              <p className="text-gray-500">Thời gian</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-gray-500 dark:text-gray-400">Thời gian</p>
+              <p className="font-medium text-gray-900 dark:text-white">
                 {ticket.ticketType?.event?.startTime
                   ? formatDate(ticket.ticketType.event.startTime, 'dd/MM/yyyy HH:mm')
                   : '---'}
               </p>
             </div>
             <div>
-              <p className="text-gray-500">Ngày mua</p>
-              <p className="font-medium text-gray-900">{formatDate(ticket.createdAt)}</p>
+              <p className="text-gray-500 dark:text-gray-400">Ngày mua</p>
+              <p className="font-medium text-gray-900 dark:text-white">{formatDate(ticket.createdAt)}</p>
             </div>
             <div>
-              <p className="text-gray-500">Trạng thái</p>
-              <p className="font-medium text-gray-900">{getStatusLabel(ticket.status)}</p>
+              <p className="text-gray-500 dark:text-gray-400">Trạng thái</p>
+              <p className="font-medium text-gray-900 dark:text-white">{getStatusLabel(ticket.status)}</p>
             </div>
           </div>
         </div>
@@ -189,7 +242,7 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
       </Card>
 
       <Modal open={transferOpen} onClose={() => setTransferOpen(false)} title="Chuyển vé">
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
           Nhập email của người nhận vé này.
         </p>
         <Input

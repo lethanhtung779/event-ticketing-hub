@@ -58,14 +58,14 @@ export default function OrderDetailPage(props: { params: Promise<{ id: string }>
 
   return (
     <div>
-      <Link href="/admin/orders" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 mb-4">
+      <Link href="/admin/orders" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-4">
         <ArrowLeft className="h-4 w-4" /> Quản lý đơn hàng
       </Link>
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Đơn hàng #{params.id.slice(0, 8)}</h1>
-          <p className="text-sm text-gray-500">{formatDate(order.createdAt, 'dd/MM/yyyy HH:mm')}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Đơn hàng #{params.id.slice(0, 8)}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(order.createdAt, 'dd/MM/yyyy HH:mm')}</p>
         </div>
         <Badge className={statusColors[order.status] || ''}>{order.status}</Badge>
       </div>
@@ -76,8 +76,8 @@ export default function OrderDetailPage(props: { params: Promise<{ id: string }>
             <User className="h-5 w-5 text-indigo-600" /> Khách hàng
           </CardTitle>
           <div className="mt-4 space-y-2 text-sm">
-            <p><span className="text-gray-500">Tên:</span> {order.user?.fullName}</p>
-            <p><span className="text-gray-500">Email:</span> {order.user?.email}</p>
+            <p><span className="text-gray-500 dark:text-gray-400">Tên:</span> {order.user?.fullName}</p>
+            <p><span className="text-gray-500 dark:text-gray-400">Email:</span> {order.user?.email}</p>
           </div>
         </Card>
 
@@ -86,10 +86,10 @@ export default function OrderDetailPage(props: { params: Promise<{ id: string }>
             <CreditCard className="h-5 w-5 text-indigo-600" /> Thanh toán
           </CardTitle>
           <div className="mt-4 space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-gray-500">Tạm tính</span><span>{formatCurrency(order.totalAmount)}</span></div>
-            {order.discount > 0 && <div className="flex justify-between"><span className="text-gray-500">Giảm giá</span><span className="text-green-600">-{formatCurrency(order.discount)}</span></div>}
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Tạm tính</span><span>{formatCurrency(order.totalAmount)}</span></div>
+            {order.discount > 0 && <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Giảm giá</span><span className="text-green-600">-{formatCurrency(order.discount)}</span></div>}
             <div className="flex justify-between font-bold text-base border-t pt-2"><span>Thành tiền</span><span>{formatCurrency(order.finalAmount)}</span></div>
-            {order.promoCode && <div className="flex justify-between"><span className="text-gray-500">Mã giảm giá</span><span className="font-mono">{order.promoCode}</span></div>}
+            {order.promoCode && <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Mã giảm giá</span><span className="font-mono">{order.promoCode}</span></div>}
           </div>
         </Card>
       </div>
@@ -99,15 +99,15 @@ export default function OrderDetailPage(props: { params: Promise<{ id: string }>
           <Ticket className="h-5 w-5 text-indigo-600" /> Vé ({order.tickets?.length || 0})
         </CardTitle>
         {order.tickets?.length ? (
-          <div className="mt-4 divide-y divide-gray-100">
+          <div className="mt-4 divide-y divide-gray-100 dark:divide-gray-800">
             {order.tickets.map((t: any) => (
               <div key={t.id} className="flex items-center justify-between py-3">
                 <div>
-                  <p className="font-medium text-gray-900">{t.ticketType?.name}</p>
-                  <p className="text-xs text-gray-400">{t.ticketType?.event?.title}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{t.ticketType?.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{t.ticketType?.event?.title}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{formatCurrency(t.ticketType?.price || 0)}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{formatCurrency(t.ticketType?.price || 0)}</p>
                   <Badge className={`text-xs ${t.status === 'VALID' ? 'bg-green-100 text-green-800' : t.status === 'CHECKED_IN' ? 'bg-blue-100 text-blue-800' : t.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
                     {t.status}
                   </Badge>
@@ -116,22 +116,22 @@ export default function OrderDetailPage(props: { params: Promise<{ id: string }>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 py-4">Không có vé nào</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-4">Không có vé nào</p>
         )}
       </Card>
 
       {order.payments?.length > 0 && (
         <Card className="mb-6">
           <CardTitle>Giao dịch</CardTitle>
-          <div className="mt-4 divide-y divide-gray-100">
+          <div className="mt-4 divide-y divide-gray-100 dark:divide-gray-800">
             {order.payments.map((p: any) => (
               <div key={p.id} className="flex items-center justify-between py-3 text-sm">
                 <div>
-                  <p className="font-medium text-gray-900">{p.method}</p>
-                  <p className="text-gray-400 text-xs">{p.transactionNo || '---'}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{p.method}</p>
+                  <p className="text-gray-400 dark:text-gray-500 text-xs">{p.transactionNo || '---'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium text-gray-900">{formatCurrency(p.amount)}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(p.amount)}</p>
                   <Badge className={`text-xs ${p.status === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{p.status}</Badge>
                 </div>
               </div>

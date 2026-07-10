@@ -7,3 +7,6 @@ dist/
 .env.*.local
 uploads/
 *.tsbuildinfo
+.idea/
+*.pdf
+apps/mobile/.env
