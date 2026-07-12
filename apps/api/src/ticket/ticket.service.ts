@@ -4,6 +4,7 @@ import { RedisService } from '../redis/redis.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import * as crypto from 'crypto';
 
+const QR_SEPARATOR = ':::'
 const TICKET_AVAILABLE_KEY = (id: string) => `ticket_type:${id}:available`;
 const TICKET_TOTAL_KEY = (id: string) => `ticket_type:${id}:total`;
 const BOOKING_KEY = (id: string) => `booking:${id}`;
@@ -42,6 +43,19 @@ const RELEASE_SCRIPT = `
 
   return {1, 'RELEASED'}
 `;
+
+function generateQrToken(eventId: string): string {
+  const token = crypto.randomBytes(32).toString('hex');
+  return `${eventId}${QR_SEPARATOR}${token}`;
+}
+
+function parseQrString(qr: string): { eventId?: string; token: string; raw: string } {
+  const idx = qr.indexOf(QR_SEPARATOR);
+  if (idx !== -1) {
+    return { eventId: qr.slice(0, idx), token: qr.slice(idx + QR_SEPARATOR.length), raw: qr };
+  }
+  return { token: qr, raw: qr };
+}
 
 @Injectable()
 export class TicketService implements OnModuleInit, OnModuleDestroy {
@@ -252,13 +266,14 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
       qrCodeToken: string;
     }> = [];
 
+    const eventId = ticketType.event.id;
     for (let i = 0; i < quantity; i++) {
       ticketData.push({
         orderId: order.id,
         ticketTypeId,
         userId,
         status: 'PENDING',
-        qrCodeToken: crypto.randomBytes(32).toString('hex'),
+        qrCodeToken: generateQrToken(eventId),
       });
     }
 
@@ -362,7 +377,10 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
   }
 
   async transfer(id: string, userId: string, targetEmail: string) {
-    const ticket = await this.prisma.ticket.findUnique({ where: { id } });
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      include: { ticketType: { select: { eventId: true } } },
+    });
     if (!ticket) throw new NotFoundException('Vé không tồn tại');
     if (ticket.userId !== userId) throw new BadRequestException('Không phải vé của bạn');
     if (ticket.status !== 'VALID') throw new BadRequestException('Chỉ có thể chuyển vé VALID');
@@ -371,9 +389,10 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
     if (!target) throw new NotFoundException('Người nhận không tồn tại');
     if (target.id === userId) throw new BadRequestException('Không thể chuyển cho chính mình');
 
+    const eventId = ticket.ticketType.eventId;
     const transferResult = await this.prisma.$transaction([
       this.prisma.ticket.update({ where: { id }, data: { userId: target.id, transferredFromId: userId, transferredToId: target.id, status: 'TRANSFERRED' } }),
-      this.prisma.ticket.create({ data: { orderId: ticket.orderId, ticketTypeId: ticket.ticketTypeId, userId: target.id, qrCodeToken: crypto.randomBytes(32).toString('hex'), status: 'VALID' } }),
+      this.prisma.ticket.create({ data: { orderId: ticket.orderId, ticketTypeId: ticket.ticketTypeId, userId: target.id, qrCodeToken: generateQrToken(eventId), status: 'VALID' } }),
     ]);
 
     return { message: 'Chuyển vé thành công', newOwner: target.fullName };
@@ -395,30 +414,37 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
     return { originalPrice: totalPrice, discount, finalPrice: totalPrice - discount };
   }
 
-  async lookupTicket(qrCodeToken: string) {
-    const ticket = await this.prisma.ticket.findUnique({
-      where: { qrCodeToken },
+  private async findTicketByQr(qrCodeToken: string) {
+    const parsed = parseQrString(qrCodeToken);
+    let ticket = await this.prisma.ticket.findUnique({
+      where: { qrCodeToken: parsed.raw },
       include: {
         user: { select: { id: true, fullName: true, email: true } },
-        ticketType: { select: { name: true, event: { select: { title: true, startTime: true, location: true } } } },
+        ticketType: { select: { name: true, event: { select: { id: true, title: true, startTime: true, location: true } } } },
       },
     });
+    if (!ticket && parsed.raw !== parsed.token) {
+      ticket = await this.prisma.ticket.findUnique({
+        where: { qrCodeToken: parsed.token },
+        include: {
+          user: { select: { id: true, fullName: true, email: true } },
+          ticketType: { select: { name: true, event: { select: { id: true, title: true, startTime: true, location: true } } } },
+        },
+      });
+    }
+    return { ticket, parsed };
+  }
 
+  async lookupTicket(qrCodeToken: string) {
+    const { ticket } = await this.findTicketByQr(qrCodeToken);
     if (!ticket) {
       throw new NotFoundException('Vé không tồn tại');
     }
-
     return ticket;
   }
 
   async checkIn(qrCodeToken: string) {
-    const ticket = await this.prisma.ticket.findUnique({
-      where: { qrCodeToken },
-      include: {
-        user: { select: { id: true, fullName: true, email: true } },
-        ticketType: { select: { name: true, event: { select: { title: true, startTime: true, location: true } } } },
-      },
-    });
+    const { ticket } = await this.findTicketByQr(qrCodeToken);
 
     if (!ticket) {
       throw new NotFoundException('Vé không tồn tại');
@@ -428,7 +454,16 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
       const time = ticket.checkedInAt
         ? ticket.checkedInAt.toLocaleString('vi-VN')
         : 'không xác định';
-      throw new ConflictException(`Vé này đã được sử dụng lúc ${time}!`);
+      throw new ConflictException({
+        statusCode: 409,
+        message: `Vé này đã được sử dụng lúc ${time}!`,
+        ticket: {
+          id: ticket.id,
+          fullName: ticket.user?.fullName,
+          ticketType: { name: ticket.ticketType?.name },
+          checkedInAt: ticket.checkedInAt,
+        },
+      });
     }
 
     if (ticket.status !== 'VALID') {
@@ -441,6 +476,61 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
       include: {
         user: { select: { id: true, fullName: true, email: true } },
         ticketType: { select: { name: true, event: { select: { title: true, startTime: true, location: true } } } },
+      },
+    });
+  }
+
+  async getEventTickets(eventId: string) {
+    return this.prisma.ticket.findMany({
+      where: { ticketType: { eventId } },
+      include: {
+        user: { select: { id: true, fullName: true, email: true } },
+        ticketType: { select: { name: true, event: { select: { id: true, title: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async searchTicket(query: string) {
+    const tickets = await this.prisma.ticket.findMany({
+      take: 50,
+      include: {
+        user: { select: { id: true, fullName: true, email: true } },
+        ticketType: { select: { name: true, event: { select: { id: true, title: true } } } },
+        order: { select: { id: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const q = query.toLowerCase().trim();
+    const filtered = tickets.filter((t: any) => {
+      const name = t.user?.fullName?.toLowerCase() ?? '';
+      const email = t.user?.email?.toLowerCase() ?? '';
+      const orderId = t.order?.id?.toLowerCase() ?? '';
+      return name.includes(q) || email.includes(q) || orderId.includes(q);
+    });
+
+    return filtered.slice(0, 20);
+  }
+
+  async checkInManual(query: string) {
+    const results = await this.searchTicket(query);
+    if (results.length === 0) {
+      throw new NotFoundException('Không tìm thấy vé phù hợp');
+    }
+    const ticket = results[0];
+    if (ticket.status === 'CHECKED_IN') {
+      throw new ConflictException('Vé này đã được sử dụng');
+    }
+    if (ticket.status !== 'VALID') {
+      throw new BadRequestException('Vé không ở trạng thái hợp lệ để check-in');
+    }
+    return this.prisma.ticket.update({
+      where: { id: ticket.id },
+      data: { status: 'CHECKED_IN', checkedInAt: new Date() },
+      include: {
+        user: { select: { id: true, fullName: true, email: true } },
+        ticketType: { select: { name: true, event: { select: { id: true, title: true } } } },
       },
     });
   }

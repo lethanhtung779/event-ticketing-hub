@@ -156,33 +156,59 @@ export class VnpayService {
 
     await this.redis.del(BOOKING_KEY(orderId));
 
-    // Generate PDF ticket and send via email
-    const eventDate = event.startTime.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const eventTime = event.startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    try {
+      const eventDate = event.startTime.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const eventTime = event.startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
-    const pdfBuffer = await this.ticketPdf.generateTicketPdf({
-      eventTitle: event.title,
-      eventLocation: event.location,
-      eventDate,
-      eventTime,
-      ticketTypeName: order.tickets[0].ticketType.name,
-      buyerName: user.fullName,
-      buyerEmail: user.email,
-      orderId: order.id,
-      tickets: order.tickets.map(t => ({ id: t.id, qrCodeToken: t.qrCodeToken })),
+      const pdfBuffer = await this.ticketPdf.generateTicketPdf({
+        eventTitle: event.title,
+        eventLocation: event.location,
+        eventDate,
+        eventTime,
+        ticketTypeName: order.tickets[0].ticketType.name,
+        buyerName: user.fullName,
+        buyerEmail: user.email,
+        orderId: order.id,
+        tickets: order.tickets.map(t => ({ id: t.id, qrCodeToken: t.qrCodeToken })),
+      });
+
+      await this.email.send(
+        user.email,
+        `Xác nhận đặt vé - ${event.title}`,
+        `<h2>Chào ${user.fullName},</h2>
+         <p>Bạn đã đặt vé thành công cho sự kiện <strong>${event.title}</strong>.</p>
+         <p><strong>Thời gian:</strong> ${eventDate} lúc ${eventTime}</p>
+         <p><strong>Địa điểm:</strong> ${event.location}</p>
+         <p>File PDF vé đính kèm email này. Vui lòng xuất trình mã QR tại cửa vào.</p>
+         <p>Trân trọng,<br/>TicketHub</p>`,
+        [{ filename: `ve-${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }],
+      );
+    } catch (err) {
+      console.error('PDF/email failed, payment already confirmed:', err);
+    }
+  }
+
+  async verifyPayment(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: { status: true, finalAmount: true, userId: true },
+    });
+    if (!order) throw new NotFoundException('Đơn hàng không tồn tại');
+
+    if (order.status === 'PAID') {
+      return { paid: true, orderId };
+    }
+
+    const payment = await this.prisma.payment.findFirst({
+      where: { orderId, status: 'PENDING' },
+      orderBy: { createdAt: 'desc' },
     });
 
-    await this.email.send(
-      user.email,
-      `Xác nhận đặt vé - ${event.title}`,
-      `<h2>Chào ${user.fullName},</h2>
-       <p>Bạn đã đặt vé thành công cho sự kiện <strong>${event.title}</strong>.</p>
-       <p><strong>Thời gian:</strong> ${eventDate} lúc ${eventTime}</p>
-       <p><strong>Địa điểm:</strong> ${event.location}</p>
-       <p>File PDF vé đính kèm email này. Vui lòng xuất trình mã QR tại cửa vào.</p>
-       <p>Trân trọng,<br/>TicketHub</p>`,
-      [{ filename: `ve-${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }],
-    );
+    if (!payment) {
+      return { paid: false, orderId };
+    }
+
+    return { paid: false, orderId };
   }
 
   async refund(orderId: string, reason: string) {

@@ -31,6 +31,18 @@ export class VnpayController {
     return this.vnpayService.handleIpn(query);
   }
 
+  @Post('vnpay/verify')
+  @UseGuards(JwtAuthGuard)
+  async verifyPayment(@Body() body: { orderId: string }) {
+    return this.vnpayService.verifyPayment(body.orderId);
+  }
+
+  @Post('vnpay/mobile-return')
+  @UseGuards(JwtAuthGuard)
+  async handleMobileReturn(@Body() body: Record<string, string>) {
+    return this.vnpayService.handleReturn(body);
+  }
+
   @Post('vnpay/refund')
   @UseGuards(JwtAuthGuard)
   async refund(@Body() body: { orderId: string; reason: string }) {

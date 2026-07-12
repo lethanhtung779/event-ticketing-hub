@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, Req, Query } from '@nestjs/common';
 import { TicketService } from './ticket.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -70,5 +70,26 @@ export class TicketController {
   @Roles('ADMIN', 'STAFF')
   async checkIn(@Body() body: CheckInDto) {
     return this.ticketService.checkIn(body.qrCodeToken);
+  }
+
+  @Post('check-in/manual')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'STAFF')
+  async checkInManual(@Body() body: { query: string }) {
+    return this.ticketService.checkInManual(body.query);
+  }
+
+  @Get('event/:eventId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'STAFF')
+  async getEventTickets(@Param('eventId') eventId: string) {
+    return this.ticketService.getEventTickets(eventId);
+  }
+
+  @Get('search')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'STAFF')
+  async searchTicket(@Query('q') q: string) {
+    return this.ticketService.searchTicket(q);
   }
 }
