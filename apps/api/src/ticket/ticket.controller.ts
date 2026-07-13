@@ -68,15 +68,22 @@ export class TicketController {
   @Post('check-in')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'STAFF')
-  async checkIn(@Body() body: CheckInDto) {
-    return this.ticketService.checkIn(body.qrCodeToken);
+  async checkIn(@Req() req: RequestWithUser, @Body() body: CheckInDto) {
+    return this.ticketService.checkIn(body.qrCodeToken, req.user.sub);
   }
 
   @Post('check-in/manual')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'STAFF')
-  async checkInManual(@Body() body: { query: string }) {
-    return this.ticketService.checkInManual(body.query);
+  async checkInManual(@Req() req: RequestWithUser, @Body() body: { query: string }) {
+    return this.ticketService.checkInManual(body.query, req.user.sub);
+  }
+
+  @Get('check-in/history')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'STAFF')
+  async getCheckInHistory(@Req() req: RequestWithUser) {
+    return this.ticketService.getCheckInHistory(req.user.sub);
   }
 
   @Get('event/:eventId')

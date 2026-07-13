@@ -29,6 +29,7 @@ model User {
   organizer           Organizer?
   follows             Follow[]
   savedEvents         SavedEvent[]
+  checkedInTickets    Ticket[]    @relation("checkedInBy")
 
   @@index([email])
   @@index([role])
@@ -201,6 +202,8 @@ model Ticket {
   status       TicketStatus @default(PENDING)
   qrCodeToken  String       @unique
   checkedInAt  DateTime?
+  checkedInById String?
+  checkedInBy  User?        @relation(fields: [checkedInById], references: [id], name: "checkedInBy")
   createdAt    DateTime     @default(now())
 
   @@index([orderId])
@@ -208,6 +211,7 @@ model Ticket {
   @@index([ticketTypeId])
   @@index([status])
   @@index([qrCodeToken])
+  @@index([checkedInById])
 }
 
 enum TicketStatus {

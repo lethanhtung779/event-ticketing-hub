@@ -130,11 +130,39 @@ export class VnpayService {
     const user = order.tickets[0].user;
     const event = order.tickets[0].ticketType.event;
 
+    const otherPendingOrders = await this.prisma.order.findMany({
+      where: {
+        userId: user.id,
+        status: 'PENDING',
+        id: { not: orderId },
+        tickets: {
+          some: {
+            ticketType: { eventId: event.id },
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    const cancelOrderIds = otherPendingOrders.map((o) => o.id);
+
     await this.prisma.$transaction([
       this.prisma.ticket.updateMany({
         where: { orderId, status: 'PENDING' },
         data: { status: 'VALID' },
       }),
+      ...(cancelOrderIds.length > 0
+        ? [
+            this.prisma.ticket.updateMany({
+              where: { orderId: { in: cancelOrderIds }, status: 'PENDING' },
+              data: { status: 'CANCELLED' },
+            }),
+            this.prisma.order.updateMany({
+              where: { id: { in: cancelOrderIds } },
+              data: { status: 'CANCELLED' },
+            }),
+          ]
+        : []),
       this.prisma.ticketType.update({
         where: { id: ticketTypeId },
         data: { soldQuantity: { increment: order.tickets.length } },

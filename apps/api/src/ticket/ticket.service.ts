@@ -443,7 +443,7 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
     return ticket;
   }
 
-  async checkIn(qrCodeToken: string) {
+  async checkIn(qrCodeToken: string, staffId: string) {
     const { ticket } = await this.findTicketByQr(qrCodeToken);
 
     if (!ticket) {
@@ -472,7 +472,7 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
 
     return this.prisma.ticket.update({
       where: { id: ticket.id },
-      data: { status: 'CHECKED_IN', checkedInAt: new Date() },
+      data: { status: 'CHECKED_IN', checkedInAt: new Date(), checkedInById: staffId },
       include: {
         user: { select: { id: true, fullName: true, email: true } },
         ticketType: { select: { name: true, event: { select: { title: true, startTime: true, location: true } } } },
@@ -513,7 +513,7 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
     return filtered.slice(0, 20);
   }
 
-  async checkInManual(query: string) {
+  async checkInManual(query: string, staffId: string) {
     const results = await this.searchTicket(query);
     if (results.length === 0) {
       throw new NotFoundException('Không tìm thấy vé phù hợp');
@@ -527,11 +527,28 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
     }
     return this.prisma.ticket.update({
       where: { id: ticket.id },
-      data: { status: 'CHECKED_IN', checkedInAt: new Date() },
+      data: { status: 'CHECKED_IN', checkedInAt: new Date(), checkedInById: staffId },
       include: {
         user: { select: { id: true, fullName: true, email: true } },
         ticketType: { select: { name: true, event: { select: { id: true, title: true } } } },
       },
+    });
+  }
+
+  async getCheckInHistory(staffId: string) {
+    return this.prisma.ticket.findMany({
+      where: { checkedInById: staffId, status: 'CHECKED_IN' },
+      include: {
+        user: { select: { id: true, fullName: true, email: true } },
+        ticketType: {
+          select: {
+            name: true,
+            event: { select: { id: true, title: true, startTime: true, location: true } },
+          },
+        },
+      },
+      orderBy: { checkedInAt: 'desc' },
+      take: 100,
     });
   }
 }

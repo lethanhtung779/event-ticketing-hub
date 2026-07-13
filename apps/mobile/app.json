@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "TicketHub",
+    "slug": "event-ticketing-hub",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": ["tickethub", "com.googleusercontent.apps.1019091092463-qo4fa6upu1sfpbrlrhj5eqc3e3t4ed6v"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tunglt.tickethub"
+    },
+    "android": {
+      "package": "com.tunglt.tickethub",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "tickethub", "host": "*", "pathPrefix": "/oauth2redirect" },
+            { "scheme": "com.googleusercontent.apps.1019091092463-qo4fa6upu1sfpbrlrhj5eqc3e3t4ed6v", "pathPrefix": "/oauth2redirect" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": [
+      ["expo-camera", { "barcodeScannerEnabled": true, "cameraPermission": "Cho phép TicketHub sử dụng camera để quét mã vé" }]
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
