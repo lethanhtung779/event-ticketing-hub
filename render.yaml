@@ -17,6 +17,10 @@ services:
         sync: false
       - key: REDIS_PORT
         value: "6379"
+      - key: REDIS_TLS
+        value: "true"
+      - key: REDIS_PASSWORD
+        sync: false
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
