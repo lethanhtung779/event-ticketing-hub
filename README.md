@@ -1,23 +1,23 @@
 # TicketHub - Online Event Ticketing Platform
 
-**Giải pháp đặt vé sự kiện toàn diện cho doanh nghiệp — từ bán vé, kiểm soát cửa, đến báo cáo doanh thu.**
+**An end-to-end event ticketing solution for businesses — from ticket sales and gate control to revenue reports.**
 
-TicketHub là nền tảng quản lý vé sự kiện mã nguồn mở, giải quyết bài toán **đặt vé trùng, vé giả, kiểm soát cửa thủ công, và thiếu dữ liệu analytics** mà các tổ chức sự kiện vừa và nhỏ thường gặp phải. Hệ thống hỗ trợ đa nền tảng (**Web + Mobile App**) với quy trình vận hành khép kín: nhà tổ chức tạo sự kiện → khách hàng đặt vé online → nhân viên soát vé qua QR → báo cáo doanh thu tự động.
+TicketHub is an open-source event ticketing platform that solves the real-world problems of **duplicate bookings, counterfeit tickets, manual check-ins, and lack of analytics** that small-to-medium event organizers face. It provides a unified **Web + Mobile App** with a closed-loop operational workflow: organizers create events → customers book tickets online → staff scan QR codes at the door → revenue reports are generated automatically.
 
-> **Ứng dụng thực tế:** Concert, hội thảo, workshop, sự kiện thể thao, festival — bất kỳ tổ chức nào cần bán vé, kiểm soát ra vào và phân tích doanh thu đều có thể triển khai TicketHub trong vài phút.
+> **Real-world use cases:** Concerts, conferences, workshops, sports events, festivals — any organization that needs ticket sales, access control, and revenue analytics can deploy TicketHub in minutes.
 
-### Bài toán doanh nghiệp giải quyết
+### Business Problems Solved
 
-| Vấn đề | Giải pháp của TicketHub |
-|--------|------------------------|
-| ✅ **Vé giả / check-in thủ công chậm** | QR code động + offline queue + phân biệt trạng thái real‑time |
-| ✅ **Đặt vé trùng / quá sức chứa** | Redis locking + waiting list tự động |
-| ✅ **Thiếu kênh bán vé online** | Web + Mobile app đa nền tảng, tích hợp VNPay |
-| ✅ **Không có dữ liệu khách hàng & analytics** | Dashboard doanh thu, top events, user growth tracking |
-| ✅ **Quản lý nhiều sự kiện phức tạp** | Organizer dashboard với 4‑bước wizard tạo event |
-| ✅ **Hợp tác tổ chức khó khăn** | Staff role + QR check‑in không cần chọn event |
-| ✅ **Thanh toán linh hoạt** | VNPay + pay‑later (giữ vé 15 phút) |
-| ✅ **Rào cản ngôn ngữ** | Hỗ trợ song ngữ Việt/Anh |
+| Problem | TicketHub Solution |
+|---------|-------------------|
+| ✅ **Counterfeit tickets / slow manual check-in** | Dynamic QR codes + offline queue + real-time status validation |
+| ✅ **Duplicate bookings / overselling** | Redis locking + automatic waiting list |
+| ✅ **No online sales channel** | Cross-platform Web + Mobile app, VNPay integrated |
+| ✅ **No customer data & analytics** | Revenue dashboard, top events, user growth tracking |
+| ✅ **Complex multi-event management** | Organizer dashboard with 4-step event creation wizard |
+| ✅ **Hard to coordinate event staff** | Staff role + QR check-in without event selection |
+| ✅ **Rigid payment options** | VNPay + pay-later (15-minute hold) |
+| ✅ **Language barrier** | Bilingual support (Vietnamese / English) |
 
 ## Tech Stack
 
@@ -78,23 +78,23 @@ event-ticketing-hub/
 └── pnpm-workspace.yaml             # Monorepo config
 ```
 
-## Tính năng nổi bật (Business Features)
+## Key Business Features
 
-### Luồng vận hành khép kín
+### Closed-Loop Workflow
 ```
-Nhà tổ chức tạo sự kiện (Web wizard)
-    → Xuất bản lên danh sách công khai
-        → Khách hàng tìm kiếm & đặt vé (Web / Mobile)
-            → Thanh toán VNPay hoặc giữ vé tạm thời
-                → QR code được tạo động, gắn eventId
-                    → Nhân viên check-in bằng QR (Mobile app)
-                        → Báo cáo doanh thu tự động (Dashboard)
+Organizer creates event (Web wizard)
+    → Publish to public listing
+        → Customer discovers & books tickets (Web / Mobile)
+            → VNPay payment or temporary hold
+                → Dynamic QR code generated with embedded eventId
+                    → Staff scans QR for check-in (Mobile app)
+                        → Automatic revenue reports (Dashboard)
 ```
 
 ### Web App
 #### Public
 - Event discovery with category, search, location, price, and date filtering
-- Category bar: Nhạc sống, Sân khấu & Nghệ thuật, Thể Thao, Hội thảo & Workshop, Tham quan & Trải nghiệm, Khác, Vé bán lại, Blog
+- Category bar: Music, Stage & Arts, Sports, Workshops, Tours & Experiences, Other, Resale, Blog
 - Event detail pages with ticket type selection, reviews, and similar events
 - Ticket purchase flow with promo code validation and VNPay payment
 - User registration, login, Google OAuth, email verification, password reset
@@ -180,13 +180,13 @@ Nhà tổ chức tạo sự kiện (Web wizard)
 - Conflict detection (already checked-in, invalid status, not found)
 - Offline fallback queue stored in AsyncStorage
 
-## Hiệu năng & Độ tin cậy
+## Performance & Reliability
 
-- **Redis ticket locking** — chống đặt trùng trong lượt cao điểm, giữ vé 15 phút cho người dùng đang thanh toán
-- **JWT access + refresh token** — tự động refresh, không lo mất phiên đăng nhập
-- **Offline check-in queue** — nhân viên soát vé vẫn làm việc được khi mất mạng, dữ liệu đồng bộ khi có lại kết nối
-- **Real‑time notifications** — thông báo ngay lập tức qua Socket.IO khi vé được xác nhận, sự kiện thay đổi trạng thái
-- **Phân quyền chi tiết** — 4 role (USER, STAFF, ORGANIZER, ADMIN) với quyền truy cập riêng biệt
+- **Redis ticket locking** — prevents duplicate bookings during peak traffic, holds tickets for 15 minutes during payment
+- **JWT access + refresh tokens** — automatic silent refresh, no session loss
+- **Offline check-in queue** — staff can scan tickets even without internet; data syncs when connection resumes
+- **Real-time notifications** — instant Socket.IO push on ticket confirmation and event status changes
+- **Granular access control** — 4 roles (USER, STAFF, ORGANIZER, ADMIN) with distinct permissions
 
 ## Getting Started
 
@@ -269,20 +269,20 @@ Swagger documentation is available at `http://localhost:3001/api/docs` when the 
 
 ### 1. PostgreSQL — Supabase
 
-1. Đăng ký [supabase.com](https://supabase.com) (GitHub login)
-2. Tạo project mới, copy **Connection string** (URI) từ Settings → Database
-3. Thay `postgresql://...` vào biến `DATABASE_URL`
+1. Sign up at [supabase.com](https://supabase.com) (GitHub login)
+2. Create a new project, copy the **Connection string** (URI) from Settings → Database
+3. Set as `DATABASE_URL`
 
 ### 2. Redis — Upstash
 
-1. Đăng ký [upstash.com](https://upstash.com) (GitHub login)
-2. Tạo Redis database (Region gần nhất)
-3. Copy **UPSTASH_REDIS_REST_URL** và **UPSTASH_REDIS_REST_TOKEN**
+1. Sign up at [upstash.com](https://upstash.com) (GitHub login)
+2. Create a Redis database (nearest region)
+3. Copy **UPSTASH_REDIS_REST_URL** and **UPSTASH_REDIS_REST_TOKEN**
 
 ### 3. Backend API — Render
 
-1. Fork repo, vào [render.com](https://render.com) → New Web Service
-2. Chọn repo, branch `main`
+1. Fork this repo, go to [render.com](https://render.com) → New Web Service
+2. Select repo, branch `main`
 3. **Build Command:**
    ```bash
    pnpm install --frozen-lockfile && pnpm --filter api build && npx prisma generate --schema=apps/api/prisma/schema.prisma
@@ -290,35 +290,35 @@ Swagger documentation is available at `http://localhost:3001/api/docs` when the 
 4. **Start Command:** `node apps/api/dist/main`
 5. **Plan:** Free
 6. **Health Check Path:** `/auth/login`
-7. **Environment Variables (cần set):**
+7. **Environment Variables (required):**
 
-   | Variable | Giá trị |
+   | Variable | Value |
    |---|---|
-   | `DATABASE_URL` | Connection string từ Supabase |
-   | `JWT_SECRET` | Chuỗi bí mật (vd: openssl rand -hex 32) |
-   | `REDIS_HOST` | `upstash.com` (hoặc host từ Upstash) |
+   | `DATABASE_URL` | Connection string from Supabase |
+   | `JWT_SECRET` | Secret string (e.g. `openssl rand -hex 32`) |
+   | `REDIS_HOST` | Host from Upstash |
    | `REDIS_PORT` | `6379` |
    | `CORS_ORIGIN` | `https://<web-app>.vercel.app` |
    | `FRONTEND_URL` | `https://<web-app>.vercel.app` |
    | `BACKEND_URL` | `https://<api>.onrender.com` |
-   | `SMTP_HOST` | (để trống nếu chưa có SMTP) |
+   | `SMTP_HOST` | (leave blank if no SMTP) |
    | `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
-   | `VNPAY_*` | (bỏ qua nếu chưa dùng VNPay) |
+   | `VNPAY_*` | (skip if not using VNPay) |
 
-8. Deploy xong, copy URL dạng `https://<api>.onrender.com`
+8. After deployment, copy the URL: `https://<api>.onrender.com`
 
 ### 4. Web Frontend — Vercel
 
-1. Vào [vercel.com](https://vercel.com) → Add New Project → Import GitHub repo
+1. Go to [vercel.com](https://vercel.com) → Add New Project → Import GitHub repo
 2. **Root Directory:** `apps/web`
-3. **Framework Preset:** Next.js (tự động detect)
+3. **Framework Preset:** Next.js (auto-detected)
 4. **Environment Variables:**
 
-   | Variable | Giá trị |
+   | Variable | Value |
    |---|---|
    | `NEXT_PUBLIC_API_URL` | `https://<api>.onrender.com` |
 
-5. Deploy — web app có sẵn tại `https://<web>.vercel.app`
+5. Deploy — your web app is live at `https://<web>.vercel.app`
 
 ### 5. Mobile App
 
@@ -327,11 +327,11 @@ Swagger documentation is available at `http://localhost:3001/api/docs` when the 
 cd apps/mobile
 npx expo run:android
 
-# Hoặc dùng EAS Build (30 builds/tháng free)
+# Or use EAS Build (30 builds/month free)
 npx eas build --platform android --profile preview
 ```
 
-> **Lưu ý:** Với Render free tier, API sẽ **sleep** sau 15 phút không có request. Khi có request đầu tiên, cần chờ ~30s để khởi động lại. Để tránh sleep, có thể dùng [cron-job.org](https://cron-job.org) ping health check mỗi 10 phút.
+> **Note:** With Render's free tier, the API will **sleep** after 15 minutes of inactivity. The first request after sleep takes ~30s to wake up. To prevent sleeping, use [cron-job.org](https://cron-job.org) to ping the health check endpoint every 10 minutes.
 
 ## License
 
