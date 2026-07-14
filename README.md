@@ -1,4 +1,7 @@
-# TicketHub - Online Event Ticketing Platform
+# 🎫 TicketHub - Online Event Ticketing Platform
+
+> **🌐 Live demo:** [event-ticketing-hub-eight.vercel.app](https://event-ticketing-hub-eight.vercel.app)  
+> **📖 API docs:** [event-ticketing-api-db5k.onrender.com/api-docs](https://event-ticketing-api-db5k.onrender.com/api-docs)
 
 **An end-to-end event ticketing solution for businesses — from ticket sales and gate control to revenue reports.**
 
