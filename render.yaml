@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: ticketing-api
+    env: node
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter api build && npx prisma generate --schema=apps/api/prisma/schema.prisma
+    startCommand: node apps/api/dist/main
+    healthCheckPath: /auth/login
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        value: "6379"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "1025"
+      - key: SMTP_FROM
+        sync: false
+      - key: VNPAY_TMN_CODE
+        sync: false
+      - key: VNPAY_HASH_SECRET
+        sync: false
+      - key: VNPAY_URL
+        sync: false
+      - key: VNPAY_RETURN_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: BACKEND_URL
+        sync: false
+      - key: PORT
+        value: "3000"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_ANDROID_CLIENT_ID
+        sync: false

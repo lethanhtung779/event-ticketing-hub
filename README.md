@@ -265,6 +265,74 @@ npx expo start     # Expo dev server
 
 Swagger documentation is available at `http://localhost:3001/api/docs` when the backend is running.
 
+## Deployment (Free Tier)
+
+### 1. PostgreSQL — Supabase
+
+1. Đăng ký [supabase.com](https://supabase.com) (GitHub login)
+2. Tạo project mới, copy **Connection string** (URI) từ Settings → Database
+3. Thay `postgresql://...` vào biến `DATABASE_URL`
+
+### 2. Redis — Upstash
+
+1. Đăng ký [upstash.com](https://upstash.com) (GitHub login)
+2. Tạo Redis database (Region gần nhất)
+3. Copy **UPSTASH_REDIS_REST_URL** và **UPSTASH_REDIS_REST_TOKEN**
+
+### 3. Backend API — Render
+
+1. Fork repo, vào [render.com](https://render.com) → New Web Service
+2. Chọn repo, branch `main`
+3. **Build Command:**
+   ```bash
+   pnpm install --frozen-lockfile && pnpm --filter api build && npx prisma generate --schema=apps/api/prisma/schema.prisma
+   ```
+4. **Start Command:** `node apps/api/dist/main`
+5. **Plan:** Free
+6. **Health Check Path:** `/auth/login`
+7. **Environment Variables (cần set):**
+
+   | Variable | Giá trị |
+   |---|---|
+   | `DATABASE_URL` | Connection string từ Supabase |
+   | `JWT_SECRET` | Chuỗi bí mật (vd: openssl rand -hex 32) |
+   | `REDIS_HOST` | `upstash.com` (hoặc host từ Upstash) |
+   | `REDIS_PORT` | `6379` |
+   | `CORS_ORIGIN` | `https://<web-app>.vercel.app` |
+   | `FRONTEND_URL` | `https://<web-app>.vercel.app` |
+   | `BACKEND_URL` | `https://<api>.onrender.com` |
+   | `SMTP_HOST` | (để trống nếu chưa có SMTP) |
+   | `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+   | `VNPAY_*` | (bỏ qua nếu chưa dùng VNPay) |
+
+8. Deploy xong, copy URL dạng `https://<api>.onrender.com`
+
+### 4. Web Frontend — Vercel
+
+1. Vào [vercel.com](https://vercel.com) → Add New Project → Import GitHub repo
+2. **Root Directory:** `apps/web`
+3. **Framework Preset:** Next.js (tự động detect)
+4. **Environment Variables:**
+
+   | Variable | Giá trị |
+   |---|---|
+   | `NEXT_PUBLIC_API_URL` | `https://<api>.onrender.com` |
+
+5. Deploy — web app có sẵn tại `https://<web>.vercel.app`
+
+### 5. Mobile App
+
+```bash
+# Build APK locally
+cd apps/mobile
+npx expo run:android
+
+# Hoặc dùng EAS Build (30 builds/tháng free)
+npx eas build --platform android --profile preview
+```
+
+> **Lưu ý:** Với Render free tier, API sẽ **sleep** sau 15 phút không có request. Khi có request đầu tiên, cần chờ ~30s để khởi động lại. Để tránh sleep, có thể dùng [cron-job.org](https://cron-job.org) ping health check mỗi 10 phút.
+
 ## License
 
 ISC
