@@ -3,7 +3,7 @@ services:
     name: ticketing-api
     env: node
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter api build && npx prisma generate --schema=apps/api/prisma/schema.prisma
+    buildCommand: npm_config_prefix=/opt/render/.npm-global npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter api build && pnpm --filter api exec prisma generate
     startCommand: node apps/api/dist/main
     healthCheckPath: /auth/login
     envVars:
@@ -39,6 +39,10 @@ services:
         sync: false
       - key: PORT
         value: "3000"
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_ANDROID_CLIENT_ID
