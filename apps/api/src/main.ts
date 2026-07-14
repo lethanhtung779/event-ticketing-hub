@@ -6,10 +6,17 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import helmet from 'helmet';
-import { setDefaultResultOrder } from 'dns';
-setDefaultResultOrder('ipv4first');
+import { resolve4 } from 'dns/promises';
 
 async function bootstrap() {
+  const dbUrl = process.env.DATABASE_URL;
+  if (dbUrl) {
+    try {
+      const url = new URL(dbUrl);
+      const [address] = await resolve4(url.hostname);
+      if (address) process.env.DATABASE_URL = dbUrl.replace(url.hostname, address);
+    } catch { /* fallback to original */ }
+  }
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.use(helmet({
