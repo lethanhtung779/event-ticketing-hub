@@ -1,6 +1,23 @@
 # TicketHub - Online Event Ticketing Platform
 
-A full-stack event ticketing platform with **Web** (Next.js), **Mobile** (React Native / Expo), and **API** (NestJS). Features include event discovery, ticket purchasing, QR check-in, organizer dashboards, and an admin panel.
+**Giải pháp đặt vé sự kiện toàn diện cho doanh nghiệp — từ bán vé, kiểm soát cửa, đến báo cáo doanh thu.**
+
+TicketHub là nền tảng quản lý vé sự kiện mã nguồn mở, giải quyết bài toán **đặt vé trùng, vé giả, kiểm soát cửa thủ công, và thiếu dữ liệu analytics** mà các tổ chức sự kiện vừa và nhỏ thường gặp phải. Hệ thống hỗ trợ đa nền tảng (**Web + Mobile App**) với quy trình vận hành khép kín: nhà tổ chức tạo sự kiện → khách hàng đặt vé online → nhân viên soát vé qua QR → báo cáo doanh thu tự động.
+
+> **Ứng dụng thực tế:** Concert, hội thảo, workshop, sự kiện thể thao, festival — bất kỳ tổ chức nào cần bán vé, kiểm soát ra vào và phân tích doanh thu đều có thể triển khai TicketHub trong vài phút.
+
+### Bài toán doanh nghiệp giải quyết
+
+| Vấn đề | Giải pháp của TicketHub |
+|--------|------------------------|
+| ✅ **Vé giả / check-in thủ công chậm** | QR code động + offline queue + phân biệt trạng thái real‑time |
+| ✅ **Đặt vé trùng / quá sức chứa** | Redis locking + waiting list tự động |
+| ✅ **Thiếu kênh bán vé online** | Web + Mobile app đa nền tảng, tích hợp VNPay |
+| ✅ **Không có dữ liệu khách hàng & analytics** | Dashboard doanh thu, top events, user growth tracking |
+| ✅ **Quản lý nhiều sự kiện phức tạp** | Organizer dashboard với 4‑bước wizard tạo event |
+| ✅ **Hợp tác tổ chức khó khăn** | Staff role + QR check‑in không cần chọn event |
+| ✅ **Thanh toán linh hoạt** | VNPay + pay‑later (giữ vé 15 phút) |
+| ✅ **Rào cản ngôn ngữ** | Hỗ trợ song ngữ Việt/Anh |
 
 ## Tech Stack
 
@@ -61,7 +78,18 @@ event-ticketing-hub/
 └── pnpm-workspace.yaml             # Monorepo config
 ```
 
-## Features
+## Tính năng nổi bật (Business Features)
+
+### Luồng vận hành khép kín
+```
+Nhà tổ chức tạo sự kiện (Web wizard)
+    → Xuất bản lên danh sách công khai
+        → Khách hàng tìm kiếm & đặt vé (Web / Mobile)
+            → Thanh toán VNPay hoặc giữ vé tạm thời
+                → QR code được tạo động, gắn eventId
+                    → Nhân viên check-in bằng QR (Mobile app)
+                        → Báo cáo doanh thu tự động (Dashboard)
+```
 
 ### Web App
 #### Public
@@ -151,6 +179,14 @@ event-ticketing-hub/
 - Staff scan any QR, system auto-identifies the event
 - Conflict detection (already checked-in, invalid status, not found)
 - Offline fallback queue stored in AsyncStorage
+
+## Hiệu năng & Độ tin cậy
+
+- **Redis ticket locking** — chống đặt trùng trong lượt cao điểm, giữ vé 15 phút cho người dùng đang thanh toán
+- **JWT access + refresh token** — tự động refresh, không lo mất phiên đăng nhập
+- **Offline check-in queue** — nhân viên soát vé vẫn làm việc được khi mất mạng, dữ liệu đồng bộ khi có lại kết nối
+- **Real‑time notifications** — thông báo ngay lập tức qua Socket.IO khi vé được xác nhận, sự kiện thay đổi trạng thái
+- **Phân quyền chi tiết** — 4 role (USER, STAFF, ORGANIZER, ADMIN) với quyền truy cập riêng biệt
 
 ## Getting Started
 
