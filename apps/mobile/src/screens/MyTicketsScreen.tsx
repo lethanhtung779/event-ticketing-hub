@@ -3,28 +3,29 @@ import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicato
 import { useFocusEffect } from '@react-navigation/native'
 import { ticketApi, paymentApi } from '../api/client'
 import type { Ticket } from '../types'
+import { useTranslation } from 'react-i18next'
 
 function fc(amount: number) { return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount) }
 function fd(date: string) { const d = new Date(date); return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}` }
 
-const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
-  PENDING: { label: 'Chờ thanh toán', color: '#f59e0b', icon: '💳' },
-  VALID: { label: 'Hợp lệ', color: '#059669', icon: '🎫' },
-  CHECKED_IN: { label: 'Đã check-in', color: '#3b82f6', icon: '✅' },
-  CANCELLED: { label: 'Đã huỷ', color: '#ef4444', icon: '❌' },
-  TRANSFERRED: { label: 'Đã chuyển', color: '#f97316', icon: '🔄' },
-}
-
 const sections_order = ['PENDING', 'VALID', 'CHECKED_IN', 'CANCELLED', 'TRANSFERRED']
-const sectionLabels: Record<string, { label: string; icon: string }> = {
-  PENDING: { label: 'Chưa thanh toán', icon: '💳' },
-  VALID: { label: 'Vé hợp lệ', icon: '🎫' },
-  CHECKED_IN: { label: 'Đã sử dụng', icon: '✅' },
-  CANCELLED: { label: 'Đã huỷ / Chuyển', icon: '❌' },
-  TRANSFERRED: { label: 'Đã huỷ / Chuyển', icon: '❌' },
-}
 
 export default function MyTicketsScreen({ navigation }: any) {
+  const { t } = useTranslation()
+  const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
+    PENDING: { label: t('ticket.pending'), color: '#f59e0b', icon: '💳' },
+    VALID: { label: t('ticket.valid'), color: '#059669', icon: '🎫' },
+    CHECKED_IN: { label: t('ticket.checkedIn'), color: '#3b82f6', icon: '✅' },
+    CANCELLED: { label: t('ticket.cancelled'), color: '#ef4444', icon: '❌' },
+    TRANSFERRED: { label: t('ticket.transferred'), color: '#f97316', icon: '🔄' },
+  }
+  const sectionLabels: Record<string, { label: string; icon: string }> = {
+    PENDING: { label: t('ticket.sectionUnpaid'), icon: '💳' },
+    VALID: { label: t('ticket.sectionValid'), icon: '🎫' },
+    CHECKED_IN: { label: t('ticket.sectionUsed'), icon: '✅' },
+    CANCELLED: { label: t('ticket.sectionCancelled'), icon: '❌' },
+    TRANSFERRED: { label: t('ticket.sectionCancelled'), icon: '❌' },
+  }
   const [allTickets, setAllTickets] = useState<Ticket[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -42,7 +43,7 @@ export default function MyTicketsScreen({ navigation }: any) {
 
   const handlePay = async (ticket: Ticket) => {
     const orderId = ticket.order?.id || ticket.orderId
-    if (!orderId) { Alert.alert('Lỗi', 'Không tìm thấy đơn hàng'); return }
+    if (!orderId) { Alert.alert('Lỗi', t('purchase.orderNotFound')); return }
     try {
       const { data } = await paymentApi.createVnpay({ orderId })
       navigation.navigate('VnpayWebView', {
@@ -51,7 +52,7 @@ export default function MyTicketsScreen({ navigation }: any) {
         eventTitle: ticket.ticketType?.event?.title || '',
       })
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Không thể tạo thanh toán')
+      Alert.alert('Lỗi', err?.response?.data?.message || t('ticket.payFailed'))
     }
   }
 
@@ -65,8 +66,8 @@ export default function MyTicketsScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Vé của tôi</Text>
-        <Text style={styles.headerSub}>{allTickets.length} vé</Text>
+        <Text style={styles.headerTitle}>{t('ticket.myTickets')}</Text>
+        <Text style={styles.headerSub}>{allTickets.length} {t('ticket.ticketCount')}</Text>
       </View>
       {loading ? (
         <ActivityIndicator size="large" color="#059669" style={{ marginTop: 40 }} />
@@ -96,7 +97,7 @@ export default function MyTicketsScreen({ navigation }: any) {
                   <Text style={styles.cardPrice}>{fc(item.ticketType?.price || 0)}</Text>
                   {item.status === 'PENDING' && (
                     <TouchableOpacity style={styles.payBtn} onPress={() => handlePay(item)}>
-                      <Text style={styles.payBtnText}>Thanh toán</Text>
+                      <Text style={styles.payBtnText}>{t('ticket.payNow')}</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -108,9 +109,9 @@ export default function MyTicketsScreen({ navigation }: any) {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={{ fontSize: 40, marginBottom: 12 }}>🎫</Text>
-              <Text style={styles.emptyText}>Chưa có vé nào</Text>
+              <Text style={styles.emptyText}>{t('ticket.noTickets')}</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Trang chủ')}>
-                <Text style={styles.exploreLink}>Khám phá sự kiện</Text>
+                <Text style={styles.exploreLink}>{t('ticket.exploreEvents')}</Text>
               </TouchableOpacity>
             </View>
           }

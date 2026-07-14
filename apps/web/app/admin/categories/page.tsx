@@ -12,6 +12,7 @@ import { Modal } from '@/components/ui/Modal'
 import { unwrapList, getErrorMessage } from '@/lib/utils'
 import { adminApi, categoryApi } from '@/lib/api'
 import type { Category } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -26,6 +27,7 @@ export default function AdminCategoriesPage() {
   const [transLang, setTransLang] = useState('en')
   const [transName, setTransName] = useState('')
   const [savingTrans, setSavingTrans] = useState(false)
+  const { t } = useTranslation()
 
   const fetchCategories = async () => {
     try {
@@ -42,11 +44,11 @@ export default function AdminCategoriesPage() {
     setCreating(true)
     try {
       await categoryApi.create(newName.trim())
-      toast.success('Tạo danh mục thành công!')
+      toast.success(t('admin.toastCategoryCreated'))
       setNewName('')
       fetchCategories()
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Có lỗi xảy ra'))
+      toast.error(getErrorMessage(err, t('common.error')))
     } finally { setCreating(false) }
   }
 
@@ -54,10 +56,10 @@ export default function AdminCategoriesPage() {
     if (!deleteTarget) return
     try {
       await categoryApi.delete(deleteTarget.id)
-      toast.success(`Đã xoá danh mục "${deleteTarget.name}"`)
+      toast.success(t('admin.toastCategoryDeleted', { name: deleteTarget.name }))
       setDeleteTarget(null)
       fetchCategories()
-    } catch { toast.error('Xoá thất bại') }
+    } catch { toast.error(t('admin.toastCategoryDeleteFailed')) }
   }
 
   const openEdit = (cat: Category) => {
@@ -70,11 +72,11 @@ export default function AdminCategoriesPage() {
     setSavingEdit(true)
     try {
       await categoryApi.update(editTarget.id, editName.trim())
-      toast.success('Cập nhật danh mục thành công!')
+      toast.success(t('admin.toastCategoryUpdated'))
       setEditTarget(null)
       fetchCategories()
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Cập nhật thất bại'))
+      toast.error(getErrorMessage(err, t('admin.toastCategorySaveFailed')))
     } finally { setSavingEdit(false) }
   }
 
@@ -89,10 +91,10 @@ export default function AdminCategoriesPage() {
     setSavingTrans(true)
     try {
       await adminApi.upsertCategoryTranslation(transTarget.id, { language: transLang, name: transName })
-      toast.success('Đã lưu bản dịch!')
+      toast.success(t('admin.toastTranslationSaved'))
       setTransTarget(null)
     } catch {
-      toast.error('Lưu thất bại')
+      toast.error(t('admin.toastCategorySaveFailed'))
     } finally { setSavingTrans(false) }
   }
 
@@ -100,18 +102,18 @@ export default function AdminCategoriesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quản lý danh mục</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('admin.categoryManagement')}</h1>
 
       <div className="flex gap-3 mb-6">
         <Input
-          placeholder="Tên danh mục mới"
+          placeholder={t('admin.newCategoryPlaceholder')}
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
           className="max-w-xs"
         />
         <Button loading={creating} onClick={handleCreate} disabled={!newName.trim()}>
-          <Plus className="h-4 w-4" /> Thêm
+          <Plus className="h-4 w-4" /> {t('admin.add')}
         </Button>
       </div>
 
@@ -119,23 +121,23 @@ export default function AdminCategoriesPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
             <tr>
-              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Tên</th>
-              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Số sự kiện</th>
-              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colName')}</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colEventCount')}</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colActions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {categories.length === 0 ? (
-              <tr><td colSpan={3} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Chưa có danh mục nào</td></tr>
+              <tr><td colSpan={3} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('admin.noCategories')}</td></tr>
             ) : categories.map((cat) => (
               <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
                 <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{cat.name}</td>
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{cat._count?.events ?? 0}</td>
                 <td className="px-4 py-3 flex items-center gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => openTrans(cat)} title="Dịch thuật">
+                  <Button variant="ghost" size="sm" onClick={() => openTrans(cat)} title={t('admin.translate')}>
                     <Languages className="h-4 w-4 text-blue-500" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => openEdit(cat)} title="Sửa tên">
+                  <Button variant="ghost" size="sm" onClick={() => openEdit(cat)} title={t('admin.editCategory')}>
                     <Pencil className="h-4 w-4 text-indigo-500" />
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(cat)}>
@@ -148,44 +150,44 @@ export default function AdminCategoriesPage() {
         </table>
       </Card>
 
-      <Modal open={!!editTarget} onClose={() => setEditTarget(null)} title="Sửa tên danh mục">
+      <Modal open={!!editTarget} onClose={() => setEditTarget(null)} title={t('admin.editCategory')}>
         {editTarget && (
           <div className="space-y-4">
-            <Input label="Tên danh mục" value={editName} onChange={(e) => setEditName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleEdit()} placeholder="Nhập tên mới..." />
+            <Input label={t('admin.categoryName')} value={editName} onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleEdit()} placeholder={t('admin.categoryNamePlaceholder')} />
             <div className="flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setEditTarget(null)}>Huỷ</Button>
-              <Button loading={savingEdit} onClick={handleEdit} disabled={!editName.trim()}>Lưu</Button>
+              <Button variant="secondary" onClick={() => setEditTarget(null)}>{t('common.cancel')}</Button>
+              <Button loading={savingEdit} onClick={handleEdit} disabled={!editName.trim()}>{t('common.save')}</Button>
             </div>
           </div>
         )}
       </Modal>
 
-      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá danh mục">
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title={t('admin.deleteCategory')}>
         {deleteTarget && (
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Bạn có chắc muốn xoá danh mục <strong>"{deleteTarget.name}"</strong>?
+              {t('admin.confirmDeleteCategory', { name: deleteTarget.name })}
               {deleteTarget._count?.events ? (
                 <span className="text-amber-600 block mt-1">
-                  Danh mục này đang có {deleteTarget._count.events} sự kiện.
+                  {t('admin.categoryHasEvents', { count: deleteTarget._count.events })}
                 </span>
               ) : null}
             </p>
             <div className="flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Huỷ</Button>
-              <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Xác nhận xoá</Button>
+              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>{t('common.cancel')}</Button>
+              <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">{t('admin.btnConfirmDelete')}</Button>
             </div>
           </div>
         )}
       </Modal>
 
-      <Modal open={!!transTarget} onClose={() => setTransTarget(null)} title="Dịch danh mục">
+      <Modal open={!!transTarget} onClose={() => setTransTarget(null)} title={t('admin.translateCategory')}>
         {transTarget && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Đang dịch: <strong>{transTarget.name}</strong></p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.translatingFor')} <strong>{transTarget.name}</strong></p>
             <Select
-              label="Ngôn ngữ"
+              label={t('admin.fieldLanguage')}
               value={transLang}
               onChange={(e) => setTransLang(e.target.value)}
               options={[
@@ -193,10 +195,10 @@ export default function AdminCategoriesPage() {
                 { value: 'vi', label: 'Tiếng Việt' },
               ]}
             />
-            <Input label="Tên danh mục" value={transName} onChange={(e) => setTransName(e.target.value)} placeholder="Nhập tên dịch..." />
+            <Input label={t('admin.transCategoryName')} value={transName} onChange={(e) => setTransName(e.target.value)} placeholder={t('admin.transNamePlaceholder')} />
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="secondary" onClick={() => setTransTarget(null)}>Huỷ</Button>
-              <Button loading={savingTrans} onClick={handleSaveTrans}>Lưu bản dịch</Button>
+              <Button variant="secondary" onClick={() => setTransTarget(null)}>{t('common.cancel')}</Button>
+              <Button loading={savingTrans} onClick={handleSaveTrans}>{t('admin.saveTranslation')}</Button>
             </div>
           </div>
         )}

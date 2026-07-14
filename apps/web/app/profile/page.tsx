@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import toast from 'react-hot-toast'
 import {
   User, Lock, Mail, CheckCircle2, AlertCircle, Heart,
@@ -63,30 +63,11 @@ interface Order {
   tickets: OrderTicket[]
 }
 
-const profileSchema = z.object({
-  fullName: z.string().min(2, 'Tên phải có ít nhất 2 ký tự').max(100),
-})
-
-type ProfileForm = z.infer<typeof profileSchema>
-
-interface PasswordForm {
+type PasswordForm = {
   currentPassword: string
   newPassword: string
   confirmNewPassword: string
 }
-
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Vui lòng nhập mật khẩu hiện tại'),
-  newPassword: z.string().min(6, 'Mật khẩu mới phải có ít nhất 6 ký tự'),
-  confirmNewPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu mới'),
-})
-
-const tabs: { key: string; label: string; icon: any; href?: string }[] = [
-  { key: 'overview', label: 'Tổng quan tài khoản', icon: LayoutDashboard },
-  { key: 'settings', label: 'Cài đặt tài khoản', icon: Settings },
-  { key: 'orders', label: 'Đơn hàng của tôi', icon: ShoppingBag },
-  { key: 'my-events', label: 'Sự kiện của tôi', icon: Calendar, href: '/organizer/events' },
-]
 
 export default function ProfilePage() {
   const { t } = useTranslation()
@@ -101,6 +82,25 @@ export default function ProfilePage() {
   const [unfollowing, setUnfollowing] = useState<string | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
   const [ordersLoading, setOrdersLoading] = useState(false)
+
+  const tabs: { key: string; label: string; icon: any; href?: string }[] = [
+    { key: 'overview', label: t('profile.overviewTab'), icon: LayoutDashboard },
+    { key: 'settings', label: t('profile.settingsTab'), icon: Settings },
+    { key: 'orders', label: t('profile.ordersTab'), icon: ShoppingBag },
+    { key: 'my-events', label: t('profile.myEventsTab'), icon: Calendar, href: '/organizer/events' },
+  ]
+
+  const profileSchema = z.object({
+    fullName: z.string().min(2, t('profile.nameMinLength')).max(100),
+  })
+
+  type ProfileForm = z.infer<typeof profileSchema>
+
+  const passwordSchema = z.object({
+    currentPassword: z.string().min(1, t('profile.pwRequired')),
+    newPassword: z.string().min(6, t('profile.pwMinLength')),
+    confirmNewPassword: z.string().min(1, t('profile.confirmPwRequired')),
+  })
 
   const profileForm = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -129,9 +129,9 @@ export default function ProfilePage() {
     try {
       const { data: res } = await userApi.updateProfile(data)
       setUser(res)
-      toast.success('Cập nhật hồ sơ thành công!')
+      toast.success(t('profile.updateSuccess'))
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Cập nhật hồ sơ thất bại'))
+      toast.error(getErrorMessage(err, t('profile.updateFailed')))
     } finally {
       setProfileLoading(false)
     }
@@ -139,17 +139,17 @@ export default function ProfilePage() {
 
   const onPasswordSubmit = async (data: PasswordForm) => {
     if (data.newPassword !== data.confirmNewPassword) {
-      setError('confirmNewPassword', { message: 'Mật khẩu xác nhận không khớp' })
+      setError('confirmNewPassword', { message: t('profile.passwordNotMatch') })
       return
     }
     setPasswordLoading(true)
     try {
       const { confirmNewPassword: _, ...payload } = data
       await authApi.changePassword(payload)
-      toast.success('Đổi mật khẩu thành công!')
+      toast.success(t('profile.pwChanged'))
       passwordForm.reset()
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Đổi mật khẩu thất bại'))
+      toast.error(getErrorMessage(err, t('profile.pwChangeFailed')))
     } finally {
       setPasswordLoading(false)
     }
@@ -160,9 +160,9 @@ export default function ProfilePage() {
     try {
       await followApi.unfollow(organizerId)
       setFollows(prev => prev.filter(o => o.id !== organizerId))
-      toast.success('Đã bỏ theo dõi')
+      toast.success(t('profile.unfollowSuccess'))
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Thao tác thất bại'))
+      toast.error(getErrorMessage(err, t('profile.unfollowFailed')))
     } finally { setUnfollowing(null) }
   }
 
@@ -174,7 +174,7 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <SeoHead title="Hồ sơ" />
+      <SeoHead title={t('profile.title')} />
       <div className="flex flex-col lg:flex-row gap-8">
         <aside className="lg:w-64 shrink-0">
           <div className="flex items-center gap-3 mb-6 lg:mb-8 px-1">
@@ -220,23 +220,23 @@ export default function ProfilePage() {
         <div className="flex-1 min-w-0">
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tổng quan tài khoản</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('profile.overviewTab')}</h2>
 
               <Card>
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="h-5 w-5 text-emerald-600" />
-                  Email
+                  {t('profile.emailSection')}
                 </CardTitle>
                 <div className="mt-4 flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-900 dark:text-white">{user.email}</p>
                     {user.isVerified ? (
                       <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                        <CheckCircle2 className="h-3 w-3" /> Đã xác thực
+                        <CheckCircle2 className="h-3 w-3" /> {t('profile.verified')}
                       </p>
                     ) : (
                       <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
-                        <AlertCircle className="h-3 w-3" /> Chưa xác thực &middot; <button onClick={() => setActiveTab('settings')} className="underline hover:text-amber-800">Xác thực ngay</button>
+                        <AlertCircle className="h-3 w-3" /> {t('profile.unverified')} &middot; <button onClick={() => setActiveTab('settings')} className="underline hover:text-amber-800">{t('profile.verifyNow')}</button>
                       </p>
                     )}
                   </div>
@@ -246,15 +246,15 @@ export default function ProfilePage() {
               <Card>
                 <CardTitle className="flex items-center gap-2">
                   <Heart className="h-5 w-5 text-emerald-600" />
-                  Đang theo dõi
+                  {t('profile.followedOrgs')}
                 </CardTitle>
                 <div className="mt-4">
                   {followsLoading ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Đang tải...</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.loading')}</p>
                   ) : follows.length === 0 ? (
                     <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                       <Heart className="mx-auto mb-2 h-8 w-8" />
-                      <p className="text-sm">Chưa theo dõi nhà tổ chức nào</p>
+                      <p className="text-sm">{t('profile.noFollows')}</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -283,7 +283,7 @@ export default function ProfilePage() {
                               disabled={unfollowing === org.id}
                               className="rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
                             >
-                              {unfollowing === org.id ? '...' : 'Bỏ theo dõi'}
+                              {unfollowing === org.id ? '...' : t('profile.unfollow')}
                             </button>
                           </div>
                         </div>
@@ -297,16 +297,16 @@ export default function ProfilePage() {
 
           {activeTab === 'settings' && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cài đặt tài khoản</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('profile.settingsTab')}</h2>
 
               <Card>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5 text-emerald-600" />
-                  Thông tin cá nhân
+                  {t('profile.personalInfo')}
                 </CardTitle>
                 <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="mt-4 space-y-5">
                   <div className="rounded-lg bg-gray-50 dark:bg-neutral-900 p-4 space-y-1">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Email</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">{t('profile.emailSection')}</p>
                     <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
                       {user.email}
                       {user.isVerified ? (
@@ -319,14 +319,14 @@ export default function ProfilePage() {
 
                   <Input
                     id="fullName"
-                    label="Họ và tên"
+                    label={t('auth.fullName')}
                     error={profileForm.formState.errors.fullName?.message}
                     {...profileForm.register('fullName')}
                   />
 
                   <div className="flex items-center gap-3 pt-1">
                     <Button type="submit" loading={profileLoading} className="min-w-[140px]">
-                      Lưu thay đổi
+                      {t('profile.save')}
                     </Button>
                     {profileForm.formState.isDirty && !profileLoading && (
                       <button
@@ -334,7 +334,7 @@ export default function ProfilePage() {
                         onClick={() => profileForm.reset()}
                         className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                       >
-                        Hoàn tác
+                        {t('profile.resetForm')}
                       </button>
                     )}
                   </div>
@@ -344,7 +344,7 @@ export default function ProfilePage() {
               <Card>
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="h-5 w-5 text-emerald-600" />
-                  Xác thực tài khoản
+                  {t('profile.verificationSection')}
                 </CardTitle>
                 <div className="mt-4 space-y-4">
                   <div className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 p-4">
@@ -353,11 +353,11 @@ export default function ProfilePage() {
                         {user.isVerified ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">Xác thực email</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{t('profile.verifyEmail')}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                           {user.isVerified
-                            ? 'Email của bạn đã được xác thực. Bạn có thể nhận thông báo và đặt lại mật khẩu.'
-                            : 'Xác thực email để bảo vệ tài khoản và nhận thông báo về sự kiện.'
+                            ? t('profile.verifyDescVerified')
+                            : t('profile.verifyDescUnverified')
                           }
                         </p>
                       </div>
@@ -367,12 +367,12 @@ export default function ProfilePage() {
                         setVerifying(true)
                         try {
                           await authApi.sendVerification()
-                          toast.success('Email xác thực đã được gửi!')
+                          toast.success(t('profile.verificationSent'))
                         } catch (err) {
-                          toast.error(getErrorMessage(err, 'Gửi email thất bại'))
+                          toast.error(getErrorMessage(err, t('profile.sendFailed')))
                         } finally { setVerifying(false) }
                       }} className="shrink-0">
-                        Gửi xác thực
+                        {t('profile.sendVerification')}
                       </Button>
                     )}
                   </div>
@@ -383,7 +383,7 @@ export default function ProfilePage() {
                         <Mail className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs text-blue-700 dark:text-blue-300">
-                            Email xác thực sẽ được gửi đến <strong>{user.email}</strong>. Nếu không thấy email, hãy kiểm tra thư mục Spam.
+                            <Trans i18nKey="profile.verificationInfo" values={{ email: user.email }} components={{ strong: <strong /> }} />
                           </p>
                         </div>
                       </div>
@@ -397,47 +397,47 @@ export default function ProfilePage() {
                   <div className="w-full border-t border-gray-200 dark:border-gray-700" />
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-white dark:bg-neutral-950 px-3 text-xs text-gray-400 dark:text-gray-500">BẢO MẬT</span>
+                  <span className="bg-white dark:bg-neutral-950 px-3 text-xs text-gray-400 dark:text-gray-500">{t('profile.securitySection')}</span>
                 </div>
               </div>
 
               <Card>
                 <CardTitle className="flex items-center gap-2">
                   <Lock className="h-5 w-5 text-emerald-600" />
-                  Đổi mật khẩu
+                  {t('profile.changePassword')}
                 </CardTitle>
                 <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="mt-4 space-y-5">
                   <Input
                     id="currentPassword"
-                    label="Mật khẩu hiện tại"
+                    label={t('profile.currentPassword')}
                     type="password"
                     showPasswordToggle
-                    placeholder="Nhập mật khẩu hiện tại"
+                    placeholder={t('profile.currentPasswordPlaceholder')}
                     error={passwordForm.formState.errors.currentPassword?.message}
                     {...passwordForm.register('currentPassword')}
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
                       id="newPassword"
-                      label="Mật khẩu mới"
+                      label={t('profile.newPassword')}
                       type="password"
                       showPasswordToggle
-                      placeholder="Ít nhất 6 ký tự"
+                      placeholder={t('profile.newPasswordPlaceholder')}
                       error={passwordForm.formState.errors.newPassword?.message}
                       {...passwordForm.register('newPassword')}
                     />
                     <Input
                       id="confirmNewPassword"
-                      label="Xác nhận mật khẩu mới"
+                      label={t('profile.confirmNewPassword')}
                       type="password"
                       showPasswordToggle
-                      placeholder="Nhập lại mật khẩu mới"
+                      placeholder={t('profile.confirmNewPasswordPlaceholder')}
                       error={passwordForm.formState.errors.confirmNewPassword?.message}
                       {...passwordForm.register('confirmNewPassword')}
                     />
                   </div>
                   <Button type="submit" loading={passwordLoading} className="min-w-[140px]">
-                    Cập nhật mật khẩu
+                    {t('profile.updatePasswordBtn')}
                   </Button>
                 </form>
               </Card>
@@ -446,16 +446,16 @@ export default function ProfilePage() {
 
           {activeTab === 'orders' && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Đơn hàng của tôi</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('profile.ordersTab')}</h2>
 
               {ordersLoading ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Đang tải...</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.loading')}</p>
               ) : orders.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400">
                   <ShoppingBag className="mb-4 h-12 w-12" />
-                  <p className="text-lg font-medium">Chưa có đơn hàng nào</p>
+                  <p className="text-lg font-medium">{t('profile.noOrders')}</p>
                   <Link href="/events" className="mt-4 rounded-lg bg-emerald-600 px-6 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors">
-                    Khám phá sự kiện
+                    {t('myTickets.exploreEvents')}
                   </Link>
                 </div>
               ) : (
@@ -466,7 +466,7 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">#{order.id.slice(0, 8)}</span>
                           <Badge className={order.status === 'PAID' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
-                            {order.status === 'PAID' ? 'Đã thanh toán' : order.status === 'PENDING' ? 'Chờ thanh toán' : order.status === 'CANCELLED' ? 'Đã hủy' : 'Đã hoàn tiền'}
+                            {t(`status.${order.status}`)}
                           </Badge>
                         </div>
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(order.finalAmount)}</p>

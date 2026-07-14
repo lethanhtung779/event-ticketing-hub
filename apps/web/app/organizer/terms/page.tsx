@@ -2,6 +2,7 @@
 
 import { Card, CardTitle } from '@/components/ui/Card'
 import { FileText, Shield, DollarSign, AlertTriangle, CheckCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const sections = [
   {
@@ -47,15 +48,16 @@ const sections = [
 ]
 
 export default function TermsPage() {
+  const { t } = useTranslation()
   return (
     <div className="max-w-4xl">
       <div className="flex items-center gap-3 mb-6">
         <FileText className="h-7 w-7 text-indigo-600" />
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Điều khoản cho Ban Tổ chức</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('organizer.terms')}</h1>
       </div>
 
       <p className="text-gray-500 dark:text-gray-400 mb-8">
-        Các điều khoản và quy định dành cho Ban Tổ chức (BTC) khi sử dụng nền tảng để tạo và quản lý sự kiện.
+        {t('organizer.termsDesc')}
       </p>
 
       <div className="space-y-6">

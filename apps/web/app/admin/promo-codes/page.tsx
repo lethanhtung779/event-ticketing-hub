@@ -13,6 +13,7 @@ import { PageSpinner } from '@/components/ui/Spinner'
 import { formatDate, unwrapList, unwrapMeta, getErrorMessage } from '@/lib/utils'
 import { adminApi } from '@/lib/api'
 import type { PromoCode } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 export default function AdminPromoCodesPage() {
   const [promos, setPromos] = useState<PromoCode[]>([])
@@ -26,6 +27,7 @@ export default function AdminPromoCodesPage() {
   const [form, setForm] = useState({
     code: '', discountPct: '', maxUses: '', expiresAt: '', isActive: true,
   })
+  const { t } = useTranslation()
 
   const fetch = async () => {
     setLoading(true)
@@ -71,15 +73,15 @@ export default function AdminPromoCodesPage() {
 
       if (editing) {
         await adminApi.updatePromoCode(editing.id, payload)
-        toast.success('Cập nhật mã giảm giá thành công!')
+        toast.success(t('admin.toastPromoUpdated'))
       } else {
         await adminApi.createPromoCode(payload)
-        toast.success('Tạo mã giảm giá thành công!')
+        toast.success(t('admin.toastPromoCreated'))
       }
       setModalOpen(false)
       fetch()
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Có lỗi xảy ra'))
+      toast.error(getErrorMessage(err, t('common.error')))
     } finally { setSaving(false) }
   }
 
@@ -87,10 +89,10 @@ export default function AdminPromoCodesPage() {
     if (!deleteTarget) return
     try {
       await adminApi.deletePromoCode(deleteTarget.id)
-      toast.success(`Đã xoá mã "${deleteTarget.code}"`)
+      toast.success(t('admin.toastPromoDeleted', { code: deleteTarget.code }))
       setDeleteTarget(null)
       fetch()
-    } catch { toast.error('Xoá thất bại') }
+    } catch { toast.error(t('admin.toastCategoryDeleteFailed')) }
   }
 
   if (loading) return <PageSpinner />
@@ -98,25 +100,25 @@ export default function AdminPromoCodesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mã giảm giá</h1>
-        <Button onClick={openCreate}><Plus className="h-4 w-4" /> Tạo mã</Button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('admin.promoCodes')}</h1>
+        <Button onClick={openCreate}><Plus className="h-4 w-4" /> {t('admin.createCode')}</Button>
       </div>
 
       <Card className="!p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
             <tr>
-              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Mã</th>
-              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Giảm</th>
-              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Đã dùng</th>
-              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hết hạn</th>
-              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Trạng thái</th>
-              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colCode')}</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colDiscountPct')}</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colUsage')}</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colExpires')}</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colStatus')}</th>
+              <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colActions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {promos.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Chưa có mã giảm giá</td></tr>
+              <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('admin.noPromoCodes')}</td></tr>
             ) : promos.map((p) => (
               <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
                 <td className="px-4 py-3 font-mono font-medium text-gray-900 dark:text-white">{p.code}</td>
@@ -125,7 +127,7 @@ export default function AdminPromoCodesPage() {
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{p.expiresAt ? formatDate(p.expiresAt, 'dd/MM/yyyy') : '---'}</td>
                 <td className="px-4 py-3">
                   <Badge className={p.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                    {p.isActive ? 'Hoạt động' : 'Tắt'}
+                    {p.isActive ? t('admin.active') : t('admin.inactive')}
                   </Badge>
                 </td>
                 <td className="px-4 py-3">
@@ -144,48 +146,48 @@ export default function AdminPromoCodesPage() {
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Sửa mã giảm giá' : 'Tạo mã giảm giá'}>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? t('admin.editPromoCode') : t('admin.createPromoCode')}>
         <div className="space-y-4">
-          <Input label="Mã" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
-          <Input label="Phần trăm giảm" type="number" value={form.discountPct}
+          <Input label={t('admin.fieldCode')} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
+          <Input label={t('admin.fieldDiscountPct')} type="number" value={form.discountPct}
             onChange={(e) => setForm({ ...form, discountPct: e.target.value })} />
-          <Input label="Số lượt dùng tối đa" type="number" value={form.maxUses}
+          <Input label={t('admin.fieldMaxUses')} type="number" value={form.maxUses}
             onChange={(e) => setForm({ ...form, maxUses: e.target.value })} />
-          <Input label="Hết hạn (không bắt buộc)" type="datetime-local" value={form.expiresAt}
+          <Input label={t('admin.fieldExpires')} type="datetime-local" value={form.expiresAt}
             onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} />
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.isActive}
               onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="rounded" />
-            Đang hoạt động
+            {t('admin.fieldIsActive')}
           </label>
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>Huỷ</Button>
-            <Button loading={saving} onClick={handleSave}>{editing ? 'Cập nhật' : 'Tạo mới'}</Button>
+            <Button variant="secondary" onClick={() => setModalOpen(false)}>{t('common.cancel')}</Button>
+            <Button loading={saving} onClick={handleSave}>{editing ? t('admin.update') : t('admin.create')}</Button>
           </div>
         </div>
       </Modal>
 
-      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá mã giảm giá">
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title={t('admin.deletePromoCode')}>
         {deleteTarget && (
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Bạn có chắc muốn xoá mã <strong>"{deleteTarget.code}"</strong> ({deleteTarget.discountPct}%)?
+              {t('admin.confirmDeletePromo', { code: deleteTarget.code, pct: deleteTarget.discountPct })}
             </p>
             <div className="rounded-lg bg-gray-50 dark:bg-gray-800/50 p-3 space-y-2 text-sm mb-6">
               <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Đã dùng</span>
+                <span className="text-gray-500 dark:text-gray-400">{t('admin.colUsed')}</span>
                 <span className="font-medium text-gray-900 dark:text-white">{deleteTarget.usedCount}/{deleteTarget.maxUses}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Trạng thái</span>
+                <span className="text-gray-500 dark:text-gray-400">{t('admin.colStatus')}</span>
                 <Badge className={deleteTarget.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                  {deleteTarget.isActive ? 'Hoạt động' : 'Tắt'}
+                  {deleteTarget.isActive ? t('admin.active') : t('admin.inactive')}
                 </Badge>
               </div>
             </div>
             <div className="flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Huỷ</Button>
-              <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Xác nhận xoá</Button>
+              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>{t('common.cancel')}</Button>
+              <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">{t('admin.btnConfirmDelete')}</Button>
             </div>
           </div>
         )}

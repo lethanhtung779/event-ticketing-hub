@@ -1,20 +1,11 @@
 import { useState, useEffect } from 'react'
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
 import { notificationApi } from '../api/client'
+import { useTranslation } from 'react-i18next'
 import {
   subscribe, getNotifications, setNotifications,
   getUnreadCount, markRead, markAllRead,
 } from '../stores/notification'
-
-function fd(date: string) {
-  const d = new Date(date)
-  const now = new Date()
-  const diff = now.getTime() - d.getTime()
-  if (diff < 60000) return 'Vừa xong'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)} phút trước`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)} giờ trước`
-  return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
-}
 
 const typeIcons: Record<string, string> = {
   ticket_purchased: '🎫',
@@ -31,6 +22,18 @@ const typeIcons: Record<string, string> = {
 }
 
 export default function NotificationsScreen({ navigation }: any) {
+  const { t } = useTranslation()
+
+  function fd(date: string) {
+    const d = new Date(date)
+    const now = new Date()
+    const diff = now.getTime() - d.getTime()
+    if (diff < 60000) return t('notification.justNow')
+    if (diff < 3600000) return t('notification.minutesAgo', { count: Math.floor(diff / 60000) })
+    if (diff < 86400000) return t('notification.hoursAgo', { count: Math.floor(diff / 3600000) })
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
+  }
+
   const [loading, setLoading] = useState(true)
   const list = getNotifications()
   const [, setRefresh] = useState(0)
@@ -80,12 +83,12 @@ export default function NotificationsScreen({ navigation }: any) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtn}>← Quay lại</Text>
+          <Text style={styles.backBtn}>{t('notification.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Thông báo</Text>
+        <Text style={styles.headerTitle}>{t('notification.title')}</Text>
         {getUnreadCount() > 0 && (
           <TouchableOpacity onPress={handleMarkAllRead}>
-            <Text style={styles.markAllBtn}>Đọc tất cả</Text>
+            <Text style={styles.markAllBtn}>{t('notification.markAllRead')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -101,7 +104,7 @@ export default function NotificationsScreen({ navigation }: any) {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={{ fontSize: 40, marginBottom: 12 }}>🔔</Text>
-              <Text style={styles.emptyText}>Không có thông báo nào</Text>
+              <Text style={styles.emptyText}>{t('notification.empty')}</Text>
             </View>
           }
         />

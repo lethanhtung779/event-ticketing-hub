@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, TextInput } from 'react-native'
 import { eventApi, ticketApi, paymentApi } from '../api/client'
+import { useTranslation } from 'react-i18next'
 import type { Event, TicketType } from '../types'
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000'
@@ -16,6 +17,7 @@ function fd(date: string) { const d = new Date(date); return `${d.getDate().toSt
 function ft(date: string) { const d = new Date(date); return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}` }
 
 export default function PurchaseScreen({ route, navigation }: any) {
+  const { t } = useTranslation()
   const { eventId, ticketTypeId: preselectedId } = route.params
   const [event, setEvent] = useState<Event | null>(null)
   const [selectedTT, setSelectedTT] = useState<TicketType | null>(null)
@@ -51,7 +53,7 @@ export default function PurchaseScreen({ route, navigation }: any) {
       setPromoResult(data as any)
     } catch (err: any) {
       setPromoResult(null)
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Mã khuyến mãi không hợp lệ')
+      Alert.alert('Lỗi', err?.response?.data?.message || t('purchase.invalidPromo'))
     } finally { setPromoLoading(false) }
   }
 
@@ -67,7 +69,7 @@ export default function PurchaseScreen({ route, navigation }: any) {
       const orderId = (purchaseRes as any).orderId
 
       if (paymentMethod === 'later') {
-        Alert.alert('Đặt vé thành công', 'Bạn có thể thanh toán sau trong mục Vé của tôi.', [
+        Alert.alert(t('purchase.bookingSuccess'), t('purchase.bookingSuccessDesc'), [
           { text: 'OK', onPress: () => navigation.navigate('Main', { screen: 'Vé của tôi' }) },
         ])
         return
@@ -76,25 +78,25 @@ export default function PurchaseScreen({ route, navigation }: any) {
       const { data: payRes } = await paymentApi.createVnpay({ orderId })
       const payUrl = (payRes as any).payUrl
       if (!payUrl) {
-        Alert.alert('Lỗi', 'Không tạo được đường dẫn thanh toán. Vui lòng thử lại sau.')
+        Alert.alert('Lỗi', t('purchase.noPaymentUrl'))
         return
       }
       navigation.navigate('VnpayWebView', { payUrl, orderId, eventTitle: event?.title })
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Mua vé thất bại')
+      Alert.alert('Lỗi', err?.response?.data?.message || t('purchase.failed'))
     } finally { setPurchasing(false) }
   }
 
   if (loading) return <ActivityIndicator size="large" color="#059669" style={{ marginTop: 60 }} />
-  if (!event) return <View style={styles.center}><Text style={styles.emptyText}>Không tìm thấy sự kiện</Text></View>
+  if (!event) return <View style={styles.center}><Text style={styles.emptyText}>{t('purchase.notFound')}</Text></View>
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtn}>← Quay lại</Text>
+          <Text style={styles.backBtn}>{t('purchase.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Mua vé</Text>
+        <Text style={styles.headerTitle}>{t('purchase.title')}</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -112,7 +114,7 @@ export default function PurchaseScreen({ route, navigation }: any) {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Loại vé</Text>
+        <Text style={styles.sectionTitle}>{t('purchase.ticketType')}</Text>
         {event.ticketTypes?.map((tt) => {
           const available = tt.totalQuantity - tt.soldQuantity
           const active = tt.id === selectedTTid
@@ -126,9 +128,9 @@ export default function PurchaseScreen({ route, navigation }: any) {
               <View style={styles.ttLeft}>
                 <Text style={[styles.ttName, active && styles.ttNameActive]}>{tt.name}</Text>
                 {available > 0 ? (
-                  <Text style={styles.ttAvail}>{available} vé còn lại</Text>
+                  <Text style={styles.ttAvail}>{t('event.ticketsLeft', { count: available })}</Text>
                 ) : (
-                  <Text style={styles.ttSoldOut}>Hết vé</Text>
+                  <Text style={styles.ttSoldOut}>{t('event.soldOut')}</Text>
                 )}
               </View>
               <Text style={[styles.ttPrice, active && styles.ttPriceActive]}>{fc(tt.price)}</Text>
@@ -140,7 +142,7 @@ export default function PurchaseScreen({ route, navigation }: any) {
         {currentTT && (
           <>
             <View style={styles.qtySection}>
-              <Text style={styles.sectionTitle}>Số lượng</Text>
+              <Text style={styles.sectionTitle}>{t('purchase.quantity')}</Text>
               <View style={styles.qtyRow}>
                 <TouchableOpacity
                   style={styles.qtyBtn}
@@ -160,11 +162,11 @@ export default function PurchaseScreen({ route, navigation }: any) {
               </View>
             </View>
 
-            <Text style={styles.sectionTitle}>Mã khuyến mãi</Text>
+            <Text style={styles.sectionTitle}>{t('purchase.promoCode')}</Text>
             <View style={styles.promoRow}>
               <TextInput
                 style={styles.promoInput}
-                placeholder="Nhập mã giảm giá"
+                placeholder={t('purchase.promoPlaceholder')}
                 placeholderTextColor="#9ca3af"
                 value={promoCode}
                 onChangeText={(t) => { setPromoCode(t); setPromoResult(null) }}
@@ -175,22 +177,22 @@ export default function PurchaseScreen({ route, navigation }: any) {
                 onPress={handleApplyPromo}
                 disabled={promoLoading || !promoCode.trim()}
               >
-                {promoLoading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.promoBtnText}>Áp dụng</Text>}
+                {promoLoading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.promoBtnText}>{t('purchase.apply')}</Text>}
               </TouchableOpacity>
             </View>
             {promoResult && (
-              <Text style={styles.promoSuccess}>Đã áp dụng mã giảm giá</Text>
+              <Text style={styles.promoSuccess}>{t('purchase.promoApplied')}</Text>
             )}
 
-            <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
+            <Text style={styles.sectionTitle}>{t('purchase.paymentMethod')}</Text>
             <View style={styles.pmRow}>
               <TouchableOpacity
                 style={[styles.pmCard, paymentMethod === 'vnpay' && styles.pmCardActive]}
                 onPress={() => setPaymentMethod('vnpay')}
               >
                 <Text style={[styles.pmIcon]}>💳</Text>
-                <Text style={[styles.pmLabel, paymentMethod === 'vnpay' && styles.pmLabelActive]}>Thanh toán ngay</Text>
-                <Text style={styles.pmDesc}>Chuyển đến cổng thanh toán VNPay</Text>
+                <Text style={[styles.pmLabel, paymentMethod === 'vnpay' && styles.pmLabelActive]}>{t('purchase.payNow')}</Text>
+                <Text style={styles.pmDesc}>{t('purchase.payNowDesc')}</Text>
                 {paymentMethod === 'vnpay' && <Text style={styles.pmCheck}>✓</Text>}
               </TouchableOpacity>
               <TouchableOpacity
@@ -198,8 +200,8 @@ export default function PurchaseScreen({ route, navigation }: any) {
                 onPress={() => setPaymentMethod('later')}
               >
                 <Text style={[styles.pmIcon]}>⏳</Text>
-                <Text style={[styles.pmLabel, paymentMethod === 'later' && styles.pmLabelActive]}>Thanh toán sau</Text>
-                <Text style={styles.pmDesc}>Thanh toán trong mục Vé của tôi</Text>
+                <Text style={[styles.pmLabel, paymentMethod === 'later' && styles.pmLabelActive]}>{t('purchase.payLater')}</Text>
+                <Text style={styles.pmDesc}>{t('purchase.payLaterDesc')}</Text>
                 {paymentMethod === 'later' && <Text style={styles.pmCheck}>✓</Text>}
               </TouchableOpacity>
             </View>
@@ -211,22 +213,22 @@ export default function PurchaseScreen({ route, navigation }: any) {
         <View style={styles.footer}>
           <View style={styles.summary}>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Tạm tính</Text>
+              <Text style={styles.summaryLabel}>{t('purchase.subtotal')}</Text>
               <Text style={styles.summaryValue}>{fc(subtotal)}</Text>
             </View>
             {discount > 0 && (
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Giảm giá</Text>
+                <Text style={styles.summaryLabel}>{t('purchase.discount')}</Text>
                 <Text style={[styles.summaryValue, styles.discountText]}>−{fc(discount)}</Text>
               </View>
             )}
             <View style={[styles.summaryRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Tổng cộng</Text>
+              <Text style={styles.totalLabel}>{t('purchase.total')}</Text>
               <Text style={styles.totalValue}>{fc(total)}</Text>
             </View>
           </View>
           <TouchableOpacity style={[styles.buyBtn, paymentMethod === 'later' && { backgroundColor: '#f59e0b' }]} onPress={handlePurchase} disabled={purchasing}>
-            {purchasing ? <ActivityIndicator color="#fff" /> : <Text style={styles.buyBtnText}>{paymentMethod === 'later' ? 'Đặt vé (thanh toán sau)' : 'Thanh toán ngay'}</Text>}
+            {purchasing ? <ActivityIndicator color="#fff" /> : <Text style={styles.buyBtnText}>{paymentMethod === 'later' ? t('purchase.bookingLater') : t('purchase.payNowBtn')}</Text>}
           </TouchableOpacity>
         </View>
       )}

@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Copy, Check, Send, Download } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
@@ -16,6 +17,7 @@ import { ticketApi } from '@/lib/api'
 import type { Ticket } from '@/types'
 
 export default function TicketDetailPage(props: { params: Promise<{ id: string }> }) {
+  const { t } = useTranslation()
   const params = use(props.params)
   const router = useRouter()
   const [ticket, setTicket] = useState<Ticket | null>(null)
@@ -26,6 +28,15 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
   const [transferring, setTransferring] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [qrSrc, setQrSrc] = useState('')
+
+  const generatingQRText = t('ticketDetail.generatingQR')
+  const labelTicketType = t('ticketDetail.ticketType')
+  const labelPrice = t('ticketDetail.price')
+  const labelLocation = t('eventDetail.location')
+  const labelDate = t('eventDetail.date')
+  const labelPurchaseDate = t('ticketDetail.purchaseDate')
+  const labelStatus = t('ticketDetail.status')
+  const labelCode = t('ticketDetail.code')
 
   useEffect(() => {
     let cancelled = false
@@ -62,28 +73,28 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
     setTransferring(true)
     try {
       await ticketApi.transfer(params.id, targetEmail)
-      toast.success('Chuyển vé thành công!')
+      toast.success(t('ticketDetail.transferSuccess'))
       setTransferOpen(false)
       setTargetEmail('')
       const { data } = await ticketApi.getById(params.id)
       setTicket(data)
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Chuyển vé thất bại'))
+      toast.error(getErrorMessage(err, t('ticketDetail.transferFailed')))
     } finally {
       setTransferring(false)
     }
   }
 
   const handleCancel = async () => {
-    if (!confirm('Bạn có chắc muốn huỷ vé này?')) return
+    if (!confirm(t('ticketDetail.cancelConfirm'))) return
     setCancelling(true)
     try {
       await ticketApi.cancelTicket(params.id)
-      toast.success('Đã huỷ vé')
+      toast.success(t('ticketDetail.cancelSuccess'))
       const { data } = await ticketApi.getById(params.id)
       setTicket(data)
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Huỷ vé thất bại'))
+      toast.error(getErrorMessage(err, t('ticketDetail.cancelFailed')))
     } finally {
       setCancelling(false)
     }
@@ -111,7 +122,7 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
     ctx.fillStyle = '#1e1e2e'
     ctx.font = 'bold 20px sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText(ticket.ticketType?.event?.title || 'Vé sự kiện', canvas.width / 2, 30)
+    ctx.fillText(ticket.ticketType?.event?.title || t('ticketDetail.eventFallback'), canvas.width / 2, 30)
 
     const img = new Image()
     img.src = qrDataUrl
@@ -122,10 +133,10 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
     ctx.font = '14px sans-serif'
     ctx.textAlign = 'center'
     const lines = [
-      `Loại vé: ${ticket.ticketType?.name || '---'}`,
-      `Địa điểm: ${ticket.ticketType?.event?.location || '---'}`,
-      `Thời gian: ${ticket.ticketType?.event?.startTime ? formatDate(ticket.ticketType.event.startTime, 'dd/MM/yyyy HH:mm') : '---'}`,
-      `Mã vé: ${ticket.qrCodeToken.slice(0, 16)}...`,
+      `${labelTicketType}: ${ticket.ticketType?.name || '---'}`,
+      `${labelLocation}: ${ticket.ticketType?.event?.location || '---'}`,
+      `${labelDate}: ${ticket.ticketType?.event?.startTime ? formatDate(ticket.ticketType.event.startTime, 'dd/MM/yyyy HH:mm') : '---'}`,
+      `${labelCode}: ${ticket.qrCodeToken.slice(0, 16)}...`,
     ]
     lines.forEach((line, i) => {
       ctx.fillText(line, canvas.width / 2, qrSize + 80 + i * lineHeight)
@@ -150,7 +161,7 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
         className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
-        Quay lại vé của tôi
+        {t('ticketDetail.back')}
       </Link>
 
       <Card className="text-center">
@@ -167,11 +178,11 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
               <img src={qrSrc} alt="QR Code" className="h-48 w-48 rounded-xl border-2 border-gray-200" />
             ) : (
               <div className="h-48 w-48 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-400 dark:text-gray-400 text-sm">
-                Đang tạo QR...
+                {generatingQRText}
               </div>
             )}
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-              <Badge className="bg-indigo-100 text-indigo-800 text-xs">QR Code</Badge>
+              <Badge className="bg-indigo-100 text-indigo-800 text-xs">{t('ticketDetail.qrCode')}</Badge>
             </div>
           </div>
         </div>
@@ -179,13 +190,13 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
         <div className="flex items-center justify-center gap-2 mb-6">
           <Button variant="outline" size="sm" onClick={handleCopy}>
             {copied ? (
-              <><Check className="h-4 w-4" /> Đã sao chép</>
+              <><Check className="h-4 w-4" /> {t('common.copied')}</>
             ) : (
-              <><Copy className="h-4 w-4" /> Sao chép mã vé</>
+              <><Copy className="h-4 w-4" /> {t('ticketDetail.copyCode')}</>
             )}
           </Button>
           <Button variant="outline" size="sm" onClick={handleDownload}>
-            <Download className="h-4 w-4" /> Tải vé
+            <Download className="h-4 w-4" /> {t('ticketDetail.download')}
           </Button>
         </div>
 
@@ -196,19 +207,19 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-gray-500 dark:text-gray-400">Loại vé</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('ticketDetail.ticketType')}</p>
               <p className="font-medium text-gray-900 dark:text-white">{ticket.ticketType?.name}</p>
             </div>
             <div>
-              <p className="text-gray-500 dark:text-gray-400">Giá vé</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('ticketDetail.price')}</p>
               <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(ticket.ticketType?.price || 0)}</p>
             </div>
             <div>
-              <p className="text-gray-500 dark:text-gray-400">Địa điểm</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('eventDetail.location')}</p>
               <p className="font-medium text-gray-900 dark:text-white">{ticket.ticketType?.event?.location}</p>
             </div>
             <div>
-              <p className="text-gray-500 dark:text-gray-400">Thời gian</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('eventDetail.date')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {ticket.ticketType?.event?.startTime
                   ? formatDate(ticket.ticketType.event.startTime, 'dd/MM/yyyy HH:mm')
@@ -216,11 +227,11 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
               </p>
             </div>
             <div>
-              <p className="text-gray-500 dark:text-gray-400">Ngày mua</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('ticketDetail.purchaseDate')}</p>
               <p className="font-medium text-gray-900 dark:text-white">{formatDate(ticket.createdAt)}</p>
             </div>
             <div>
-              <p className="text-gray-500 dark:text-gray-400">Trạng thái</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('ticketDetail.status')}</p>
               <p className="font-medium text-gray-900 dark:text-white">{getStatusLabel(ticket.status)}</p>
             </div>
           </div>
@@ -230,34 +241,34 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
           {canTransfer && (
             <Button variant="outline" onClick={() => setTransferOpen(true)}>
               <Send className="h-4 w-4" />
-              Chuyển vé
+              {t('ticketDetail.transferTicket')}
             </Button>
           )}
           {canCancel && (
             <Button variant="danger" loading={cancelling} onClick={handleCancel}>
-              Huỷ vé
+              {t('ticketDetail.cancelTicket')}
             </Button>
           )}
         </div>
       </Card>
 
-      <Modal open={transferOpen} onClose={() => setTransferOpen(false)} title="Chuyển vé">
+      <Modal open={transferOpen} onClose={() => setTransferOpen(false)} title={t('ticketDetail.transferTitle')}>
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-          Nhập email của người nhận vé này.
+          {t('ticketDetail.transferDescription')}
         </p>
         <Input
-          label="Email người nhận"
+          label={t('ticketDetail.recipientEmail')}
           type="email"
-          placeholder="nguoinhan@example.com"
+          placeholder={t('ticketDetail.recipientEmailPlaceholder')}
           value={targetEmail}
           onChange={(e) => setTargetEmail(e.target.value)}
         />
         <div className="mt-4 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setTransferOpen(false)}>
-            Huỷ
+            {t('common.cancel')}
           </Button>
           <Button loading={transferring} onClick={handleTransfer}>
-            Chuyển vé
+            {t('ticketDetail.transferBtn')}
           </Button>
         </div>
       </Modal>

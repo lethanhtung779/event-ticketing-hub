@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { WebView } from 'react-native-webview'
+import { useTranslation } from 'react-i18next'
 import { paymentApi } from '../api/client'
 
 export default function VnpayWebViewScreen({ route, navigation }: any) {
+  const { t } = useTranslation()
   const { payUrl, orderId, eventTitle } = route.params
   const [loading, setLoading] = useState(true)
   const [finished, setFinished] = useState(false)
@@ -15,12 +17,12 @@ export default function VnpayWebViewScreen({ route, navigation }: any) {
     if (finished) return
     setFinished(true)
     if (success) {
-      Alert.alert('Thanh toán thành công', 'Vé của bạn đã được kích hoạt!', [
-        { text: 'Xem vé của tôi', onPress: () => navigation.navigate('Main', { screen: 'Vé của tôi' }) },
+      Alert.alert(t('payment.success'), t('payment.successDesc'), [
+        { text: t('payment.viewTickets'), onPress: () => navigation.navigate('Main', { screen: 'Vé của tôi' }) },
       ])
     } else {
-      Alert.alert('Thanh toán thất bại', 'Vui lòng thử lại hoặc kiểm tra tài khoản.', [
-        { text: 'Quay lại', onPress: () => navigation.goBack() },
+      Alert.alert(t('payment.failure'), t('payment.failureDesc'), [
+        { text: t('payment.goBack'), onPress: () => navigation.goBack() },
       ])
     }
   }, [finished, navigation])
@@ -69,16 +71,16 @@ export default function VnpayWebViewScreen({ route, navigation }: any) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtn}>← Đóng</Text>
+          <Text style={styles.backBtn}>{t('payment.close')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{eventTitle || 'Thanh toán VNPay'}</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>{eventTitle || t('payment.title')}</Text>
         <View style={{ width: 50 }} />
       </View>
 
       {loading && !webError && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#059669" />
-          <Text style={styles.loadingText}>Đang kết nối cổng thanh toán...</Text>
+          <Text style={styles.loadingText}>{t('payment.connecting')}</Text>
         </View>
       )}
 
@@ -107,13 +109,13 @@ export default function VnpayWebViewScreen({ route, navigation }: any) {
       {webError && !finished && (
         <View style={styles.errorOverlay}>
           <View style={styles.errorCard}>
-            <Text style={styles.errorTitle}>Không thể tải cổng thanh toán</Text>
+            <Text style={styles.errorTitle}>{t('payment.couldNotLoad')}</Text>
             <Text style={styles.errorDesc}>{webError}</Text>
             <TouchableOpacity style={styles.retryBtn} onPress={() => { setWebError(null); setLoading(true); errorTimer.current = null; webViewRef.current?.reload() }}>
-              <Text style={styles.retryBtnText}>Thử lại</Text>
+              <Text style={styles.retryBtnText}>{t('payment.retry')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.retryBtn, { backgroundColor: '#6b7280', marginTop: 8 }]} onPress={() => navigation.goBack()}>
-              <Text style={styles.retryBtnText}>Quay lại</Text>
+              <Text style={styles.retryBtnText}>{t('payment.goBack')}</Text>
             </TouchableOpacity>
           </View>
         </View>

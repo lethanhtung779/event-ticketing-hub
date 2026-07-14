@@ -3,6 +3,7 @@
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import EventCard from './EventCard'
 import type { Event } from '@/types'
 
@@ -13,6 +14,7 @@ interface EventRowProps {
 }
 
 export default function EventRow({ title, events, link }: EventRowProps) {
+  const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const state = useRef({
     isDragging: false,
@@ -95,7 +97,7 @@ export default function EventRow({ title, events, link }: EventRowProps) {
             href={link}
             className="flex items-center gap-1 text-sm font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors"
           >
-            Xem tất cả <ChevronRight className="h-4 w-4" />
+            {t('home.viewAll')} <ChevronRight className="h-4 w-4" />
           </Link>
         )}
       </div>

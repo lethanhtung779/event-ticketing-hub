@@ -5,6 +5,7 @@ import QRCode from 'react-native-qrcode-svg'
 import { Paths, File } from 'expo-file-system'
 import { Asset, requestPermissionsAsync } from 'expo-media-library'
 import ViewShot from 'react-native-view-shot'
+import { useTranslation } from 'react-i18next'
 import type { Ticket } from '../types'
 
 function fc(amount: number) { return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount) }
@@ -19,6 +20,7 @@ const statusLabels: Record<string, { label: string; color: string }> = {
 }
 
 export default function TicketDetailScreen({ route, navigation }: any) {
+  const { t } = useTranslation()
   const { id } = route.params
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [loading, setLoading] = useState(true)
@@ -45,9 +47,9 @@ export default function TicketDetailScreen({ route, navigation }: any) {
       const destFile = new File(Paths.cache, `ticket-${ticket?.id || Date.now()}.png`)
       await tmpFile.move(destFile, { overwrite: true })
       await Asset.create(destFile.uri)
-      Alert.alert('Đã lưu', 'Ảnh vé đã được lưu vào thư viện ảnh.')
+      Alert.alert(t('common.success'), t('ticket.qrSaved'))
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.message || 'Không thể lưu ảnh vé')
+      Alert.alert('Lỗi', err?.message || t('ticket.qrFailed'))
     }
   }
 
@@ -67,7 +69,7 @@ export default function TicketDetailScreen({ route, navigation }: any) {
     setTransferring(true)
     try {
       await ticketApi.transfer(id, targetEmail.trim())
-      Alert.alert('Thành công', 'Chuyển vé thành công!')
+      Alert.alert(t('common.success'), t('ticket.transferSuccess'))
       setTransferOpen(false)
       setTargetEmail('')
       const { data } = await ticketApi.getById(id)
@@ -79,7 +81,7 @@ export default function TicketDetailScreen({ route, navigation }: any) {
 
   const handlePay = async () => {
     const orderId = ticket?.order?.id || ticket?.orderId
-    if (!orderId) { Alert.alert('Lỗi', 'Không tìm thấy đơn hàng'); return }
+      if (!orderId) { Alert.alert('Lỗi', t('purchase.orderNotFound')); return }
     try {
       const { data } = await paymentApi.createVnpay({ orderId })
       navigation.navigate('VnpayWebView', {
@@ -88,18 +90,18 @@ export default function TicketDetailScreen({ route, navigation }: any) {
         eventTitle: ticket?.ticketType?.event?.title || '',
       })
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Không thể tạo thanh toán')
+      Alert.alert('Lỗi', err?.response?.data?.message || t('ticket.payFailed'))
     }
   }
 
   const handleCancel = () => {
-    Alert.alert('Huỷ vé', 'Bạn có chắc muốn huỷ vé này?', [
-      { text: 'Không', style: 'cancel' },
-      { text: 'Huỷ vé', style: 'destructive', onPress: async () => {
+    Alert.alert(t('ticket.cancel'), t('ticket.cancelConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('ticket.cancel'), style: 'destructive', onPress: async () => {
         setCancelling(true)
         try {
           await ticketApi.cancel(id)
-          Alert.alert('Thành công', 'Đã huỷ vé')
+          Alert.alert(t('common.success'), t('ticket.cancelSuccess'))
           const { data } = await ticketApi.getById(id)
           setTicket(data)
         } catch (err: any) {
@@ -119,8 +121,8 @@ export default function TicketDetailScreen({ route, navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Chi tiết vé</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.backBtn}>← Quay lại</Text></TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('ticket.detail')}</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.backBtn}>{t('common.back')}</Text></TouchableOpacity>
       </View>
 
       <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1 }} style={styles.captureView}>
@@ -144,10 +146,10 @@ export default function TicketDetailScreen({ route, navigation }: any) {
             </View>
             <View style={styles.qrActions}>
               <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
-                <Text style={styles.copyBtnText}>📋 Chia sẻ</Text>
+                <Text style={styles.copyBtnText}>📋 {t('ticket.share')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.copyBtn} onPress={handleDownloadQR}>
-                <Text style={styles.copyBtnText}>💾 Lưu ảnh</Text>
+                <Text style={styles.copyBtnText}>💾 {t('ticket.downloadQR')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -156,27 +158,27 @@ export default function TicketDetailScreen({ route, navigation }: any) {
 
           <View style={styles.infoGrid}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Loại vé</Text>
+              <Text style={styles.infoLabel}>{t('ticket.type')}</Text>
               <Text style={styles.infoValue}>{ticket.ticketType?.name}</Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Giá vé</Text>
+              <Text style={styles.infoLabel}>{t('ticket.price')}</Text>
               <Text style={styles.infoValue}>{fc(ticket.ticketType?.price || 0)}</Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Địa điểm</Text>
+              <Text style={styles.infoLabel}>{t('event.location')}</Text>
               <Text style={styles.infoValue}>{ticket.ticketType?.event?.location}</Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Thời gian</Text>
+              <Text style={styles.infoLabel}>{t('event.time')}</Text>
               <Text style={styles.infoValue}>{ticket.ticketType?.event?.startTime ? fd(ticket.ticketType.event.startTime) : '---'}</Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Ngày mua</Text>
+              <Text style={styles.infoLabel}>{t('ticket.purchaseDate')}</Text>
               <Text style={styles.infoValue}>{fd(ticket.createdAt)}</Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Trạng thái</Text>
+              <Text style={styles.infoLabel}>{t('ticket.status')}</Text>
               <Text style={[styles.infoValue, { color: cfg.color }]}>{cfg.label}</Text>
             </View>
           </View>
@@ -184,17 +186,17 @@ export default function TicketDetailScreen({ route, navigation }: any) {
           <View style={styles.actions}>
             {ticket.status === 'PENDING' && (
               <TouchableOpacity style={[styles.actionBtn, { borderColor: '#059669' }]} onPress={handlePay}>
-                <Text style={[styles.actionBtnText, { color: '#059669' }]}>💳 Thanh toán</Text>
+                <Text style={[styles.actionBtnText, { color: '#059669' }]}>💳 {t('ticket.payNow')}</Text>
               </TouchableOpacity>
             )}
             {canTransfer && (
               <TouchableOpacity style={styles.actionBtn} onPress={() => setTransferOpen(true)}>
-                <Text style={styles.actionBtnText}>📤 Chuyển vé</Text>
+                <Text style={styles.actionBtnText}>📤 {t('ticket.transfer')}</Text>
               </TouchableOpacity>
             )}
             {canCancel && (
               <TouchableOpacity style={[styles.actionBtn, styles.actionDanger]} onPress={handleCancel} disabled={cancelling}>
-                <Text style={[styles.actionBtnText, { color: '#ef4444' }]}>{cancelling ? 'Đang huỷ...' : '🗑️ Huỷ vé'}</Text>
+                <Text style={[styles.actionBtnText, { color: '#ef4444' }]}>{cancelling ? t('common.loading') : '🗑️ ' + t('ticket.cancel')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -204,13 +206,13 @@ export default function TicketDetailScreen({ route, navigation }: any) {
       <Modal visible={transferOpen} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Chuyển vé</Text>
-            <Text style={styles.modalDesc}>Nhập email người nhận</Text>
-            <TextInput style={styles.modalInput} placeholder="Email người nhận" placeholderTextColor="#9ca3af" value={targetEmail} onChangeText={setTargetEmail} autoCapitalize="none" keyboardType="email-address" />
+            <Text style={styles.modalTitle}>{t('ticket.transfer')}</Text>
+            <Text style={styles.modalDesc}>{t('ticket.transferDesc')}</Text>
+            <TextInput style={styles.modalInput} placeholder={t('ticket.transferDesc')} placeholderTextColor="#9ca3af" value={targetEmail} onChangeText={setTargetEmail} autoCapitalize="none" keyboardType="email-address" />
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalCancel} onPress={() => setTransferOpen(false)}><Text style={styles.modalCancelText}>Huỷ</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setTransferOpen(false)}><Text style={styles.modalCancelText}>{t('common.cancel')}</Text></TouchableOpacity>
               <TouchableOpacity style={styles.modalSubmit} onPress={handleTransfer} disabled={transferring}>
-                {transferring ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>Chuyển vé</Text>}
+                {transferring ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>{t('ticket.transfer')}</Text>}
               </TouchableOpacity>
             </View>
           </View>

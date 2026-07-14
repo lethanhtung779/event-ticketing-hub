@@ -11,12 +11,14 @@ import Select from '@/components/ui/Select'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { formatDate } from '@/lib/utils'
 import { adminApi } from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 export default function AdminUserDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params)
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
 
   const fetchUser = () => {
     adminApi
@@ -31,10 +33,10 @@ export default function AdminUserDetailPage(props: { params: Promise<{ id: strin
   const handleRoleChange = async (role: string) => {
     try {
       await adminApi.updateUserRole(params.id, role)
-      toast.success('Cập nhật vai trò thành công!')
+      toast.success(t('admin.toastRoleUpdated'))
       fetchUser()
     } catch {
-      toast.error('Cập nhật thất bại')
+      toast.error(t('admin.toastRoleUpdateFailed'))
     }
   }
 
@@ -44,7 +46,7 @@ export default function AdminUserDetailPage(props: { params: Promise<{ id: strin
   return (
     <div>
       <Link href="/admin/users" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-4">
-        <ArrowLeft className="h-4 w-4" /> Quản lý người dùng
+        <ArrowLeft className="h-4 w-4" /> {t('admin.backToUsers')}
       </Link>
 
       <div className="mb-6">
@@ -56,20 +58,20 @@ export default function AdminUserDetailPage(props: { params: Promise<{ id: strin
         <Card>
           <CardTitle className="flex items-center gap-2">
             <UserIcon className="h-5 w-5 text-indigo-600" />
-            Thông tin cá nhân
+            {t('admin.personalInfo')}
           </CardTitle>
           <div className="mt-4 space-y-4">
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.fieldEmailLabel')}</p>
                 <p className="text-sm font-medium text-gray-900 dark:text-white">{user.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Shield className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Vai trò</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.fieldRoleLabel')}</p>
                 <Select
                   value={user.role}
                   onChange={(e) => handleRoleChange(e.target.value)}
@@ -84,14 +86,14 @@ export default function AdminUserDetailPage(props: { params: Promise<{ id: strin
             <div className="flex items-center gap-3">
               <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Ngày tham gia</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.fieldJoinedLabel')}</p>
                 <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(user.createdAt, 'dd/MM/yyyy')}</p>
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Trạng thái email</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.fieldEmailStatus')}</p>
               <Badge className={user.isVerified ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}>
-                {user.isVerified ? 'Đã xác thực' : 'Chưa xác thực'}
+                {user.isVerified ? t('admin.verifiedBadge') : t('admin.unverifiedBadge')}
               </Badge>
             </div>
           </div>
@@ -100,15 +102,15 @@ export default function AdminUserDetailPage(props: { params: Promise<{ id: strin
         <Card>
           <CardTitle className="flex items-center gap-2">
             <Ticket className="h-5 w-5 text-indigo-600" />
-            Hoạt động
+            {t('admin.activity')}
           </CardTitle>
           <div className="mt-4 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Vé đã mua</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{t('admin.ticketsPurchased')}</span>
               <span className="text-lg font-bold text-gray-900 dark:text-white">{user._count?.tickets ?? 0}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Đánh giá</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{t('admin.reviewsWritten')}</span>
               <span className="text-lg font-bold text-gray-900 dark:text-white">{user._count?.reviews ?? 0}</span>
             </div>
           </div>

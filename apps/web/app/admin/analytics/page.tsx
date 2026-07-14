@@ -13,12 +13,14 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { formatCurrency } from '@/lib/utils'
 import { adminApi } from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 const COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
 export default function AdminAnalyticsPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
 
   useEffect(() => {
     adminApi.getAnalytics()
@@ -28,32 +30,32 @@ export default function AdminAnalyticsPage() {
   }, [])
 
   if (loading) return <PageSpinner />
-  if (!data) return <p className="text-gray-500 dark:text-gray-400 text-center py-12">Không có dữ liệu</p>
+  if (!data) return <p className="text-gray-500 dark:text-gray-400 text-center py-12">{t('admin.noData')}</p>
 
   return (
     <div>
       <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-4">
-        <ArrowLeft className="h-4 w-4" /> Dashboard
+        <ArrowLeft className="h-4 w-4" /> {t('admin.dashboard')}
       </Link>
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-        <BarChart3 className="h-6 w-6 text-indigo-600" /> Thống kê nâng cao
+        <BarChart3 className="h-6 w-6 text-indigo-600" /> {t('admin.advancedAnalytics')}
       </h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
         <Card className="!p-4">
-          <p className="text-xs text-gray-500 dark:text-gray-400">Tổng doanh thu</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.totalRevenue')}</p>
           <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(data.totalRevenue)}</p>
         </Card>
         <Card className="!p-4">
-          <p className="text-xs text-gray-500 dark:text-gray-400">Đơn đã thanh toán</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.paidOrders')}</p>
           <p className="text-xl font-bold text-gray-900 dark:text-white">{data.totalPaidOrders}</p>
         </Card>
         <Card className="!p-4">
-          <p className="text-xs text-gray-500 dark:text-gray-400">Top sự kiện (vé bán)</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.topEventSales')}</p>
           <p className="text-xl font-bold text-indigo-600">{data.topEvents?.[0]?.totalSold || 0}</p>
         </Card>
         <Card className="!p-4">
-          <p className="text-xs text-gray-500 dark:text-gray-400">Danh mục</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.categories')}</p>
           <p className="text-xl font-bold text-gray-900 dark:text-white">{data.revenueByCategory?.length || 0}</p>
         </Card>
       </div>
@@ -62,7 +64,7 @@ export default function AdminAnalyticsPage() {
         {/* Top events */}
         <Card>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-indigo-600" /> Top sự kiện bán chạy
+            <TrendingUp className="h-5 w-5 text-indigo-600" /> {t('admin.topSellingEvents')}
           </CardTitle>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -70,7 +72,7 @@ export default function AdminAnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" tickFormatter={(v) => v.toLocaleString()} />
                 <YAxis type="category" dataKey="title" width={150} tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(v: any) => [v.toLocaleString(), 'Đã bán']} />
+                <Tooltip formatter={(v: any) => [v.toLocaleString(), t('admin.soldLabel')]} />
                 <Bar dataKey="totalSold" fill="#4f46e5" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -80,7 +82,7 @@ export default function AdminAnalyticsPage() {
         {/* Revenue by category */}
         <Card>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-emerald-600" /> Doanh thu theo danh mục
+            <DollarSign className="h-5 w-5 text-emerald-600" /> {t('admin.revenueByCategory')}
           </CardTitle>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -107,7 +109,7 @@ export default function AdminAnalyticsPage() {
         {/* Monthly revenue */}
         <Card>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-blue-600" /> Doanh thu theo tháng
+            <TrendingUp className="h-5 w-5 text-blue-600" /> {t('admin.monthlyRevenue')}
           </CardTitle>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -125,7 +127,7 @@ export default function AdminAnalyticsPage() {
         {/* User growth */}
         <Card>
           <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-purple-600" /> Người dùng mới theo tháng
+            <Users className="h-5 w-5 text-purple-600" /> {t('admin.newUsersByMonth')}
           </CardTitle>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -144,17 +146,17 @@ export default function AdminAnalyticsPage() {
       {/* Top ticket types */}
       <Card className="mb-8">
         <CardTitle className="flex items-center gap-2">
-          <ShoppingCart className="h-5 w-5 text-pink-600" /> Loại vé bán chạy nhất
+          <ShoppingCart className="h-5 w-5 text-pink-600" /> {t('admin.topTicketTypes')}
         </CardTitle>
         <div className="overflow-x-auto mt-4">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Loại vé</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Sự kiện</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Giá</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Đã bán</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Doanh thu</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colTicketTypeName')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colEventTitle')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colPrice')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colSold')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colRevenue')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">

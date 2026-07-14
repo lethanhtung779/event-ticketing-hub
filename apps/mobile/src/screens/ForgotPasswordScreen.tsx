@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { authApi } from '../api/client'
 
 export default function ForgotPasswordScreen({ navigation }: any) {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
 
   const handleSend = async () => {
-    if (!email.trim()) { Alert.alert('Lỗi', 'Vui lòng nhập email'); return }
+    if (!email.trim()) { Alert.alert('Lỗi', t('auth.enterEmailAndPassword')); return }
     setLoading(true)
     try {
       await authApi.forgotPassword(email.trim())
@@ -23,30 +25,30 @@ export default function ForgotPasswordScreen({ navigation }: any) {
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.content}>
         <Text style={styles.badge}>🎫 TicketHub</Text>
-        <Text style={styles.title}>Quên mật khẩu</Text>
-        <Text style={styles.subtitle}>Nhập email để nhận link đặt lại mật khẩu</Text>
+        <Text style={styles.title}>{t('auth.forgotPassword')}</Text>
+        <Text style={styles.subtitle}>{t('auth.forgotPwDesc')}</Text>
 
         {sent ? (
           <View style={styles.successBox}>
             <Text style={styles.successIcon}>✅</Text>
-            <Text style={styles.successTitle}>Đã gửi email!</Text>
-            <Text style={styles.successText}>Vui lòng kiểm tra hộp thư đến của bạn.</Text>
+            <Text style={styles.successTitle}>{t('auth.forgotPwSent')}</Text>
+            <Text style={styles.successText}>{t('auth.forgotPwSentDesc')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('ResetPassword')}>
-              <Text style={styles.linkText}>Đã có mã token? Đặt lại mật khẩu</Text>
+              <Text style={styles.linkText}>{t('auth.haveToken')}</Text>
             </TouchableOpacity>
             <View style={{ height: 8 }} />
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.linkText}>Quay lại đăng nhập</Text>
+              <Text style={styles.linkText}>{t('auth.backToLogin')}</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
-            <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#9ca3af" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+            <TextInput style={styles.input} placeholder={t('auth.emailPlaceholder')} placeholderTextColor="#9ca3af" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
             <TouchableOpacity style={styles.btn} onPress={handleSend} disabled={loading}>
-              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Gửi yêu cầu</Text>}
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('auth.sendRequest')}</Text>}
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ alignItems: 'center', marginTop: 16 }}>
-              <Text style={styles.linkText}>Quay lại đăng nhập</Text>
+              <Text style={styles.linkText}>{t('auth.backToLogin')}</Text>
             </TouchableOpacity>
           </>
         )}

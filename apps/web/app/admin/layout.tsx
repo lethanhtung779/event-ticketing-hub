@@ -22,27 +22,29 @@ import {
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth-store'
+import { useTranslation } from 'react-i18next'
 
 const sidebarLinks = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/events', label: 'Sự kiện', icon: Calendar },
-  { href: '/admin/orders', label: 'Đơn hàng', icon: ShoppingCart },
-  { href: '/admin/categories', label: 'Danh mục', icon: Tag },
-  { href: '/admin/reviews', label: 'Đánh giá', icon: Star },
-  { href: '/admin/check-in', label: 'Check-in', icon: Shield },
-  { href: '/admin/promo-codes', label: 'Mã giảm giá', icon: Receipt },
-  { href: '/admin/revenue', label: 'Doanh thu', icon: TrendingUp },
-  { href: '/admin/organizers', label: 'Nhà tổ chức', icon: Building2 },
-  { href: '/admin/users', label: 'Người dùng', icon: Users },
-  { href: '/admin/audit-logs', label: 'Nhật ký', icon: Shield },
-  { href: '/admin/analytics', label: 'Thống kê', icon: BarChart3 },
-  { href: '/admin/notifications', label: 'Thông báo', icon: Bell },
+  { href: '/admin', labelKey: 'admin.dashboard' as const, icon: LayoutDashboard },
+  { href: '/admin/events', labelKey: 'admin.events' as const, icon: Calendar },
+  { href: '/admin/orders', labelKey: 'admin.orderManagement' as const, icon: ShoppingCart },
+  { href: '/admin/categories', labelKey: 'admin.categories' as const, icon: Tag },
+  { href: '/admin/reviews', labelKey: 'admin.reviewManagement' as const, icon: Star },
+  { href: '/admin/check-in', labelKey: 'admin.checkIn' as const, icon: Shield },
+  { href: '/admin/promo-codes', labelKey: 'admin.promoCodes' as const, icon: Receipt },
+  { href: '/admin/revenue', labelKey: 'admin.revenue' as const, icon: TrendingUp },
+  { href: '/admin/organizers', labelKey: 'admin.organizerManagement' as const, icon: Building2 },
+  { href: '/admin/users', labelKey: 'admin.users' as const, icon: Users },
+  { href: '/admin/audit-logs', labelKey: 'admin.auditLogs' as const, icon: Shield },
+  { href: '/admin/analytics', labelKey: 'admin.advancedAnalytics' as const, icon: BarChart3 },
+  { href: '/admin/notifications', labelKey: 'admin.sendNotification' as const, icon: Bell },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { user } = useAuthStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { t } = useTranslation()
 
   return (
     <div className="flex min-h-[80vh]">
@@ -52,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
               <Ticket className="h-4 w-4 text-white" />
             </div>
-            Admin Panel
+            {t('admin.panel')}
           </Link>
         </div>
         <nav className="flex-1 p-3 space-y-0.5">
@@ -70,7 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 )}
               >
                 <link.icon className="h-4 w-4" />
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             )
           })}
@@ -86,7 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
           <Link href="/" className="text-xs text-slate-400 hover:text-emerald-600 transition-colors dark:text-gray-500 dark:hover:text-emerald-400">
-            &larr; Về trang chủ
+            &larr; {t('admin.backToHome')}
           </Link>
         </div>
       </aside>
@@ -96,7 +98,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-white/10">
             <Menu className="h-6 w-6" />
           </button>
-          <Link href="/admin" className="font-bold text-emerald-600 dark:text-emerald-400">Admin</Link>
+          <Link href="/admin" className="font-bold text-emerald-600 dark:text-emerald-400">{t('admin.panel')}</Link>
           <div />
         </header>
 
@@ -105,7 +107,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
             <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 lg:hidden dark:bg-black dark:border-gray-800">
               <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-gray-800">
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">Admin Panel</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{t('admin.panel')}</span>
                 <button onClick={() => setSidebarOpen(false)} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-white/10">
                   <X className="h-5 w-5" />
                 </button>
@@ -124,7 +126,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       )}
                     >
                       <link.icon className="h-4 w-4" />
-                      {link.label}
+                      {t(link.labelKey)}
                     </Link>
                   )
                 })}

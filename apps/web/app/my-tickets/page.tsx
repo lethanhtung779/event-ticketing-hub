@@ -21,6 +21,7 @@ function MyTicketsContent() {
   const { t } = useTranslation()
   const router = useRouter()
   const searchParams = useSearchParams()
+
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -97,7 +98,7 @@ function MyTicketsContent() {
 
                           <Link href={`/my-tickets/${ticket.id}`}>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-indigo-600 transition-colors">
-                              {ticket.ticketType?.event?.title || 'Sự kiện'}
+                              {ticket.ticketType?.event?.title || t('myTickets.event')}
                             </h3>
                           </Link>
 
@@ -139,9 +140,10 @@ function MyTicketsContent() {
 }
 
 export default function MyTicketsPage() {
+  const { t } = useTranslation()
   return (
     <>
-      <SeoHead title="Vé của tôi" />
+      <SeoHead title={t('myTickets.title')} />
       <Suspense fallback={<PageSpinner />}>
         <MyTicketsContent />
       </Suspense>

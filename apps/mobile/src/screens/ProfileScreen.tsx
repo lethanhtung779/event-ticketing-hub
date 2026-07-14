@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Modal, TextInput, ActivityIndicator, ScrollView, Image } from 'react-native'
 import { getUser, logout, SecureStore } from '../stores/auth'
 import { userApi, authApi, ticketApi, followApi } from '../api/client'
@@ -18,6 +19,7 @@ function fc(amount: number) { return new Intl.NumberFormat('vi-VN', { style: 'cu
 function fd(date: string) { const d = new Date(date); return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}` }
 
 export default function ProfileScreen({ navigation }: any) {
+  const { t } = useTranslation()
   const [user, setUser] = useState<User | null>(getUser())
   const [stats, setStats] = useState({ tickets: 0, orders: 0 })
   const [editModal, setEditModal] = useState(false)
@@ -60,30 +62,30 @@ export default function ProfileScreen({ navigation }: any) {
   }, [])
 
   const handleSaveName = async () => {
-    if (!editName.trim()) { Alert.alert('Lỗi', 'Vui lòng nhập tên'); return }
+    if (!editName.trim()) { Alert.alert(t('common.error'), t('profile.enterName')); return }
     setSaving(true)
     try {
       await userApi.updateProfile({ fullName: editName.trim() })
       const { data } = await userApi.getProfile()
       setUser(data)
       setEditModal(false)
-      Alert.alert('Thành công', 'Đã cập nhật thông tin')
+      Alert.alert(t('common.success'), t('profile.updateSuccess'))
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Cập nhật thất bại')
+      Alert.alert(t('common.error'), err?.response?.data?.message || t('profile.updateFailed'))
     } finally { setSaving(false) }
   }
 
   const handleChangePw = async () => {
-    if (!currentPw || !newPw) { Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ'); return }
-    if (newPw.length < 6) { Alert.alert('Lỗi', 'Mật khẩu mới phải có ít nhất 6 ký tự'); return }
+    if (!currentPw || !newPw) { Alert.alert(t('common.error'), t('profile.enterAllPw')); return }
+    if (newPw.length < 6) { Alert.alert(t('common.error'), t('profile.pwMinLength')); return }
     setChangingPw(true)
     try {
       await authApi.changePassword({ currentPassword: currentPw, newPassword: newPw })
       setPwModal(false)
       setCurrentPw(''); setNewPw('')
-      Alert.alert('Thành công', 'Đã đổi mật khẩu')
+      Alert.alert(t('common.success'), t('profile.pwChanged'))
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Đổi mật khẩu thất bại')
+      Alert.alert(t('common.error'), err?.response?.data?.message || t('profile.pwChangeFailed'))
     } finally { setChangingPw(false) }
   }
 
@@ -91,12 +93,12 @@ export default function ProfileScreen({ navigation }: any) {
     setVerifying(true)
     try {
       await authApi.sendVerification()
-      Alert.alert('Đã gửi', 'Vui lòng kiểm tra email, sao chép mã xác thực và dán vào màn hình tiếp theo', [
-        { text: 'Nhập mã xác thực', onPress: () => navigation.navigate('VerifyEmail') },
-        { text: 'Để sau' },
+      Alert.alert(t('profile.emailSent'), t('profile.emailSentDesc'), [
+        { text: t('profile.enterVerifyCode'), onPress: () => navigation.navigate('VerifyEmail') },
+        { text: t('profile.later') },
       ])
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Gửi email xác thực thất bại')
+      Alert.alert(t('common.error'), err?.response?.data?.message || t('profile.verifyFailed'))
     } finally { setVerifying(false) }
   }
 
@@ -104,7 +106,7 @@ export default function ProfileScreen({ navigation }: any) {
     try {
       await followApi.unfollow(orgId)
       setFollowedOrgs((prev) => prev.filter((o: any) => o.id !== orgId))
-    } catch { Alert.alert('Lỗi', 'Bỏ theo dõi thất bại') }
+    } catch { Alert.alert(t('common.error'), t('profile.unfollowFailed')) }
   }
 
   const handleChangeAvatar = async () => {
@@ -115,17 +117,17 @@ export default function ProfileScreen({ navigation }: any) {
       await userApi.updateAvatar(picked.uri)
       const { data } = await userApi.getProfile()
       setUser(data)
-      Alert.alert('Thành công', 'Đã cập nhật ảnh đại diện')
+      Alert.alert(t('common.success'), t('profile.avatarUpdated'))
     } catch (err: any) {
       if (err?.message?.includes('cancel')) return
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Cập nhật ảnh thất bại')
+      Alert.alert(t('common.error'), err?.response?.data?.message || t('profile.avatarFailed'))
     } finally { setUploadingAvatar(false) }
   }
 
   const handleLogout = () => {
-    Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
-      { text: 'Huỷ', style: 'cancel' },
-      { text: 'Đăng xuất', style: 'destructive', onPress: () => { logout() } },
+    Alert.alert(t('profile.logout'), t('profile.logoutConfirm'), [
+      { text: t('profile.cancelBtn'), style: 'cancel' },
+      { text: t('profile.logoutBtn'), style: 'destructive', onPress: () => { logout() } },
     ])
   }
 
@@ -152,10 +154,10 @@ export default function ProfileScreen({ navigation }: any) {
         <Text style={styles.email}>{user.email}</Text>
         <View style={styles.verifyRow}>
           {user.isVerified ? (
-            <Text style={styles.verifiedBadge}>✅ Đã xác thực</Text>
+            <Text style={styles.verifiedBadge}>✅ {t('auth.verified')}</Text>
           ) : (
             <TouchableOpacity onPress={handleVerifyEmail} disabled={verifying}>
-              <Text style={styles.verifyLink}>{verifying ? 'Đang gửi...' : '🔴 Xác thực email'}</Text>
+              <Text style={styles.verifyLink}>{verifying ? t('common.loading') : '🔴 ' + t('auth.verifyEmail')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -164,57 +166,57 @@ export default function ProfileScreen({ navigation }: any) {
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{stats.tickets}</Text>
-          <Text style={styles.statLabel}>Vé</Text>
+          <Text style={styles.statLabel}>{t('profile.tickets')}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{stats.orders}</Text>
-          <Text style={styles.statLabel}>Đơn hàng</Text>
+          <Text style={styles.statLabel}>{t('profile.orderCount')}</Text>
         </View>
       </View>
 
       <View style={styles.menu}>
         <TouchableOpacity style={styles.menuItem} onPress={() => { setEditName(user.fullName); setEditModal(true) }}>
           <Text style={styles.menuIcon}>✏️</Text>
-          <Text style={styles.menuText}>Sửa thông tin cá nhân</Text>
+          <Text style={styles.menuText}>{t('profile.editProfile')}</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuItem} onPress={() => setPwModal(true)}>
           <Text style={styles.menuIcon}>🔑</Text>
-          <Text style={styles.menuText}>Đổi mật khẩu</Text>
+          <Text style={styles.menuText}>{t('profile.changePwMenu')}</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
 
         {user.role === 'STAFF' && (
             <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('StaffCheckin')}>
             <Text style={styles.menuIcon}>📱</Text>
-            <Text style={styles.menuText}>Quét vé check-in</Text>
+            <Text style={styles.menuText}>{t('profile.staffCheckin')}</Text>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('OrganizerHome')}>
           <Text style={styles.menuIcon}>📢</Text>
-          <Text style={styles.menuText}>Organizer Dashboard</Text>
+          <Text style={styles.menuText}>{t('profile.organizerDashboard')}</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuItem} onPress={() => setShowOrders(!showOrders)}>
           <Text style={styles.menuIcon}>📋</Text>
-          <Text style={styles.menuText}>Lịch sử đơn hàng</Text>
+          <Text style={styles.menuText}>{t('profile.orders')}</Text>
           <Text style={styles.menuArrow}>{showOrders ? 'v' : '›'}</Text>
         </TouchableOpacity>
         {showOrders && (
           <View style={styles.subList}>
             {myOrders.length === 0 ? (
-              <Text style={styles.emptyText}>Chưa có đơn hàng nào</Text>
+              <Text style={styles.emptyText}>{t('profile.noOrders')}</Text>
             ) : (
               myOrders.map((o) => (
                 <View key={o.id} style={styles.orderCard}>
                   <View>
-                    <Text style={styles.orderId}>Đơn #{o.id.slice(0, 8)}</Text>
+                    <Text style={styles.orderId}>{t('ticket.orderId', { id: o.id.slice(0, 8) })}</Text>
                     <Text style={styles.orderDate}>{fd(o.createdAt)}</Text>
-                    <Text style={styles.orderStatus}>{o.status === 'PAID' ? '✅ Đã thanh toán' : o.status === 'PENDING' ? '💳 Chờ thanh toán' : o.status === 'CANCELLED' ? '❌ Đã huỷ' : '🔄 Đã hoàn tiền'}</Text>
+                    <Text style={styles.orderStatus}>{o.status === 'PAID' ? t('ticket.orderPaid') : o.status === 'PENDING' ? t('ticket.orderPending') : o.status === 'CANCELLED' ? t('ticket.orderCancelled') : t('ticket.orderRefunded')}</Text>
                   </View>
                   <Text style={styles.orderAmount}>{fc(o.finalAmount)}</Text>
                 </View>
@@ -225,13 +227,13 @@ export default function ProfileScreen({ navigation }: any) {
 
         <TouchableOpacity style={styles.menuItem} onPress={() => setShowFollows(!showFollows)}>
           <Text style={styles.menuIcon}>👥</Text>
-          <Text style={styles.menuText}>Đang theo dõi ({followedOrgs.length})</Text>
+          <Text style={styles.menuText}>{t('profile.followedOrgs', { count: followedOrgs.length })}</Text>
           <Text style={styles.menuArrow}>{showFollows ? 'v' : '›'}</Text>
         </TouchableOpacity>
         {showFollows && (
           <View style={styles.subList}>
             {followedOrgs.length === 0 ? (
-              <Text style={styles.emptyText}>Chưa theo dõi tổ chức nào</Text>
+              <Text style={styles.emptyText}>{t('profile.noFollows')}</Text>
             ) : (
               followedOrgs.map((org: any) => (
                 <View key={org.id} style={styles.followCard}>
@@ -240,7 +242,7 @@ export default function ProfileScreen({ navigation }: any) {
                   </View>
                   <Text style={styles.followName}>{org.name}</Text>
                   <TouchableOpacity onPress={() => handleUnfollow(org.id)}>
-                    <Text style={styles.unfollowText}>Bỏ theo dõi</Text>
+                    <Text style={styles.unfollowText}>{t('event.unfollow')}</Text>
                   </TouchableOpacity>
                 </View>
               ))
@@ -250,18 +252,18 @@ export default function ProfileScreen({ navigation }: any) {
 
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Main', { screen: 'Vé của tôi' })}>
           <Text style={styles.menuIcon}>🎫</Text>
-          <Text style={styles.menuText}>Vé của tôi</Text>
+          <Text style={styles.menuText}>{t('profile.myTickets')}</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
 
         <View style={[styles.menuItem, { flexDirection: 'column', alignItems: 'stretch' }]}>
-          <Text style={[styles.menuText, { marginBottom: 10 }]}>🌐 Ngôn ngữ / Language</Text>
+          <Text style={[styles.menuText, { marginBottom: 10 }]}>{t('profile.language')}</Text>
           <LanguageSwitcher />
         </View>
 
         <TouchableOpacity style={[styles.menuItem, styles.logoutItem]} onPress={handleLogout}>
           <Text style={styles.menuIcon}>🚪</Text>
-          <Text style={[styles.menuText, { color: '#ef4444' }]}>Đăng xuất</Text>
+          <Text style={[styles.menuText, { color: '#ef4444' }]}>{t('profile.logout')}</Text>
           <Text style={[styles.menuArrow, { color: '#ef4444' }]}>›</Text>
         </TouchableOpacity>
       </View>
@@ -269,12 +271,12 @@ export default function ProfileScreen({ navigation }: any) {
       <Modal visible={editModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Sửa thông tin</Text>
-            <TextInput style={styles.modalInput} placeholder="Họ và tên" placeholderTextColor="#9ca3af" value={editName} onChangeText={setEditName} />
+            <Text style={styles.modalTitle}>{t('profile.editTitle')}</Text>
+            <TextInput style={styles.modalInput} placeholder={t('profile.namePlaceholder')} placeholderTextColor="#9ca3af" value={editName} onChangeText={setEditName} />
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalCancel} onPress={() => setEditModal(false)}><Text style={styles.modalCancelText}>Huỷ</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setEditModal(false)}><Text style={styles.modalCancelText}>{t('profile.cancelBtn')}</Text></TouchableOpacity>
               <TouchableOpacity style={styles.modalSubmit} onPress={handleSaveName} disabled={saving}>
-                {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>Lưu</Text>}
+                {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>{t('profile.save')}</Text>}
               </TouchableOpacity>
             </View>
           </View>
@@ -284,13 +286,13 @@ export default function ProfileScreen({ navigation }: any) {
       <Modal visible={pwModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Đổi mật khẩu</Text>
-            <TextInput style={styles.modalInput} placeholder="Mật khẩu hiện tại" placeholderTextColor="#9ca3af" value={currentPw} onChangeText={setCurrentPw} secureTextEntry />
-            <TextInput style={styles.modalInput} placeholder="Mật khẩu mới (6+ ký tự)" placeholderTextColor="#9ca3af" value={newPw} onChangeText={setNewPw} secureTextEntry />
+            <Text style={styles.modalTitle}>{t('profile.changePwTitle')}</Text>
+            <TextInput style={styles.modalInput} placeholder={t('profile.currentPwPlaceholder')} placeholderTextColor="#9ca3af" value={currentPw} onChangeText={setCurrentPw} secureTextEntry />
+            <TextInput style={styles.modalInput} placeholder={t('profile.newPwPlaceholder')} placeholderTextColor="#9ca3af" value={newPw} onChangeText={setNewPw} secureTextEntry />
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalCancel} onPress={() => setPwModal(false)}><Text style={styles.modalCancelText}>Huỷ</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setPwModal(false)}><Text style={styles.modalCancelText}>{t('profile.cancelBtn')}</Text></TouchableOpacity>
               <TouchableOpacity style={styles.modalSubmit} onPress={handleChangePw} disabled={changingPw}>
-                {changingPw ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>Đổi mật khẩu</Text>}
+                {changingPw ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>{t('profile.changePwMenu')}</Text>}
               </TouchableOpacity>
             </View>
           </View>

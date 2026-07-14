@@ -1,53 +1,53 @@
 import { useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Platform } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000'
 
 export default function VerifyEmailScreen({ navigation }: any) {
+  const { t } = useTranslation()
   const [token, setToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
 
   const handleVerify = async () => {
-    if (!token.trim()) { Alert.alert('Lỗi', 'Vui lòng nhập token xác thực từ email'); return }
+    if (!token.trim()) { Alert.alert('Lỗi', t('auth.enterToken')); return }
     setLoading(true)
     try {
       await axios.get(`${API_BASE_URL}/auth/verify-email`, { params: { token: token.trim() } })
       setDone(true)
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Token không hợp lệ hoặc đã hết hạn')
+      Alert.alert('Lỗi', err?.response?.data?.message || t('auth.invalidToken'))
     } finally { setLoading(false) }
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.backBtn}>← Quay lại</Text></TouchableOpacity>
-        <Text style={styles.headerTitle}>Xác thực email</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.backBtn}>{t('common.back')}</Text></TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('auth.verifyEmailTitle')}</Text>
       </View>
 
       {done ? (
         <View style={styles.center}>
           <Text style={styles.icon}>✅</Text>
-          <Text style={styles.successTitle}>Xác thực thành công!</Text>
-          <Text style={styles.successDesc}>Email của bạn đã được xác thực.</Text>
+          <Text style={styles.successTitle}>{t('auth.verifySuccess')}</Text>
+          <Text style={styles.successDesc}>{t('auth.verifySuccessDesc')}</Text>
           <TouchableOpacity style={styles.btn} onPress={() => navigation.goBack()}>
-            <Text style={styles.btnText}>Quay lại</Text>
+            <Text style={styles.btnText}>{t('common.back')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.content}>
           <Text style={styles.icon}>📧</Text>
-          <Text style={styles.title}>Xác thực email</Text>
-          <Text style={styles.desc}>
-            Mở email xác thực từ ứng dụng, sao chép mã xác thực (token) và dán vào bên dưới.
-          </Text>
+          <Text style={styles.title}>{t('auth.verifyEmailTitle')}</Text>
+          <Text style={styles.desc}>{t('auth.verifyEmailDesc')}</Text>
 
-          <Text style={styles.label}>Mã xác thực (token)</Text>
+          <Text style={styles.label}>{t('auth.token')}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Dán token từ email..."
+            placeholder={t('auth.tokenPlaceholderDesc')}
             placeholderTextColor="#9ca3af"
             value={token}
             onChangeText={setToken}
@@ -57,12 +57,10 @@ export default function VerifyEmailScreen({ navigation }: any) {
           />
 
           <TouchableOpacity style={styles.btn} onPress={handleVerify} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Xác thực</Text>}
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('auth.verifyBtn')}</Text>}
           </TouchableOpacity>
 
-          <Text style={styles.hint}>
-            Token là đoạn mã dài trong link xác thực được gửi đến email của bạn.
-          </Text>
+          <Text style={styles.hint}>{t('auth.tokenHint')}</Text>
         </View>
       )}
     </View>

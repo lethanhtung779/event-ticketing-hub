@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import * as WebBrowser from 'expo-web-browser'
 import * as Google from 'expo-auth-session/providers/google'
 import { authApi, userApi } from '../api/client'
@@ -10,6 +11,7 @@ WebBrowser.maybeCompleteAuthSession()
 const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '1019091092463-qo4fa6upu1sfpbrlrhj5eqc3e3t4ed6v.apps.googleusercontent.com'
 
 export default function LoginScreen({ navigation }: any) {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -31,7 +33,7 @@ export default function LoginScreen({ navigation }: any) {
       const { id_token } = response.params
       if (!id_token) {
         console.warn('[Google] Missing id_token in success response')
-        Alert.alert('Lỗi', 'Không nhận được token từ Google')
+        Alert.alert('Lỗi', t('auth.googleNoToken'))
         return
       }
       try {
@@ -48,14 +50,14 @@ export default function LoginScreen({ navigation }: any) {
         const profileRes = await userApi.getProfile()
         await setAuth({ user: profileRes.data, ...tokens })
       }).catch((err: any) => {
-        const msg = err?.response?.data?.message || err.message || 'Đăng nhập Google thất bại'
+        const msg = err?.response?.data?.message || err.message || t('auth.googleLoginFailed')
         console.warn('[Google] API error:', msg)
         Alert.alert('Lỗi', Array.isArray(msg) ? msg[0] : msg)
       })
     } else if (response?.type === 'error') {
       console.warn('[Google] OAuth error:', response.params?.error_description)
       console.warn('[Google] Error details:', JSON.stringify(response))
-      Alert.alert('Lỗi', response.error?.description || response.params?.error_description || 'Đăng nhập Google thất bại')
+      Alert.alert('Lỗi', response.error?.description || response.params?.error_description || t('auth.googleLoginFailed'))
     } else if (response?.type === 'cancel') {
       console.log('[Google] User cancelled Google login')
     } else if (response) {
@@ -64,7 +66,7 @@ export default function LoginScreen({ navigation }: any) {
   }, [response])
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) { Alert.alert('Lỗi', 'Vui lòng nhập email và mật khẩu'); return }
+    if (!email.trim() || !password.trim()) { Alert.alert('Lỗi', t('auth.enterEmailAndPassword')); return }
     setLoading(true)
     try {
       const loginRes = await authApi.login(email.trim(), password)
@@ -74,7 +76,7 @@ export default function LoginScreen({ navigation }: any) {
       const profileRes = await userApi.getProfile()
       await setAuth({ user: profileRes.data, ...tokens })
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err.message || 'Đăng nhập thất bại'
+      const msg = err?.response?.data?.message || err.message || t('auth.loginFailed')
       Alert.alert('Lỗi', Array.isArray(msg) ? msg[0] : msg)
     } finally { setLoading(false) }
   }
@@ -88,40 +90,40 @@ export default function LoginScreen({ navigation }: any) {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.topSection}>
           <Text style={styles.badge}>🎫 TicketHub</Text>
-          <Text style={styles.title}>Đăng nhập</Text>
-          <Text style={styles.subtitle}>Chào mừng bạn trở lại!</Text>
+          <Text style={styles.title}>{t('auth.login')}</Text>
+          <Text style={styles.subtitle}>{t('auth.welcomeBack')}</Text>
         </View>
 
         <View style={styles.form}>
-          <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#9ca3af" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+          <TextInput style={styles.input} placeholder={t('auth.emailPlaceholder')} placeholderTextColor="#9ca3af" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
           <View style={styles.pwRow}>
-            <TextInput style={[styles.input, { flex: 1, marginBottom: 0 }]} placeholder="Mật khẩu" placeholderTextColor="#9ca3af" value={password} onChangeText={setPassword} secureTextEntry={!showPw} />
+            <TextInput style={[styles.input, { flex: 1, marginBottom: 0 }]} placeholder={t('auth.passwordPlaceholder')} placeholderTextColor="#9ca3af" value={password} onChangeText={setPassword} secureTextEntry={!showPw} />
             <TouchableOpacity onPress={() => setShowPw(!showPw)} style={styles.eyeBtn}>
               <Text>{showPw ? '🙈' : '👁️'}</Text>
             </TouchableOpacity>
           </View>
 
           <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotRow}>
-            <Text style={styles.forgotText}>Quên mật khẩu?</Text>
+            <Text style={styles.forgotText}>{t('auth.forgotPassword')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginBtnText}>Đăng nhập</Text>}
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginBtnText}>{t('auth.login')}</Text>}
           </TouchableOpacity>
 
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>HOẶC</Text>
+            <Text style={styles.dividerText}>{t('auth.or')}</Text>
             <View style={styles.dividerLine} />
           </View>
 
           <TouchableOpacity style={styles.googleBtn} onPress={handleGoogle}>
             <Text style={styles.googleIcon}>G</Text>
-            <Text style={styles.googleBtnText}>Đăng nhập với Google</Text>
+            <Text style={styles.googleBtnText}>{t('auth.loginGoogle')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.linkRow}>
-            <Text style={styles.linkText}>Chưa có tài khoản? <Text style={styles.linkHighlight}>Đăng ký</Text></Text>
+            <Text style={styles.linkText}>{t('auth.noAccount')} <Text style={styles.linkHighlight}>{t('auth.registerNow')}</Text></Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

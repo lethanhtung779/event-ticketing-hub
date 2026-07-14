@@ -1,4 +1,5 @@
-import type { NextConfig } from "next";
+import path from "node:path"
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   images: {
@@ -19,6 +20,9 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "date-fns", "@hookform/resolvers"],
   },
-};
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
+}
 
-export default nextConfig;
+export default nextConfig

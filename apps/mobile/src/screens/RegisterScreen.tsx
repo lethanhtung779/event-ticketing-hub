@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { authApi } from '../api/client'
 
 export default function RegisterScreen({ navigation }: any) {
+  const { t } = useTranslation()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -12,19 +14,19 @@ export default function RegisterScreen({ navigation }: any) {
 
   const handleRegister = async () => {
     if (!fullName.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin')
+      Alert.alert('Lỗi', t('auth.enterAllFields'))
       return
     }
-    if (password.length < 6) { Alert.alert('Lỗi', 'Mật khẩu phải có ít nhất 6 ký tự'); return }
-    if (password !== confirm) { Alert.alert('Lỗi', 'Mật khẩu xác nhận không khớp'); return }
+    if (password.length < 6) { Alert.alert('Lỗi', t('auth.passwordMin')); return }
+    if (password !== confirm) { Alert.alert('Lỗi', t('auth.passwordConfirmMismatch')); return }
     setLoading(true)
     try {
       await authApi.register({ fullName: fullName.trim(), email: email.trim(), password })
-      Alert.alert('Thành công', 'Đăng ký thành công! Vui lòng đăng nhập.', [
+      Alert.alert(t('common.success'), t('auth.registerSuccess'), [
         { text: 'OK', onPress: () => navigation.navigate('Login') }
       ])
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err.message || 'Đăng ký thất bại'
+      const msg = err?.response?.data?.message || err.message || t('auth.registerFailed')
       Alert.alert('Lỗi', Array.isArray(msg) ? msg[0] : msg)
     } finally { setLoading(false) }
   }
@@ -34,33 +36,29 @@ export default function RegisterScreen({ navigation }: any) {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.topSection}>
           <Text style={styles.badge}>🎫 TicketHub</Text>
-          <Text style={styles.title}>Đăng ký</Text>
-          <Text style={styles.subtitle}>Tạo tài khoản mới</Text>
+          <Text style={styles.title}>{t('auth.register')}</Text>
+          <Text style={styles.subtitle}>{t('auth.createAccount')}</Text>
         </View>
 
         <View style={styles.form}>
-          <TextInput style={styles.input} placeholder="Họ và tên" placeholderTextColor="#9ca3af" value={fullName} onChangeText={setFullName} />
-          <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#9ca3af" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+          <TextInput style={styles.input} placeholder={t('auth.fullNamePlaceholder')} placeholderTextColor="#9ca3af" value={fullName} onChangeText={setFullName} />
+          <TextInput style={styles.input} placeholder={t('auth.emailPlaceholder')} placeholderTextColor="#9ca3af" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
           <View style={styles.pwRow}>
-            <TextInput style={[styles.input, { flex: 1, marginBottom: 0 }]} placeholder="Mật khẩu" placeholderTextColor="#9ca3af" value={password} onChangeText={setPassword} secureTextEntry={!showPw} />
+            <TextInput style={[styles.input, { flex: 1, marginBottom: 0 }]} placeholder={t('auth.passwordPlaceholder')} placeholderTextColor="#9ca3af" value={password} onChangeText={setPassword} secureTextEntry={!showPw} />
             <TouchableOpacity onPress={() => setShowPw(!showPw)} style={styles.eyeBtn}>
               <Text>{showPw ? '🙈' : '👁️'}</Text>
             </TouchableOpacity>
           </View>
-          <TextInput style={styles.input} placeholder="Xác nhận mật khẩu" placeholderTextColor="#9ca3af" value={confirm} onChangeText={setConfirm} secureTextEntry={!showPw} />
+          <TextInput style={styles.input} placeholder={t('auth.confirmPasswordPlaceholder')} placeholderTextColor="#9ca3af" value={confirm} onChangeText={setConfirm} secureTextEntry={!showPw} />
 
-          <Text style={styles.legal}>
-            Bằng cách đăng ký, bạn đồng ý với{' '}
-            <Text style={styles.legalLink}>Điều khoản dịch vụ</Text> và{' '}
-            <Text style={styles.legalLink}>Chính sách bảo mật</Text>
-          </Text>
+          <Text style={styles.legal}>{t('auth.terms')}</Text>
 
           <TouchableOpacity style={styles.registerBtn} onPress={handleRegister} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.registerBtnText}>Đăng ký</Text>}
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.registerBtnText}>{t('auth.register')}</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.linkRow}>
-            <Text style={styles.linkText}>Đã có tài khoản? <Text style={styles.linkHighlight}>Đăng nhập</Text></Text>
+            <Text style={styles.linkText}>{t('auth.hasAccount')} <Text style={styles.linkHighlight}>{t('auth.login')}</Text></Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, TextInput, Alert } from 'react-native'
 import { eventApi, reviewApi, ticketApi, followApi, wishlistApi } from '../api/client'
+import { useTranslation } from 'react-i18next'
 import { getUser } from '../stores/auth'
 import type { Event, Review } from '../types'
 
@@ -20,10 +21,7 @@ const statusColors: Record<string, string> = {
   DRAFT: '#6b7280', PENDING: '#f59e0b', PUBLISHED: '#059669',
   REJECTED: '#ef4444', CANCELLED: '#ef4444', COMPLETED: '#3b82f6',
 }
-const statusLabels: Record<string, string> = {
-  DRAFT: 'Nháp', PENDING: 'Chờ duyệt', PUBLISHED: 'Đã xuất bản',
-  REJECTED: 'Bị từ chối', CANCELLED: 'Đã huỷ', COMPLETED: 'Hoàn thành',
-}
+
 
 export default function EventDetailScreen({ route, navigation }: any) {
   const { id } = route.params
@@ -42,6 +40,11 @@ export default function EventDetailScreen({ route, navigation }: any) {
   const [reviewComment, setReviewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const user = getUser()
+  const { t } = useTranslation()
+  const statusLabels: Record<string, string> = {
+    DRAFT: t('event.statusDraft'), PENDING: t('event.statusPending'), PUBLISHED: t('event.statusPublished'),
+    REJECTED: t('event.statusRejected'), CANCELLED: t('event.statusCancelled'), COMPLETED: t('event.statusCompleted'),
+  }
 
   const fetchData = () => {
     Promise.all([
@@ -75,21 +78,21 @@ export default function EventDetailScreen({ route, navigation }: any) {
   useEffect(() => { fetchData() }, [id])
 
   const handleFollow = async () => {
-    if (!event?.organizer || !user) { Alert.alert('Lỗi', 'Vui lòng đăng nhập'); return }
+    if (!event?.organizer || !user) { Alert.alert('Lỗi', t('auth.loginRequired')); return }
     setFollowLoading(true)
     try {
       if (following) { await followApi.unfollow(event.organizer.id); setFollowing(false) }
       else { await followApi.follow(event.organizer.id); setFollowing(true) }
-    } catch { Alert.alert('Lỗi', 'Thao tác thất bại') }
+      } catch { Alert.alert('Lỗi', t('event.followFailed')) }
     finally { setFollowLoading(false) }
   }
 
   const handleWishlist = async () => {
-    if (!user) { Alert.alert('Lỗi', 'Vui lòng đăng nhập'); return }
+    if (!user) { Alert.alert('Lỗi', t('auth.loginRequired')); return }
     try {
       if (saved) { await wishlistApi.unsave(event!.id); setSaved(false) }
       else { await wishlistApi.save(event!.id); setSaved(true) }
-    } catch { Alert.alert('Lỗi', 'Thao tác thất bại') }
+      } catch { Alert.alert('Lỗi', t('event.wishlistFailed')) }
   }
 
   const handleReview = async () => {
@@ -100,7 +103,7 @@ export default function EventDetailScreen({ route, navigation }: any) {
       setReviewComment('')
       fetchData()
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Gửi đánh giá thất bại')
+      Alert.alert('Lỗi', err?.response?.data?.message || t('event.reviewFailed'))
     } finally { setSubmitting(false) }
   }
 
@@ -109,14 +112,14 @@ export default function EventDetailScreen({ route, navigation }: any) {
     try {
       await ticketApi.joinWaitingList({ eventId: id, ticketTypeId: wlTicketTypeId, quantity: wlQty })
       setWlModal(false)
-      Alert.alert('Thành công', 'Đã đăng ký hàng chờ!')
+      Alert.alert(t('common.success'), t('event.wlRegistered'))
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Đăng ký thất bại')
+      Alert.alert('Lỗi', err?.response?.data?.message || t('event.wlFailed'))
     } finally { setSubmitting(false) }
   }
 
   if (loading) return <ActivityIndicator size="large" color="#059669" style={{ marginTop: 60 }} />
-  if (!event) return <View style={styles.center}><Text style={styles.errorText}>Không tìm thấy sự kiện</Text></View>
+  if (!event) return <View style={styles.center}><Text style={styles.errorText}>{t('event.notFound')}</Text></View>
 
   const avgRating = reviews.length ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10 : 0
 
@@ -145,27 +148,27 @@ export default function EventDetailScreen({ route, navigation }: any) {
         <View style={styles.infoGrid}>
           <View style={styles.infoCard}>
             <Text style={styles.infoIcon}>📅</Text>
-            <Text style={styles.infoLabel}>Ngày</Text>
+            <Text style={styles.infoLabel}>{t('event.date')}</Text>
             <Text style={styles.infoValue}>{fd(event.startTime)}</Text>
           </View>
           <View style={styles.infoCard}>
             <Text style={styles.infoIcon}>🕐</Text>
-            <Text style={styles.infoLabel}>Giờ</Text>
+            <Text style={styles.infoLabel}>{t('event.time')}</Text>
             <Text style={styles.infoValue}>{ft(event.startTime)} - {ft(event.endTime)}</Text>
           </View>
           <View style={styles.infoCard}>
             <Text style={styles.infoIcon}>📍</Text>
-            <Text style={styles.infoLabel}>Địa điểm</Text>
+            <Text style={styles.infoLabel}>{t('event.location')}</Text>
             <Text style={styles.infoValue} numberOfLines={2}>{event.location}</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Mô tả</Text>
+        <Text style={styles.sectionTitle}>{t('event.description')}</Text>
         <Text style={styles.description}>{event.description}</Text>
 
         {event.agenda && Array.isArray(event.agenda) && event.agenda.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Chương trình</Text>
+            <Text style={styles.sectionTitle}>{t('event.agenda')}</Text>
             {event.agenda.map((item: any, i: number) => (
               <View key={i} style={styles.agendaItem}>
                 {item.time && <Text style={styles.agendaTime}>{item.time}</Text>}
@@ -176,21 +179,21 @@ export default function EventDetailScreen({ route, navigation }: any) {
           </>
         )}
 
-        <Text style={styles.sectionTitle}>Đánh giá {avgRating > 0 && `⭐ ${avgRating} (${reviews.length})`}</Text>
+        <Text style={styles.sectionTitle}>{t('event.reviews')} {avgRating > 0 && `⭐ ${avgRating} (${reviews.length})`}</Text>
         {user && (
           <TouchableOpacity style={styles.reviewBtn} onPress={() => setReviewModal(true)}>
-            <Text style={styles.reviewBtnText}>✏️ Viết đánh giá</Text>
+            <Text style={styles.reviewBtnText}>✏️ {t('event.writeReview')}</Text>
           </TouchableOpacity>
         )}
         {reviews.length === 0 ? (
-          <Text style={styles.emptyText}>Chưa có đánh giá nào</Text>
+          <Text style={styles.emptyText}>{t('event.noReviews')}</Text>
         ) : (
           reviews.map((r) => (
             <View key={r.id} style={styles.reviewCard}>
               <View style={styles.reviewHeader}>
                 <View style={styles.reviewAvatar}><Text style={styles.reviewAvatarText}>{r.user?.fullName?.charAt(0) || '?'}</Text></View>
                 <View>
-                  <Text style={styles.reviewName}>{r.user?.fullName || 'Ẩn danh'}</Text>
+                  <Text style={styles.reviewName}>{r.user?.fullName || t('event.anonymous')}</Text>
                   <Text style={styles.reviewStars}>{'⭐'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</Text>
                 </View>
               </View>
@@ -202,7 +205,7 @@ export default function EventDetailScreen({ route, navigation }: any) {
 
         {similarEvents.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Sự kiện tương tự</Text>
+            <Text style={styles.sectionTitle}>{t('event.similarEvents')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.similarScroll}>
               {similarEvents.map((se) => (
                 <TouchableOpacity key={se.id} style={styles.similarCard} onPress={() => navigation.replace('EventDetail', { id: se.id })}>
@@ -218,7 +221,7 @@ export default function EventDetailScreen({ route, navigation }: any) {
 
         {event.organizer && (
           <>
-            <Text style={styles.sectionTitle}>Ban Tổ chức</Text>
+            <Text style={styles.sectionTitle}>{t('event.organizer')}</Text>
             <View style={styles.organizerCard}>
               <View style={styles.orgAvatar}><Text style={styles.orgAvatarText}>{event.organizer.name.charAt(0)}</Text></View>
               <View style={styles.orgInfo}>
@@ -227,14 +230,14 @@ export default function EventDetailScreen({ route, navigation }: any) {
               </View>
               {user && (
                 <TouchableOpacity style={[styles.followBtn, following && styles.followBtnActive]} onPress={handleFollow} disabled={followLoading}>
-                  <Text style={[styles.followBtnText, following && styles.followBtnTextActive]}>{following ? 'Đang theo dõi' : 'Theo dõi'}</Text>
+                  <Text style={[styles.followBtnText, following && styles.followBtnTextActive]}>{following ? t('event.following') : t('event.follow')}</Text>
                 </TouchableOpacity>
               )}
             </View>
           </>
         )}
 
-        <Text style={styles.sectionTitle}>Loại vé</Text>
+        <Text style={styles.sectionTitle}>{t('event.ticketTypes')}</Text>
         {event.ticketTypes?.length > 0 ? (
           event.ticketTypes.map((tt) => {
             const available = tt.totalQuantity - tt.soldQuantity
@@ -243,29 +246,29 @@ export default function EventDetailScreen({ route, navigation }: any) {
               <View key={tt.id} style={[styles.ttCard, soldOut && styles.ttSoldOut]}>
                 <View style={styles.ttInfo}>
                   <Text style={styles.ttName}>{tt.name}</Text>
-                  <Text style={styles.ttAvailable}>{soldOut ? 'Hết vé' : `${available} vé còn lại`}</Text>
+                  <Text style={styles.ttAvailable}>{soldOut ? t('event.soldOut') : t('event.ticketsLeft', { count: available })}</Text>
                 </View>
                 <Text style={styles.ttPrice}>{fc(tt.price)}</Text>
                 {!soldOut && user && event.status === 'PUBLISHED' && (
                   <TouchableOpacity style={styles.buyBtn} onPress={() => navigation.navigate('Purchase', { eventId: event.id, ticketTypeId: tt.id })}>
-                    <Text style={styles.buyBtnText}>Mua vé</Text>
+                    <Text style={styles.buyBtnText}>{t('event.buy')}</Text>
                   </TouchableOpacity>
                 )}
                 {soldOut && user && event.status === 'PUBLISHED' && (
                   <TouchableOpacity style={styles.wlBtn} onPress={() => { setWlTicketTypeId(tt.id); setWlQty(tt.minPerOrder || 1); setWlModal(true) }}>
-                    <Text style={styles.wlBtnText}>🔔 Hàng chờ</Text>
+                    <Text style={styles.wlBtnText}>🔔 {t('event.waitingList')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
             )
           })
-        ) : <Text style={styles.emptyText}>Chưa có loại vé nào</Text>}
+        ) : <Text style={styles.emptyText}>{t('event.noTickets')}</Text>}
 
         {!user && (
           <View style={styles.loginPrompt}>
-            <Text style={styles.loginPromptText}>Vui lòng đăng nhập để mua vé</Text>
+            <Text style={styles.loginPromptText}>{t('event.loginToBuy')}</Text>
             <TouchableOpacity style={styles.loginBtn} onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginBtnText}>Đăng nhập</Text>
+              <Text style={styles.loginBtnText}>{t('auth.login')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -274,7 +277,7 @@ export default function EventDetailScreen({ route, navigation }: any) {
       <Modal visible={reviewModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Đánh giá sự kiện</Text>
+            <Text style={styles.modalTitle}>{t('event.reviewTitle')}</Text>
             <View style={styles.starRow}>
               {[1, 2, 3, 4, 5].map((r) => (
                 <TouchableOpacity key={r} onPress={() => setReviewRating(r)}>
@@ -282,11 +285,11 @@ export default function EventDetailScreen({ route, navigation }: any) {
                 </TouchableOpacity>
               ))}
             </View>
-            <TextInput style={styles.modalInput} placeholder="Chia sẻ trải nghiệm của bạn..." placeholderTextColor="#9ca3af" multiline value={reviewComment} onChangeText={setReviewComment} />
+            <TextInput style={styles.modalInput} placeholder={t('event.reviewPlaceholder')} placeholderTextColor="#9ca3af" multiline value={reviewComment} onChangeText={setReviewComment} />
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalCancel} onPress={() => setReviewModal(false)}><Text style={styles.modalCancelText}>Huỷ</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setReviewModal(false)}><Text style={styles.modalCancelText}>{t('common.cancel')}</Text></TouchableOpacity>
               <TouchableOpacity style={styles.modalSubmit} onPress={handleReview} disabled={submitting}>
-                {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>Gửi</Text>}
+                {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>{t('event.reviewSubmit')}</Text>}
               </TouchableOpacity>
             </View>
           </View>
@@ -296,17 +299,17 @@ export default function EventDetailScreen({ route, navigation }: any) {
       <Modal visible={wlModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Đăng ký hàng chờ</Text>
-            <Text style={styles.wlInfo}>Chúng tôi sẽ thông báo khi có thêm vé</Text>
+            <Text style={styles.modalTitle}>{t('event.joinWLModalTitle')}</Text>
+            <Text style={styles.wlInfo}>{t('event.joinWLDesc')}</Text>
             <View style={styles.qtyRow}>
               <TouchableOpacity onPress={() => setWlQty(Math.max(1, wlQty - 1))} style={styles.qtyBtn}><Text>-</Text></TouchableOpacity>
               <Text style={styles.qtyText}>{wlQty}</Text>
               <TouchableOpacity onPress={() => setWlQty(wlQty + 1)} style={styles.qtyBtn}><Text>+</Text></TouchableOpacity>
             </View>
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalCancel} onPress={() => setWlModal(false)}><Text style={styles.modalCancelText}>Huỷ</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setWlModal(false)}><Text style={styles.modalCancelText}>{t('common.cancel')}</Text></TouchableOpacity>
               <TouchableOpacity style={styles.modalSubmit} onPress={handleJoinWL} disabled={submitting}>
-                {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>Đăng ký</Text>}
+                {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSubmitText}>{t('event.joinWL')}</Text>}
               </TouchableOpacity>
             </View>
           </View>

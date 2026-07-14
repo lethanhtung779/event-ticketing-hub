@@ -1,7 +1,8 @@
 'use client'
 
 import { Search, MapPin, ChevronDown, ChevronUp } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import Select from '@/components/ui/Select'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
@@ -28,14 +29,6 @@ interface EventFiltersProps {
   onClear: () => void
 }
 
-const sortOptions = [
-  { value: 'startTime_asc', label: 'Sớm nhất' },
-  { value: 'startTime_desc', label: 'Muộn nhất' },
-  { value: 'newest', label: 'Mới nhất' },
-  { value: 'price_asc', label: 'Giá: Thấp → Cao' },
-  { value: 'price_desc', label: 'Giá: Cao → Thấp' },
-]
-
 export default function EventFilters({
   search,
   categoryId,
@@ -56,8 +49,17 @@ export default function EventFilters({
   onToDateChange,
   onClear,
 }: EventFiltersProps) {
+  const { t } = useTranslation()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const hasFilters = search || categoryId || location || sortBy !== 'startTime_asc' || minPrice || maxPrice || fromDate || toDate
+
+  const sortOptions = useMemo(() => [
+    { value: 'startTime_asc', label: t('events.sortEarliest') },
+    { value: 'startTime_desc', label: t('events.sortLatest') },
+    { value: 'newest', label: t('events.sortNewest') },
+    { value: 'price_asc', label: t('events.sortPriceLow') },
+    { value: 'price_desc', label: t('events.sortPriceHigh') },
+  ], [t])
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-neutral-900">
@@ -66,7 +68,7 @@ export default function EventFilters({
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
-            placeholder="Tìm kiếm sự kiện..."
+            placeholder={t('events.searchPlaceholder')}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             className="block w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:placeholder:text-gray-500"
@@ -75,14 +77,14 @@ export default function EventFilters({
         <Select
           value={categoryId}
           onChange={(e) => onCategoryChange(e.target.value)}
-          placeholder="Danh mục"
+          placeholder={t('events.filterCategory')}
           options={categories.map((c) => ({ value: c.id, label: c.name }))}
         />
         <div className="relative">
           <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
-            placeholder="Địa điểm..."
+            placeholder={t('events.filterLocation')}
             value={location}
             onChange={(e) => onLocationChange(e.target.value)}
             className="block w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:placeholder:text-gray-500"
@@ -101,7 +103,7 @@ export default function EventFilters({
         className="mt-3 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
       >
         {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        Bộ lọc nâng cao
+        {t('events.advancedFilters')}
       </button>
 
       {showAdvanced && (
@@ -109,26 +111,26 @@ export default function EventFilters({
           <Input
             type="number"
             min={0}
-            placeholder="Giá từ"
+            placeholder={t('events.priceFrom')}
             value={minPrice}
             onChange={(e) => onMinPriceChange(e.target.value)}
           />
           <Input
             type="number"
             min={0}
-            placeholder="Giá đến"
+            placeholder={t('events.priceTo')}
             value={maxPrice}
             onChange={(e) => onMaxPriceChange(e.target.value)}
           />
           <Input
             type="date"
-            placeholder="Từ ngày"
+            placeholder={t('events.dateFrom')}
             value={fromDate}
             onChange={(e) => onFromDateChange(e.target.value)}
           />
           <Input
             type="date"
-            placeholder="Đến ngày"
+            placeholder={t('events.dateTo')}
             value={toDate}
             onChange={(e) => onToDateChange(e.target.value)}
           />
@@ -138,7 +140,7 @@ export default function EventFilters({
       {hasFilters && (
         <div className="mt-3 flex justify-end">
           <Button variant="ghost" size="sm" onClick={onClear}>
-            Xoá bộ lọc
+            {t('events.clearFilters')}
           </Button>
         </div>
       )}

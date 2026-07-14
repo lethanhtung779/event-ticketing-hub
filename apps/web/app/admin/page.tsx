@@ -8,10 +8,12 @@ import { Badge } from '@/components/ui/Badge'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { adminApi } from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
 
   useEffect(() => {
     adminApi
@@ -24,20 +26,20 @@ export default function AdminDashboard() {
   if (loading) return <PageSpinner />
 
   const cards = [
-    { label: 'Tổng người dùng', value: stats?.totalUsers ?? 0, icon: Users, color: 'bg-blue-500', href: '/admin/users' },
-    { label: 'Tổng sự kiện', value: stats?.totalEvents ?? 0, icon: Calendar, color: 'bg-green-500', href: '/admin/events' },
-    { label: 'Tổng đơn hàng', value: stats?.totalOrders ?? 0, icon: ShoppingCart, color: 'bg-purple-500', href: '/admin/orders' },
-    { label: 'Doanh thu', value: formatCurrency(stats?.revenue ?? 0), icon: DollarSign, color: 'bg-amber-500', href: '/admin/revenue' },
-    { label: 'Vé đã bán', value: stats?.totalTickets ?? 0, icon: TrendingUp, color: 'bg-indigo-500', href: '/admin/events' },
-    { label: 'Check-in', value: stats?.checkedInTickets ?? 0, icon: Tag, color: 'bg-pink-500', href: '/admin/check-in' },
+    { label: t('admin.totalUsers'), value: stats?.totalUsers ?? 0, icon: Users, color: 'bg-blue-500', href: '/admin/users' },
+    { label: t('admin.totalEvents'), value: stats?.totalEvents ?? 0, icon: Calendar, color: 'bg-green-500', href: '/admin/events' },
+    { label: t('admin.totalOrders'), value: stats?.totalOrders ?? 0, icon: ShoppingCart, color: 'bg-purple-500', href: '/admin/orders' },
+    { label: t('admin.revenue'), value: formatCurrency(stats?.revenue ?? 0), icon: DollarSign, color: 'bg-amber-500', href: '/admin/revenue' },
+    { label: t('admin.ticketsSold'), value: stats?.totalTickets ?? 0, icon: TrendingUp, color: 'bg-indigo-500', href: '/admin/events' },
+    { label: t('admin.checkIns'), value: stats?.checkedInTickets ?? 0, icon: Tag, color: 'bg-pink-500', href: '/admin/check-in' },
   ]
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('admin.dashboard')}</h1>
         <Link href="/admin/revenue" className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-          Xem báo cáo <ArrowUpRight className="h-3 w-3" />
+          {t('admin.viewReport')} <ArrowUpRight className="h-3 w-3" />
         </Link>
       </div>
 
@@ -61,7 +63,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardTitle>Đơn hàng gần đây</CardTitle>
+          <CardTitle>{t('admin.recentOrders')}</CardTitle>
           {stats?.recentOrders?.length ? (
             <div className="mt-4 divide-y divide-gray-100 dark:divide-gray-800">
               {stats.recentOrders.map((o: any) => (
@@ -78,12 +80,12 @@ export default function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 py-4">Chưa có đơn hàng nào</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 py-4">{t('admin.noRecentOrders')}</p>
           )}
         </Card>
 
         <Card>
-          <CardTitle>Người dùng mới</CardTitle>
+          <CardTitle>{t('admin.newUsers')}</CardTitle>
           {stats?.recentUsers?.length ? (
             <div className="mt-4 divide-y divide-gray-100 dark:divide-gray-800">
               {stats.recentUsers.map((u: any) => (
@@ -102,7 +104,7 @@ export default function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 py-4">Chưa có người dùng mới</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 py-4">{t('admin.noNewUsers')}</p>
           )}
         </Card>
       </div>

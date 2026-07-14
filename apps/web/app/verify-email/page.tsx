@@ -19,20 +19,20 @@ function VerifyEmailContent() {
     const token = searchParams.get('token')
     if (!token) {
       setStatus('error')
-      setMessage('Token xác thực không hợp lệ')
+      setMessage(t('emailVerification.invalidToken'))
       return
     }
     authApi
       .verifyEmail(token)
       .then(({ data }) => {
         setStatus('success')
-        setMessage((data as { message: string }).message || 'Email đã được xác thực thành công!')
+        setMessage((data as { message: string }).message || t('emailVerification.verified'))
       })
       .catch(() => {
         setStatus('error')
-        setMessage('Token xác thực không hợp lệ hoặc đã hết hạn')
+        setMessage(t('emailVerification.invalidToken'))
       })
-  }, [searchParams])
+  }, [searchParams, t])
 
   return (
     <div className="mx-auto max-w-md px-4 py-20 text-center">
@@ -40,7 +40,7 @@ function VerifyEmailContent() {
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
-            <p className="text-gray-600 dark:text-gray-300">Đang xác thực...</p>
+            <p className="text-gray-600 dark:text-gray-300">{t('emailVerification.sending')}</p>
           </div>
         )}
         {status === 'success' && (
@@ -48,7 +48,7 @@ function VerifyEmailContent() {
             <CheckCircle2 className="h-12 w-12 text-green-500" />
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">{message}</h1>
             <Link href="/login" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-              Đăng nhập ngay
+              {t('auth.loginNow')}
             </Link>
           </div>
         )}
@@ -57,7 +57,7 @@ function VerifyEmailContent() {
             <XCircle className="h-12 w-12 text-red-500" />
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">{message}</h1>
             <Link href="/" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-              Về trang chủ
+              {t('common.backToHome')}
             </Link>
           </div>
         )}
@@ -67,9 +67,10 @@ function VerifyEmailContent() {
 }
 
 export default function VerifyEmailPage() {
+  const { t } = useTranslation()
   return (
     <>
-      <SeoHead title="Xác thực email" />
+      <SeoHead title={t('emailVerification.title')} />
       <Suspense fallback={null}>
         <VerifyEmailContent />
       </Suspense>

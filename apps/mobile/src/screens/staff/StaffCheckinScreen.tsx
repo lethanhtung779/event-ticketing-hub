@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, Alert, Vibration, Animated, Platform, Modal } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { useFocusEffect } from '@react-navigation/native'
@@ -32,6 +33,7 @@ function hr(date: string) {
 }
 
 export default function StaffCheckinScreen({ navigation }: any) {
+  const { t } = useTranslation()
   const [permission, requestPermission] = useCameraPermissions()
   const [scanned, setScanned] = useState(false)
   const [scanResult, setScanResult] = useState<ResultData | null>(null)
@@ -128,12 +130,12 @@ export default function StaffCheckinScreen({ navigation }: any) {
       setOfflineCount(queue.length)
       handleResult({
         state: 'success',
-        message: 'Đã lưu vào hàng chờ (offline). Sẽ đồng bộ khi có mạng.',
+        message: t('staff.checkin.offlineSaved'),
       })
     } catch {
       handleResult({
         state: 'error',
-        message: 'Lỗi lưu offline. Vui lòng thử lại.',
+        message: t('staff.checkin.offlineError'),
       })
     }
   }
@@ -147,7 +149,7 @@ export default function StaffCheckinScreen({ navigation }: any) {
       const ticket = (res.data as any)?.ticket
       handleResult({
         state: 'success',
-        message: 'Check-in thành công!',
+        message: t('staff.checkin.success'),
         ticket: {
           id: ticket?.id,
           fullName: ticket?.user?.fullName || ticket?.fullName,
@@ -164,7 +166,7 @@ export default function StaffCheckinScreen({ navigation }: any) {
         const ticket = err?.response?.data?.ticket
         handleResult({
           state: 'already_used',
-          message: 'Vé đã được sử dụng!',
+          message: t('staff.checkin.alreadyUsed'),
           ticket: {
             id: ticket?.id,
             fullName: ticket?.fullName,
@@ -176,7 +178,7 @@ export default function StaffCheckinScreen({ navigation }: any) {
       } else if (status === 404 || msg?.includes('không tồn tại') || msg?.includes('invalid')) {
         handleResult({
           state: 'invalid',
-          message: 'Vé không hợp lệ!',
+          message: t('staff.checkin.invalid'),
         })
       } else if (msg?.includes('mạng') || msg?.includes('network') || msg?.includes('ENOTFOUND') || msg?.includes('timeout') || errMsg?.includes('Network Error') || errMsg?.includes('network') || err.code === 'ERR_NETWORK' || err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') {
         await offlineCheckIn(data)
@@ -194,14 +196,14 @@ export default function StaffCheckinScreen({ navigation }: any) {
   }, [])
 
   const handleManualSearch = async () => {
-    if (!manualQuery.trim()) { Alert.alert('Lỗi', 'Nhập email, tên, hoặc mã đơn'); return }
+    if (!manualQuery.trim()) { Alert.alert(t('common.error'), t('staff.manual.searchEmpty')); return }
     setSearching(true)
     try {
       const res = await ticketApi.searchTicket(manualQuery.trim())
       const results = Array.isArray(res.data) ? res.data : res.data?.data ?? []
       setManualResults(results)
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Tìm kiếm thất bại')
+      Alert.alert(t('common.error'), err?.response?.data?.message || t('staff.manual.searchFailed'))
     } finally { setSearching(false) }
   }
 
@@ -210,9 +212,9 @@ export default function StaffCheckinScreen({ navigation }: any) {
       await ticketApi.checkInManual(ticketId)
       setManualResults((prev) => prev.filter((t: any) => t.id !== ticketId))
       setManualQuery('')
-      Alert.alert('Thành công', 'Check-in thủ công thành công!')
+      Alert.alert(t('common.success'), t('staff.manual.checkinSuccess'))
     } catch (err: any) {
-      Alert.alert('Lỗi', err?.response?.data?.message || 'Check-in thất bại')
+      Alert.alert(t('common.error'), err?.response?.data?.message || t('staff.manual.checkinFailed'))
     }
   }
 
@@ -250,8 +252,8 @@ export default function StaffCheckinScreen({ navigation }: any) {
       <Animated.View pointerEvents="none" style={[styles.flashOverlay, { opacity: flashAnim, backgroundColor: getResultBg() }]} />
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.backBtn}>← Quay lại</Text></TouchableOpacity>
-        <Text style={styles.headerTitle}>Quét vé check-in</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.backBtn}>{t('staff.checkin.back')}</Text></TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('staff.checkin.title')}</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={() => navigation.navigate('CheckInHistory')} style={styles.historyBtn}>
             <Text style={styles.historyBtnText}>📋</Text>
@@ -274,9 +276,9 @@ export default function StaffCheckinScreen({ navigation }: any) {
           <View style={styles.scannerSection}>
             {!permission.granted ? (
               <View style={styles.cameraPlaceholder}>
-                <Text style={styles.cameraPlaceholderText}>Cần quyền camera để quét mã</Text>
+                <Text style={styles.cameraPlaceholderText}>{t('staff.checkin.cameraPermission')}</Text>
                 <TouchableOpacity style={styles.permitBtn} onPress={requestPermission}>
-                  <Text style={styles.permitBtnText}>Cấp quyền</Text>
+                  <Text style={styles.permitBtnText}>{t('staff.checkin.grantPermission')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -294,7 +296,7 @@ export default function StaffCheckinScreen({ navigation }: any) {
                     <View style={[styles.scanCorner, styles.cornerBL]} />
                     <View style={[styles.scanCorner, styles.cornerBR]} />
                   </View>
-                  <Text style={styles.scanHint}>Đưa mã QR vào khung</Text>
+                  <Text style={styles.scanHint}>{t('staff.checkin.hint')}</Text>
                 </View>
               </CameraView>
             )}
@@ -303,7 +305,7 @@ export default function StaffCheckinScreen({ navigation }: any) {
           <View style={styles.resultSection}>
             {!scanResult && (
               <View style={styles.resultPlaceholder}>
-                <Text style={styles.resultPlaceholderText}>Chờ quét mã QR...</Text>
+                <Text style={styles.resultPlaceholderText}>{t('staff.checkin.waiting')}</Text>
               </View>
             )}
           </View>
@@ -325,28 +327,28 @@ export default function StaffCheckinScreen({ navigation }: any) {
                   <Text style={styles.modalDetail}>🕐 Đã check-in lúc {hr(scanResult.ticket.checkedInAt)}{scanResult.ticket.checkedInBy ? ` bởi ${scanResult.ticket.checkedInBy}` : ''}</Text>
                 )}
                 <TouchableOpacity style={[styles.modalOkBtn, { backgroundColor: getResultBg() }]} onPress={dismissResult}>
-                  <Text style={styles.modalOkBtnText}>OK</Text>
+                  <Text style={styles.modalOkBtnText}>{t('staff.checkin.modalOk')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </Modal>
 
           <TouchableOpacity style={styles.modeSwitch} onPress={() => setMode('manual')}>
-            <Text style={styles.modeSwitchText}>🔍 Không quét được? Tra cứu thủ công</Text>
+            <Text style={styles.modeSwitchText}>{t('staff.checkin.switchManual')}</Text>
           </TouchableOpacity>
         </>
       ) : (
         <View style={styles.manualSection}>
           <View style={styles.manualHeader}>
-            <Text style={styles.manualTitle}>Tra cứu thủ công</Text>
+            <Text style={styles.manualTitle}>{t('staff.manual.title')}</Text>
             <TouchableOpacity onPress={() => { setMode('scan'); setManualResults([]); setManualQuery('') }}>
-              <Text style={styles.manualBack}>← Quét QR</Text>
+              <Text style={styles.manualBack}>{t('staff.manual.back')}</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.manualSearchRow}>
             <TextInput
               style={styles.manualInput}
-              placeholder="Email, tên hoặc mã đơn..."
+              placeholder={t('staff.manual.placeholder')}
               placeholderTextColor="#9ca3af"
               value={manualQuery}
               onChangeText={setManualQuery}
@@ -354,30 +356,30 @@ export default function StaffCheckinScreen({ navigation }: any) {
               autoCorrect={false}
             />
             <TouchableOpacity style={styles.manualSearchBtn} onPress={handleManualSearch} disabled={searching}>
-              {searching ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.manualSearchBtnText}>Tìm</Text>}
+              {searching ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.manualSearchBtnText}>{t('staff.manual.search')}</Text>}
             </TouchableOpacity>
           </View>
 
           {manualResults.length > 0 && (
             <View style={styles.manualResults}>
-              <Text style={styles.manualResultsTitle}>Kết quả ({manualResults.length})</Text>
+              <Text style={styles.manualResultsTitle}>{t('staff.manual.results', { count: manualResults.length })}</Text>
               {manualResults.map((ticket: any) => {
                 const alreadyChecked = ticket.status === 'CHECKED_IN'
                 return (
                   <View key={ticket.id} style={[styles.manualCard, alreadyChecked && styles.manualCardDone]}>
                     <View style={styles.manualCardInfo}>
-                      <Text style={styles.manualCardName}>{ticket.user?.fullName || 'Không tên'}</Text>
+                      <Text style={styles.manualCardName}>{ticket.user?.fullName || t('staff.manual.noName')}</Text>
                       <Text style={styles.manualCardType}>🎟️ {ticket.ticketType?.name || 'Vé'}</Text>
                       {ticket.ticketType?.event?.title && (
                         <Text style={styles.manualCardEvent}>📅 {ticket.ticketType.event.title}</Text>
                       )}
                       <Text style={[styles.manualCardStatus, { color: alreadyChecked ? '#dc2626' : '#059669' }]}>
-                        {alreadyChecked ? '✅ Đã check-in' : '⏳ Chưa sử dụng'}
+                        {alreadyChecked ? t('staff.manual.checkedIn') : t('staff.manual.notUsed')}
                       </Text>
                     </View>
                     {!alreadyChecked && (
                       <TouchableOpacity style={styles.manualCheckinBtn} onPress={() => handleManualCheckIn(ticket.id)}>
-                        <Text style={styles.manualCheckinBtnText}>Check-in</Text>
+                        <Text style={styles.manualCheckinBtnText}>{t('staff.manual.checkinBtn')}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -388,7 +390,7 @@ export default function StaffCheckinScreen({ navigation }: any) {
 
           {manualQuery && manualResults.length === 0 && !searching && (
             <View style={styles.manualEmpty}>
-              <Text style={styles.manualEmptyText}>Không tìm thấy kết quả</Text>
+              <Text style={styles.manualEmptyText}>{t('staff.manual.noResults')}</Text>
             </View>
           )}
         </View>

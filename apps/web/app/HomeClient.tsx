@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import { Search, MapPin, Calendar, Music, Theater, Trophy, Users, Compass, MoreHorizontal, Ticket, Newspaper } from 'lucide-react'
 import EventCard from '@/components/events/EventCard'
 import EventRow from '@/components/events/EventRow'
@@ -16,22 +17,22 @@ import SeoHead from '@/components/SeoHead'
 import { useAuthStore } from '@/stores/auth-store'
 
 const CATEGORIES = [
-  { label: 'Nhạc sống', icon: Music },
-  { label: 'Sân khấu & Nghệ thuật', icon: Theater },
-  { label: 'Thể Thao', icon: Trophy },
-  { label: 'Hội thảo & Workshop', icon: Users },
-  { label: 'Tham quan & Trải nghiệm', icon: Compass },
-  { label: 'Khác', icon: MoreHorizontal },
-  { label: 'Vé bán lại', icon: Ticket },
-  { label: 'Blog', icon: Newspaper },
+  { label: 'Nhạc sống', labelKey: 'home.catLiveMusic', icon: Music },
+  { label: 'Sân khấu & Nghệ thuật', labelKey: 'home.catTheatre', icon: Theater },
+  { label: 'Thể Thao', labelKey: 'home.catSports', icon: Trophy },
+  { label: 'Hội thảo & Workshop', labelKey: 'home.catWorkshop', icon: Users },
+  { label: 'Tham quan & Trải nghiệm', labelKey: 'home.catExperience', icon: Compass },
+  { label: 'Khác', labelKey: 'home.catOther', icon: MoreHorizontal },
+  { label: 'Vé bán lại', labelKey: 'home.catResale', icon: Ticket },
+  { label: 'Blog', labelKey: 'home.catBlog', icon: Newspaper },
 ]
 
 const CATEGORY_SECTIONS = [
-  { title: 'Nhạc sống', label: 'Nhạc sống', icon: Music, link: '/events?category=Nhạc sống' },
-  { title: 'Sân khấu & Nghệ thuật', label: 'Sân khấu & Nghệ thuật', icon: Theater, link: '/events?category=Sân khấu & Nghệ thuật' },
-  { title: 'Hội thảo & Workshop', label: 'Hội thảo & Workshop', icon: Users, link: '/events?category=Hội thảo & Workshop' },
-  { title: 'Tham quan & Trải nghiệm', label: 'Tham quan & Trải nghiệm', icon: Compass, link: '/events?category=Tham quan & Trải nghiệm' },
-  { title: 'Thể thao & Thể loại khác', label: 'Thể Thao', icon: Trophy, link: '/events?category=Thể Thao' },
+  { title: 'Nhạc sống', titleKey: 'home.catLiveMusic', label: 'Nhạc sống', labelKey: 'home.catLiveMusic', icon: Music, link: '/events?category=Nhạc sống' },
+  { title: 'Sân khấu & Nghệ thuật', titleKey: 'home.catTheatre', label: 'Sân khấu & Nghệ thuật', labelKey: 'home.catTheatre', icon: Theater, link: '/events?category=Sân khấu & Nghệ thuật' },
+  { title: 'Hội thảo & Workshop', titleKey: 'home.catWorkshop', label: 'Hội thảo & Workshop', labelKey: 'home.catWorkshop', icon: Users, link: '/events?category=Hội thảo & Workshop' },
+  { title: 'Tham quan & Trải nghiệm', titleKey: 'home.catExperience', label: 'Tham quan & Trải nghiệm', labelKey: 'home.catExperience', icon: Compass, link: '/events?category=Tham quan & Trải nghiệm' },
+  { title: 'Thể thao & Thể loại khác', titleKey: 'home.catSports', label: 'Thể Thao', labelKey: 'home.catSports', icon: Trophy, link: '/events?category=Thể Thao' },
 ]
 
 interface HomeClientProps {
@@ -40,6 +41,7 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ initialEvents, initialCategories }: HomeClientProps) {
+  const { t } = useTranslation()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -198,7 +200,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
 
   return (
     <div>
-      <SeoHead title="Trang chủ" description="Nền tảng đặt vé sự kiện trực tuyến hàng đầu Việt Nam" />
+      <SeoHead title={t('nav.home')} description={t('app.tagline')} />
       {/* Banner Slider */}
       {!hasFilters && (
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6">
@@ -221,7 +223,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
                 }`}
               >
                 <cat.icon className="h-4 w-4" />
-                {cat.label}
+                {t(cat.labelKey)}
               </button>
             ))}
           </div>
@@ -238,7 +240,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
               <>
                 {specialEvents.length > 0 && (
                   <EventRow
-                    title="Sự kiện đặc biệt"
+                    title={t('home.sectionSpecial')}
                     events={specialEvents}
                     link="/events"
                   />
@@ -246,7 +248,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
 
                 {trendingEvents.length > 0 && (
                   <EventRow
-                    title="Sự kiện xu hướng"
+                    title={t('home.sectionTrending')}
                     events={trendingEvents}
                     link="/events"
                   />
@@ -254,7 +256,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
 
                 {weekendEvents.length > 0 && (
                   <EventRow
-                    title="Cuối tuần này"
+                    title={t('home.sectionWeekend')}
                     events={weekendEvents}
                     link="/events"
                   />
@@ -262,7 +264,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
 
                 {monthEvents.length > 0 && (
                   <EventRow
-                    title="Tháng này"
+                    title={t('home.sectionMonth')}
                     events={monthEvents}
                     link="/events"
                   />
@@ -275,7 +277,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
                   return (
                     <EventRow
                       key={section.title}
-                      title={section.title}
+                      title={t(section.titleKey)}
                       events={catEvents.slice(0, 10)}
                       link={section.link}
                     />
@@ -290,7 +292,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
         <div className="mb-6 mt-16 flex items-center gap-3">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-gray-800" />
           <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-400 dark:text-gray-500">
-            {shouldShowSections ? 'Khám phá thêm' : 'Kết quả tìm kiếm'}
+            {shouldShowSections ? t('home.exploreMore') : t('events.title')}
           </h2>
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-gray-800" />
         </div>
@@ -302,7 +304,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-gray-400" />
               <input
                 type="text"
-                placeholder="Tìm kiếm sự kiện..."
+                placeholder={t('events.searchPlaceholder')}
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); setActiveCategory('') }}
                 className="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-neutral-900 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-400/20"
@@ -313,7 +315,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
               onChange={(e) => { setCategoryId(e.target.value); setPage(1); setActiveCategory('') }}
               className="block w-full rounded-lg border border-slate-300 bg-white py-2.5 px-3 text-sm text-slate-900 transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-neutral-900 dark:text-white dark:focus:border-emerald-400 dark:focus:ring-emerald-400/20"
             >
-              <option value="">Danh mục</option>
+              <option value="">{t('events.filterCategory')}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -322,7 +324,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
               <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-gray-400" />
               <input
                 type="text"
-                placeholder="Địa điểm..."
+                placeholder={t('events.filterLocation')}
                 value={location}
                 onChange={(e) => { setLocation(e.target.value); setPage(1) }}
                 className="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-neutral-900 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-400/20"
@@ -335,7 +337,7 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
                 onClick={handleClear}
                 className="text-sm text-slate-500 hover:text-slate-700 transition-colors dark:text-gray-400 dark:hover:text-gray-200"
               >
-                Xoá bộ lọc
+                {t('events.clearFilters')}
               </button>
             </div>
           )}
@@ -348,8 +350,8 @@ export default function HomeClient({ initialEvents, initialCategories }: HomeCli
           ) : allEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400 animate-fade-in dark:text-gray-500">
               <Calendar className="h-16 w-16 mb-4 text-slate-300 dark:text-gray-600" />
-              <p className="text-lg font-medium text-slate-500 dark:text-gray-400">Không tìm thấy sự kiện nào</p>
-              <p className="text-sm mt-1">Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm</p>
+              <p className="text-lg font-medium text-slate-500 dark:text-gray-400">{t('events.noEvents')}</p>
+              <p className="text-sm mt-1">{t('home.noResultsHint')}</p>
             </div>
           ) : (
             <>

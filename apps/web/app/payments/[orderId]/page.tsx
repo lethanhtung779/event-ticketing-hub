@@ -32,10 +32,10 @@ export default function PaymentPage(props: { params: Promise<{ orderId: string }
       if (url) {
         window.location.href = url
       } else {
-        toast.error('Không nhận được link thanh toán')
+        toast.error(t('payment.noUrl'))
       }
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Tạo thanh toán thất bại'))
+      toast.error(getErrorMessage(err, t('payment.createFailed')))
     } finally {
       setCreating(false)
     }

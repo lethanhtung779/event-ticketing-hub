@@ -12,6 +12,7 @@ import { PageSpinner } from '@/components/ui/Spinner'
 import { Modal } from '@/components/ui/Modal'
 import { formatCurrency, formatDate, getErrorMessage } from '@/lib/utils'
 import { adminApi, paymentApi } from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 interface PaymentItem {
   amount: number
@@ -54,6 +55,7 @@ export default function RevenuePage() {
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [groupBy, setGroupBy] = useState<'day' | 'month' | 'year'>('month')
+  const { t } = useTranslation()
 
   const [refundModal, setRefundModal] = useState(false)
   const [refundOrderId, setRefundOrderId] = useState('')
@@ -82,7 +84,7 @@ export default function RevenuePage() {
       setTotalOrders(data.totalTransactions || 0)
       setPayments(data.payments || [])
     } catch {
-      toast.error('Tải dữ liệu thất bại')
+      toast.error(t('admin.toastDataLoadFailed'))
     } finally {
       setLoading(false)
     }
@@ -96,18 +98,18 @@ export default function RevenuePage() {
 
   const handleRefund = async () => {
     if (!refundReason.trim()) {
-      toast.error('Vui lòng nhập lý do hoàn tiền')
+      toast.error(t('admin.toastRequireReason'))
       return
     }
     setRefunding(true)
     try {
       await paymentApi.refund({ orderId: refundOrderId, reason: refundReason })
-      toast.success('Hoàn tiền thành công!')
+      toast.success(t('admin.toastRefundSuccess'))
       setRefundModal(false)
       setRefundReason('')
       fetchData(fromDate || undefined, toDate || undefined)
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Hoàn tiền thất bại'))
+      toast.error(getErrorMessage(err, t('admin.toastRefundFailed')))
     } finally {
       setRefunding(false)
     }
@@ -122,27 +124,27 @@ export default function RevenuePage() {
   if (loading) return <PageSpinner />
 
   const summaryCards = [
-    { label: 'Tổng doanh thu', value: formatCurrency(totalRevenue), icon: DollarSign, color: 'bg-green-500' },
-    { label: 'Tổng giao dịch', value: totalOrders, icon: ShoppingCart, color: 'bg-blue-500' },
-    { label: 'Số ngày có giao dịch', value: new Set(payments.map((p) => formatDate(p.paidAt, 'dd/MM/yyyy'))).size, icon: Calendar, color: 'bg-purple-500' },
+    { label: t('admin.totalRevenue'), value: formatCurrency(totalRevenue), icon: DollarSign, color: 'bg-green-500' },
+    { label: t('admin.totalTransactions'), value: totalOrders, icon: ShoppingCart, color: 'bg-blue-500' },
+    { label: t('admin.daysWithTransactions'), value: new Set(payments.map((p) => formatDate(p.paidAt, 'dd/MM/yyyy'))).size, icon: Calendar, color: 'bg-purple-500' },
   ]
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Báo cáo doanh thu</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('admin.revenueReport')}</h1>
         <Button variant="secondary" size="sm" onClick={() => window.print()} className="flex items-center gap-2">
-          <Printer className="h-4 w-4" /> In / Xuất PDF
+          <Printer className="h-4 w-4" /> {t('admin.printPdf')}
         </Button>
       </div>
 
       <Card className="mb-6">
         <div className="flex items-end gap-3">
-          <Input label="Từ ngày" type="date" value={fromDate}
+          <Input label={t('admin.filterFromDate')} type="date" value={fromDate}
             onChange={(e) => setFromDate(e.target.value)} />
-          <Input label="Đến ngày" type="date" value={toDate}
+          <Input label={t('admin.filterToDate')} type="date" value={toDate}
             onChange={(e) => setToDate(e.target.value)} />
-          <Button onClick={handleFilter} className="mb-0.5">Lọc</Button>
+          <Button onClick={handleFilter} className="mb-0.5">{t('admin.filterBtn')}</Button>
         </div>
       </Card>
 
@@ -167,15 +169,15 @@ export default function RevenuePage() {
           <div className="flex items-center justify-between mb-2">
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-indigo-600" />
-              Biểu đồ doanh thu
+              {t('admin.revenueChart')}
             </CardTitle>
             <Select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value as 'day' | 'month' | 'year')}
               options={[
-                { value: 'day', label: 'Theo ngày' },
-                { value: 'month', label: 'Theo tháng' },
-                { value: 'year', label: 'Theo năm' },
+                { value: 'day', label: t('admin.byDay') },
+                { value: 'month', label: t('admin.byMonth') },
+                { value: 'year', label: t('admin.byYear') },
               ]}
               className="!w-32"
             />
@@ -206,7 +208,7 @@ export default function RevenuePage() {
                   tickFormatter={(v: number) => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v / 1_000).toFixed(0)}K` : String(v)}
                 />
                 <Tooltip
-                  formatter={(value: any) => [formatCurrency(Number(value)), 'Doanh thu']}
+                  formatter={(value: any) => [formatCurrency(Number(value)), t('admin.revenueLabel')]}
                   labelStyle={{ fontWeight: 600 }}
                   contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                 />
@@ -228,20 +230,20 @@ export default function RevenuePage() {
       <Card>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-indigo-600" />
-          Lịch sử giao dịch
+          {t('admin.transactionHistory')}
         </CardTitle>
         {payments.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Chưa có giao dịch nào</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">{t('admin.noTransactions')}</p>
         ) : (
           <div className="overflow-x-auto mt-4">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Ngày</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Doanh thu</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Phương thức</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Mã đơn</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colDate')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colRevenue')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colMethod')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colOrderId')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -264,20 +266,20 @@ export default function RevenuePage() {
         )}
       </Card>
 
-      <Modal open={refundModal} onClose={() => setRefundModal(false)} title="Hoàn tiền">
+      <Modal open={refundModal} onClose={() => setRefundModal(false)} title={t('admin.refundOrder')}>
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-          Xác nhận hoàn tiền cho đơn hàng <span className="font-mono font-medium">{refundOrderId.slice(0, 8)}</span>?
+          {t('admin.confirmRefundText', { id: refundOrderId.slice(0, 8), amount: '' })}
         </p>
         <Input
-          label="Lý do hoàn tiền"
+          label={t('admin.refundReason')}
           value={refundReason}
           onChange={(e) => setRefundReason(e.target.value)}
-          placeholder="Nhập lý do..."
+          placeholder={t('admin.refundReasonPlaceholder')}
         />
         <div className="mt-4 flex justify-end gap-3">
-          <Button variant="secondary" onClick={() => setRefundModal(false)}>Huỷ</Button>
+          <Button variant="secondary" onClick={() => setRefundModal(false)}>{t('common.cancel')}</Button>
           <Button loading={refunding} onClick={handleRefund} className="bg-red-600 hover:bg-red-700">
-            Xác nhận hoàn tiền
+            {t('admin.refundConfirm')}
           </Button>
         </div>
       </Modal>

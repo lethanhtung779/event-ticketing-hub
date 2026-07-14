@@ -16,18 +16,20 @@ import { formatDate, formatCurrency, getStatusColor, getStatusLabel, getErrorMes
 import { eventApi } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
 import type { Event } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 const STATUS_TABS = [
-  { value: '', label: 'Tất cả' },
-  { value: 'PENDING', label: 'Chờ duyệt' },
-  { value: 'PUBLISHED', label: 'Đã xuất bản' },
-  { value: 'DRAFT', label: 'Nháp' },
-  { value: 'REJECTED', label: 'Bị từ chối' },
-  { value: 'CANCELLED', label: 'Đã huỷ' },
-  { value: 'COMPLETED', label: 'Hoàn thành' },
+  { value: '', label: 'organizer.all' },
+  { value: 'PENDING', label: 'status.PENDING' },
+  { value: 'PUBLISHED', label: 'status.PUBLISHED' },
+  { value: 'DRAFT', label: 'status.DRAFT' },
+  { value: 'REJECTED', label: 'status.REJECTED' },
+  { value: 'CANCELLED', label: 'status.CANCELLED' },
+  { value: 'COMPLETED', label: 'status.COMPLETED' },
 ] as const
 
 export default function OrganizerEventsPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,11 +78,11 @@ export default function OrganizerEventsPage() {
     setDeleting(true)
     try {
       await eventApi.delete(deleteTarget.id)
-      toast.success('Đã xoá sự kiện')
+      toast.success(t('organizer.deleted'))
       setDeleteTarget(null)
       fetchEvents()
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Xoá thất bại'))
+      toast.error(getErrorMessage(err, t('organizer.deleteFailed')))
     } finally { setDeleting(false) }
   }
 
@@ -95,9 +97,9 @@ export default function OrganizerEventsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sự kiện của tôi</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('organizer.myEvents')}</h1>
         <Button onClick={() => setShowNotesModal(true)}>
-          <Plus className="h-4 w-4" /> Tạo sự kiện
+          <Plus className="h-4 w-4" /> {t('organizer.createEvent')}
         </Button>
       </div>
 
@@ -107,7 +109,7 @@ export default function OrganizerEventsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
-              placeholder="Tìm kiếm sự kiện..."
+              placeholder={t('organizer.searchEvents')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -125,7 +127,7 @@ export default function OrganizerEventsPage() {
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
                 }`}
               >
-                {tab.label}
+                {t(tab.label)}
               </button>
             ))}
           </div>
@@ -135,25 +137,25 @@ export default function OrganizerEventsPage() {
       {events.length === 0 ? (
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400 mb-4">Không tìm thấy sự kiện nào</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">{t('organizer.noEvents')}</p>
             <Link href="/organizer/events/new">
-              <Button><Plus className="h-4 w-4" /> Tạo sự kiện đầu tiên</Button>
+              <Button><Plus className="h-4 w-4" /> {t('organizer.createFirstEvent')}</Button>
             </Link>
           </div>
         </Card>
       ) : (
         <>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">Tổng số: {total} sự kiện</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">{t('organizer.totalEventsCount', { count: total })}</div>
           <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Sự kiện</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Thời gian</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Trạng thái</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Đã bán</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Doanh thu</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Thao tác</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('organizer.event')}</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('organizer.time')}</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('organizer.status')}</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('organizer.sold')}</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('organizer.revenue')}</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('organizer.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -240,13 +242,13 @@ export default function OrganizerEventsPage() {
             </table>
           </div>
           <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-gray-500 dark:text-gray-400">Trang {page}/{totalPages}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">{t('organizer.pageInfo', { current: page, total: totalPages })}</div>
             <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         </>
       )}
 
-      <Modal open={showNotesModal} onClose={() => setShowNotesModal(false)} title="LƯU Ý KHI ĐĂNG TẢI SỰ KIỆN" className="max-w-xl">
+      <Modal open={showNotesModal} onClose={() => setShowNotesModal(false)} title={t('organizer.createEventNoticeTitle')} className="max-w-xl">
         <div className="space-y-3 text-sm text-gray-700 dark:text-gray-200">
           <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
             <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
@@ -260,21 +262,21 @@ export default function OrganizerEventsPage() {
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setShowNotesModal(false)}>Huỷ</Button>
+            <Button variant="secondary" onClick={() => setShowNotesModal(false)}>{t('common.cancel')}</Button>
             <Button onClick={() => { setShowNotesModal(false); router.push('/organizer/events/new') }}>
-              Tôi đã hiểu, tiếp tục
+              {t('organizer.gotIt')}
             </Button>
           </div>
         </div>
       </Modal>
 
-      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá sự kiện">
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title={t('organizer.deleteEvent')}>
         {deleteTarget && (
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Bạn có chắc muốn xoá <strong>"{deleteTarget.title}"</strong>?</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{t('organizer.deleteConfirm', { title: deleteTarget.title })}</p>
             <div className="flex justify-end gap-3 mt-6">
-              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Huỷ</Button>
-              <Button loading={deleting} onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Xoá</Button>
+              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>{t('common.cancel')}</Button>
+              <Button loading={deleting} onClick={handleDelete} className="bg-red-600 hover:bg-red-700">{t('organizer.delete')}</Button>
             </div>
           </div>
         )}

@@ -65,9 +65,9 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
       const { data } = await ticketApi.validatePromo({ code: promoCode, totalPrice: subtotal })
       setPromoDiscount(data.discount || 0)
       setPromoApplied(promoCode)
-      toast.success(`Mã giảm giá áp dụng thành công!`)
+      toast.success(t('purchase.promoApplied'))
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Mã giảm giá không hợp lệ'
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || t('purchase.promoInvalid')
       toast.error(msg)
       setPromoDiscount(0)
       setPromoApplied('')
@@ -77,14 +77,14 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
   const handlePurchase = async () => {
     const items = Object.entries(quantities).filter(([, qty]) => qty > 0)
     if (items.length === 0) {
-      toast.error('Vui lòng chọn ít nhất 1 vé')
+      toast.error(t('purchase.selectAtLeastOne'))
       return
     }
 
     for (const [ticketTypeId] of items) {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
       if (!uuidRegex.test(ticketTypeId.trim())) {
-        toast.error('Mã loại vé không hợp lệ, vui lòng thử lại')
+        toast.error(t('purchase.invalidTicketTypeId'))
         return
       }
     }
@@ -101,7 +101,7 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
         const order = data as { orderId: string }
         if (!orderId) orderId = order.orderId
       }
-      toast.success('Đặt vé thành công!')
+      toast.success(t('purchase.success'))
       if (orderId) {
         router.push(`/payments/${orderId}`)
       } else {
@@ -109,7 +109,7 @@ export default function PurchasePage(props: { params: Promise<{ id: string }> })
       }
     } catch (err: unknown) {
       console.error('Purchase error:', err)
-      toast.error(getErrorMessage(err, 'Đặt vé thất bại'))
+      toast.error(getErrorMessage(err, t('purchase.failure')))
     } finally {
       setPurchasing(false)
     }

@@ -72,14 +72,14 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
       if (following) {
         await followApi.unfollow(event.organizer.id)
         setFollowing(false)
-        toast.success('Đã bỏ theo dõi')
+        toast.success(t('eventDetail.unfollowed'))
       } else {
         await followApi.follow(event.organizer.id)
         setFollowing(true)
-        toast.success('Đã theo dõi nhà tổ chức')
+        toast.success(t('eventDetail.followed'))
       }
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Thao tác thất bại'))
+      toast.error(getErrorMessage(err, t('eventDetail.actionFailed')))
     } finally { setFollowLoading(false) }
   }
 
@@ -87,12 +87,12 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
     setSubmitting(true)
     try {
       await reviewApi.create(params.id, { rating: reviewRating, comment: reviewComment || undefined })
-      toast.success('Đánh giá của bạn đã được gửi!')
+      toast.success(t('eventDetail.reviewSubmitted'))
       setReviewModal(false)
       setReviewComment('')
       fetchData()
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Gửi đánh giá thất bại'))
+      toast.error(getErrorMessage(err, t('eventDetail.reviewFailed')))
     } finally { setSubmitting(false) }
   }
 
@@ -100,10 +100,10 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
     setSubmitting(true)
     try {
       await ticketApi.joinWaitingList({ eventId: params.id, ticketTypeId: wlTicketTypeId, quantity: wlQty })
-      toast.success('Đã đăng ký hàng chờ! Chúng tôi sẽ thông báo khi có vé.')
+      toast.success(t('eventDetail.waitingListJoined'))
       setWlModal(false)
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Đăng ký thất bại'))
+      toast.error(getErrorMessage(err, t('eventDetail.waitingListFailed')))
     } finally { setSubmitting(false) }
   }
 
@@ -160,14 +160,14 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <SeoHead title={event?.title || 'Chi tiết sự kiện'} description={event?.description?.slice(0, 160)} />
+      <SeoHead title={event?.title || t('eventDetail.reviewModalTitle')} description={event?.description?.slice(0, 160)} />
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <div className="relative aspect-[2/1] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
             {event.bannerUrl ? (
               <img src={bu(event.bannerUrl)!} alt={event.title} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full items-center justify-center text-gray-400 dark:text-gray-500 text-lg">Không có ảnh banner</div>
+              <div className="flex h-full items-center justify-center text-gray-400 dark:text-gray-500 text-lg">{t('eventDetail.noBanner')}</div>
             )}
           </div>
 
@@ -210,7 +210,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
 
           {event.agenda && Array.isArray(event.agenda) && event.agenda.length > 0 && (
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Chương trình sự kiện</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{t('eventDetail.agenda')}</h2>
               <div className="space-y-3">
                 {event.agenda.map((item: { time?: string; title?: string; description?: string }, i: number) => (
                   <div key={i} className="flex gap-4 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
@@ -255,7 +255,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
                 {reviews.map((review) => (
                   <Card key={review.id} className="!p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">{review.user?.fullName || 'Ẩn danh'}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{review.user?.fullName || t('eventDetail.anonymous')}</span>
                       <div className="flex items-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-gray-600'}`} />
@@ -274,7 +274,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
           <div className="space-y-6">
           {event.organizer && (
             <Card>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ban Tổ chức</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('eventDetail.organizer')}</h3>
               <div className="flex items-start gap-4">
                 {event.organizer.logo ? (
                   <img src={bu(event.organizer.logo)!} alt={event.organizer.name} className="h-14 w-14 rounded-lg object-cover" />
@@ -290,7 +290,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
                   )}
                   <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
                     {event.organizer._count && (
-                      <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {event.organizer._count.follows} người theo dõi</span>
+                      <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {t('eventDetail.followers', { count: event.organizer._count.follows })}</span>
                     )}
                   </div>
                   {event.organizer.email && (
@@ -316,7 +316,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
                   }`}
                 >
                   <Heart className={`h-4 w-4 ${following ? 'fill-current' : ''}`} />
-                  {following ? 'Đang theo dõi' : 'Theo dõi'}
+                  {following ? t('eventDetail.following') : t('eventDetail.follow')}
                 </button>
               )}
             </Card>
@@ -346,7 +346,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
                       {soldOut && isAuthenticated && event.status === 'PUBLISHED' && (
                         <Button size="sm" variant="outline" className="mt-3 w-full"
                           onClick={() => { setWlTicketTypeId(tt.id); setWlQty(tt.minPerOrder || 1); setWlModal(true) }}>
-                          <Bell className="h-4 w-4" /> Đăng ký hàng chờ
+                          <Bell className="h-4 w-4" /> {t('eventDetail.waitingList')}
                         </Button>
                       )}
                     </div>
@@ -354,13 +354,13 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
                 })}
               </div>
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Chưa có loại vé nào</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('eventDetail.noTicketTypes')}</p>
             )}
 
             {!isAuthenticated && (
               <div className="mt-4 rounded-lg bg-indigo-50 p-4 text-center dark:bg-emerald-900/30">
-                <p className="text-sm text-indigo-800 dark:text-emerald-200 mb-2">Vui lòng đăng nhập để mua vé</p>
-                <Link href="/login"><Button size="sm">Đăng nhập</Button></Link>
+                <p className="text-sm text-indigo-800 dark:text-emerald-200 mb-2">{t('eventDetail.loginToBuy')}</p>
+                <Link href="/login"><Button size="sm">{t('auth.login')}</Button></Link>
               </div>
             )}
           </Card>
@@ -369,14 +369,14 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
 
       {similarEvents.length > 0 && (
         <div className="mt-16">
-          <EventRow title="Có thể bạn cũng thích" events={similarEvents} link={event.category ? `/events?categoryId=${event.categoryId}` : undefined} />
+          <EventRow title={t('eventDetail.similarEvents')} events={similarEvents} link={event.category ? `/events?categoryId=${event.categoryId}` : undefined} />
         </div>
       )}
 
-      <Modal open={reviewModal} onClose={() => setReviewModal(false)} title="Đánh giá sự kiện">
+      <Modal open={reviewModal} onClose={() => setReviewModal(false)} title={t('eventDetail.reviewModalTitle')}>
         <div className="space-y-4">
           <div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Xếp hạng</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('eventDetail.rating')}</p>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((r) => (
                 <button key={r} onClick={() => setReviewRating(r)} className="p-1">
@@ -386,27 +386,27 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nhận xét (không bắt buộc)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('eventDetail.reviewLabel')}</label>
             <textarea
               className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 dark:focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-emerald-400/20 dark:bg-neutral-900 dark:text-white"
-              rows={3} placeholder="Chia sẻ trải nghiệm của bạn..."
+              rows={3} placeholder={t('eventDetail.reviewPlaceholder')}
               value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}
             />
           </div>
           <div className="flex justify-end gap-3">
-            <Button variant="secondary" onClick={() => setReviewModal(false)}>Huỷ</Button>
-            <Button loading={submitting} onClick={handleSubmitReview}>Gửi đánh giá</Button>
+            <Button variant="secondary" onClick={() => setReviewModal(false)}>{t('common.cancel')}</Button>
+            <Button loading={submitting} onClick={handleSubmitReview}>{t('eventDetail.reviewSubmitBtn')}</Button>
           </div>
         </div>
       </Modal>
 
-      <Modal open={wlModal} onClose={() => setWlModal(false)} title="Đăng ký hàng chờ">
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Khi có thêm vé, chúng tôi sẽ thông báo cho bạn qua email.</p>
-        <Input label="Số lượng" type="number" min={1} value={wlQty}
+      <Modal open={wlModal} onClose={() => setWlModal(false)} title={t('eventDetail.waitingList')}>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{t('eventDetail.waitingListDesc')}</p>
+        <Input label={t('eventDetail.quantity')} type="number" min={1} value={wlQty}
           onChange={(e) => setWlQty(Number(e.target.value))} />
         <div className="flex justify-end gap-3 mt-4">
-          <Button variant="secondary" onClick={() => setWlModal(false)}>Huỷ</Button>
-          <Button loading={submitting} onClick={handleJoinWaitingList}>Đăng ký</Button>
+          <Button variant="secondary" onClick={() => setWlModal(false)}>{t('common.cancel')}</Button>
+          <Button loading={submitting} onClick={handleJoinWaitingList}>{t('eventDetail.joinWaitingList')}</Button>
         </div>
       </Modal>
     </div>

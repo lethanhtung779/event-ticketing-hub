@@ -15,6 +15,7 @@ import { PageSpinner } from '@/components/ui/Spinner'
 import { formatCurrency, formatDate, getErrorMessage, unwrapList, unwrapMeta } from '@/lib/utils'
 import { adminApi, paymentApi } from '@/lib/api'
 import type { Order } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([])
@@ -23,6 +24,7 @@ export default function AdminOrdersPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const { t } = useTranslation()
 
   const [refundTarget, setRefundTarget] = useState<any>(null)
   const [refundReason, setRefundReason] = useState('')
@@ -56,12 +58,12 @@ export default function AdminOrdersPage() {
     setRefunding(true)
     try {
       await paymentApi.refund({ orderId: refundTarget.id, reason: refundReason })
-      toast.success('Hoàn tiền thành công!')
+      toast.success(t('admin.toastRefundSuccess'))
       setRefundTarget(null)
       setRefundReason('')
       fetch()
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Hoàn tiền thất bại'))
+      toast.error(getErrorMessage(err, t('admin.toastRefundFailed')))
     } finally { setRefunding(false) }
   }
 
@@ -74,14 +76,14 @@ export default function AdminOrdersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quản lý đơn hàng</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('admin.orderManagement')}</h1>
 
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
-            placeholder="Tìm kiếm đơn hàng..."
+            placeholder={t('admin.searchOrders')}
             value={search}
             onChange={(e) => { if (!e.target.value) doSearch(''); else setSearch(e.target.value) }}
             onKeyDown={(e) => { if (e.key === 'Enter') doSearch(e.currentTarget.value) }}
@@ -93,16 +95,16 @@ export default function AdminOrdersPage() {
             </button>
           )}
         </div>
-        <Button onClick={() => doSearch(search)} className="mb-0.5">Tìm</Button>
+        <Button onClick={() => doSearch(search)} className="mb-0.5">{t('admin.searchBtn')}</Button>
         <Select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
           options={[
-            { value: '', label: 'Tất cả trạng thái' },
-            { value: 'PENDING', label: 'Chờ thanh toán' },
-            { value: 'PAID', label: 'Đã thanh toán' },
-            { value: 'CANCELLED', label: 'Đã huỷ' },
-            { value: 'REFUNDED', label: 'Đã hoàn tiền' },
+            { value: '', label: t('admin.allStatuses') },
+            { value: 'PENDING', label: t('admin.statusPendingPayment') },
+            { value: 'PAID', label: t('admin.statusPaid') },
+            { value: 'CANCELLED', label: t('admin.statusOrderCancelled') },
+            { value: 'REFUNDED', label: t('admin.statusRefunded') },
           ]}
           className="!w-44"
         />
@@ -113,22 +115,22 @@ export default function AdminOrdersPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Mã đơn</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Khách hàng</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Tổng tiền</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Giảm giá</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Thành tiền</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Số vé</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Trạng thái</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Ngày tạo</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colOrderId')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colCustomer')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colTotalAmount')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colDiscount')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colFinalAmount')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colTicketCount')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colStatus')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colOrderDate')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {loading ? (
                 <tr><td colSpan={9} className="px-4 py-12"><PageSpinner /></td></tr>
               ) : orders.length === 0 ? (
-                <tr><td colSpan={9} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Không tìm thấy đơn hàng</td></tr>
+                <tr><td colSpan={9} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('admin.noOrders')}</td></tr>
               ) : orders.map((o) => (
                 <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
                   <td className="px-4 py-3 font-mono text-xs text-gray-900 dark:text-white">#{o.id.slice(0, 8)}</td>
@@ -167,17 +169,16 @@ export default function AdminOrdersPage() {
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
 
-      <Modal open={!!refundTarget} onClose={() => setRefundTarget(null)} title="Hoàn tiền">
+      <Modal open={!!refundTarget} onClose={() => setRefundTarget(null)} title={t('admin.refundOrder')}>
         {refundTarget && (
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Xác nhận hoàn tiền đơn hàng <strong>#{refundTarget.id.slice(0, 8)}</strong>
-              {' '}({formatCurrency(refundTarget.finalAmount)})?
+              {t('admin.confirmRefundText', { id: refundTarget.id.slice(0, 8), amount: formatCurrency(refundTarget.finalAmount) })}
             </p>
-            <Input label="Lý do" value={refundReason} onChange={(e) => setRefundReason(e.target.value)} placeholder="Nhập lý do..." />
+            <Input label={t('admin.fieldRefundReason')} value={refundReason} onChange={(e) => setRefundReason(e.target.value)} placeholder={t('admin.refundReasonPlaceholder')} />
             <div className="mt-4 flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setRefundTarget(null)}>Huỷ</Button>
-              <Button loading={refunding} onClick={handleRefund} className="bg-red-600 hover:bg-red-700">Xác nhận</Button>
+              <Button variant="secondary" onClick={() => setRefundTarget(null)}>{t('common.cancel')}</Button>
+              <Button loading={refunding} onClick={handleRefund} className="bg-red-600 hover:bg-red-700">{t('admin.btnConfirm')}</Button>
             </div>
           </div>
         )}

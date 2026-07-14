@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -17,18 +17,18 @@ import { useAuthStore } from '@/stores/auth-store'
 import { getErrorMessage } from '@/lib/utils'
 import SeoHead from '@/components/SeoHead'
 
-const loginSchema = z.object({
-  email: z.string().email('Email không hợp lệ'),
-  password: z.string().min(1, 'Vui lòng nhập mật khẩu'),
-})
-
-type LoginForm = z.infer<typeof loginSchema>
-
 export default function LoginPage() {
   const { t } = useTranslation()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+
+  const loginSchema = useMemo(() => z.object({
+    email: z.string().email(t('auth.invalidEmail')),
+    password: z.string().min(1, t('auth.required', { field: t('auth.password') })),
+  }), [t])
+
+  type LoginForm = z.infer<typeof loginSchema>
 
   const {
     register,
@@ -73,7 +73,7 @@ export default function LoginPage() {
       const { data: res } = await authApi.googleLogin(credentialResponse.credential)
       await handleAuthSuccess(res as { access_token: string; refresh_token: string })
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Đăng nhập Google thất bại'))
+      toast.error(getErrorMessage(err, t('auth.googleLoginFailed')))
     } finally {
       setGoogleLoading(false)
     }
@@ -82,7 +82,7 @@ export default function LoginPage() {
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
       <div className="flex min-h-[80vh] items-center justify-center px-4">
-        <SeoHead title="Đăng nhập" />
+        <SeoHead title={t('auth.login')} />
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl text-indigo-600">
@@ -133,7 +133,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-200 dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-white dark:bg-neutral-950 px-3 text-xs text-gray-400 dark:text-gray-500">HOẶC</span>
+              <span className="bg-white dark:bg-neutral-950 px-3 text-xs text-gray-400 dark:text-gray-500">{t('auth.or')}</span>
             </div>
           </div>
 
@@ -141,12 +141,12 @@ export default function LoginPage() {
             {googleLoading ? (
               <div className="flex items-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 px-6 py-2.5 text-sm text-gray-500">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-emerald-600" />
-                Đang đăng nhập...
+                {t('auth.loggingIn')}
               </div>
             ) : (
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
-                onError={() => toast.error('Đăng nhập Google thất bại')}
+                onError={() => toast.error(t('auth.googleLoginFailed'))}
                 theme="outline"
                 size="large"
                 text="signin_with"

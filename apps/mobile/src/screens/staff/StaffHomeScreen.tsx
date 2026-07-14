@@ -1,21 +1,23 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, RefreshControl } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
 import { eventApi, ticketApi } from '../../api/client'
 import type { Event } from '../../types'
 
-function fd(date: string) {
-  const d = new Date(date)
-  const today = new Date()
-  const diff = d.toDateString() === today.toDateString() ? 'Hôm nay' : `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
-  return diff
-}
 function ft(date: string) {
   const d = new Date(date)
   return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }
 
 export default function StaffHomeScreen({ navigation }: any) {
+  const { t } = useTranslation()
+  function fd(date: string) {
+    const d = new Date(date)
+    const today = new Date()
+    const diff = d.toDateString() === today.toDateString() ? t('staff.home.today') : `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
+    return diff
+  }
   const [events, setEvents] = useState<(Event & { checkedIn?: number })[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -69,7 +71,7 @@ export default function StaffHomeScreen({ navigation }: any) {
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('StaffCheckin', { eventId: item.id, eventTitle: item.title })} activeOpacity={0.7}>
         <View style={styles.cardHeader}>
           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            {isToday && <View style={styles.todayBadge}><Text style={styles.todayBadgeText}>Hôm nay</Text></View>}
+            {isToday && <View style={styles.todayBadge}><Text style={styles.todayBadgeText}>{t('staff.home.todayBadge')}</Text></View>}
             <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
           </View>
           <Text style={styles.cardArrow}>›</Text>
@@ -81,7 +83,7 @@ export default function StaffHomeScreen({ navigation }: any) {
         <Text style={styles.cardLocation} numberOfLines={1}>📍 {item.location}</Text>
         <View style={styles.progressSection}>
           <View style={styles.progressRow}>
-            <Text style={styles.progressLabel}>Đã check-in: <Text style={styles.progressCount}>{checkedIn}</Text> / {total}</Text>
+            <Text style={styles.progressLabel}>{t('staff.home.checkedIn', { count: checkedIn, total })}</Text>
             <Text style={styles.progressPct}>{progress}%</Text>
           </View>
           <View style={styles.progressBar}>
@@ -109,15 +111,15 @@ export default function StaffHomeScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.backBtn}>← Quay lại</Text></TouchableOpacity>
-        <Text style={styles.headerTitle}>Check-in vé</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.backBtn}>{t('staff.home.back')}</Text></TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('staff.home.title')}</Text>
         <View style={{ width: 60 }} />
       </View>
 
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Tìm sự kiện..."
+          placeholder={t('staff.home.searchPlaceholder')}
           placeholderTextColor="#9ca3af"
           value={search}
           onChangeText={setSearch}
@@ -136,8 +138,8 @@ export default function StaffHomeScreen({ navigation }: any) {
         renderItem={() => null}
         ListHeaderComponent={
           <View>
-            {todayEvents.length > 0 && renderSection('Hôm nay', todayEvents)}
-            {upcomingEvents.length > 0 && renderSection('Sự kiện sắp tới', upcomingEvents)}
+            {todayEvents.length > 0 && renderSection(t('staff.home.today'), todayEvents)}
+            {upcomingEvents.length > 0 && renderSection(t('staff.home.upcoming'), upcomingEvents)}
           </View>
         }
         contentContainerStyle={filtered.length === 0 ? styles.emptyContainer : { padding: 16, paddingBottom: 40 }}
@@ -145,7 +147,7 @@ export default function StaffHomeScreen({ navigation }: any) {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={{ fontSize: 40, marginBottom: 12 }}>🔍</Text>
-            <Text style={styles.emptyText}>{search ? 'Không tìm thấy sự kiện' : 'Không có sự kiện nào'}</Text>
+            <Text style={styles.emptyText}>{search ? t('staff.home.noSearchResults') : t('staff.home.noEvents')}</Text>
           </View>
         }
       />

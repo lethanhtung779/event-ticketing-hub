@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, ScrollView, Platform } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { eventApi, categoryApi, wishlistApi } from '../api/client'
 import EventCard from '../components/EventCard'
 import BannerSlider from '../components/BannerSlider'
@@ -21,6 +22,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 }
 
 export default function HomeScreen({ navigation }: any) {
+  const { t } = useTranslation()
   const [events, setEvents] = useState<Event[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -132,16 +134,16 @@ export default function HomeScreen({ navigation }: any) {
             {!selectedCategory && sections && (
             <ScrollView horizontal={false} showsVerticalScrollIndicator={false}>
               {sections.featured.length > 0 && (
-                <EventRowSection title="Sự kiện đặc biệt" events={sections.featured} savedIds={savedIds} onPress={(id) => navigation.navigate('EventDetail', { id })} />
+                <EventRowSection title={t('home.featured')} events={sections.featured} savedIds={savedIds} onPress={(id) => navigation.navigate('EventDetail', { id })} />
               )}
               {sections.trending.length > 0 && (
-                <EventRowSection title="Sự kiện xu hướng" events={sections.trending} savedIds={savedIds} onPress={(id) => navigation.navigate('EventDetail', { id })} />
+                <EventRowSection title={t('home.trending')} events={sections.trending} savedIds={savedIds} onPress={(id) => navigation.navigate('EventDetail', { id })} />
               )}
               {sections.weekendEvts.length > 0 && (
-                <EventRowSection title="Cuối tuần này" events={sections.weekendEvts} savedIds={savedIds} onPress={(id) => navigation.navigate('EventDetail', { id })} />
+                <EventRowSection title={t('home.weekend')} events={sections.weekendEvts} savedIds={savedIds} onPress={(id) => navigation.navigate('EventDetail', { id })} />
               )}
               {sections.monthEvts.length > 0 && (
-                <EventRowSection title="Tháng này" events={sections.monthEvts} savedIds={savedIds} onPress={(id) => navigation.navigate('EventDetail', { id })} />
+                <EventRowSection title={t('home.thisMonth')} events={sections.monthEvts} savedIds={savedIds} onPress={(id) => navigation.navigate('EventDetail', { id })} />
               )}
               {Object.entries(sections.byCategory).map(([name, evts]) => (
                 <EventRowSection key={name} title={name} events={evts} savedIds={savedIds} onPress={(id) => navigation.navigate('EventDetail', { id })} />
@@ -154,14 +156,14 @@ export default function HomeScreen({ navigation }: any) {
         ListFooterComponent={
           !loading && events.length === 0 ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyText}>Chưa có sự kiện nào</Text>
+              <Text style={styles.emptyText}>{t('home.noEvents')}</Text>
               <Text style={styles.debugText}>API: {API_URL}</Text>
             </View>
           ) : null
         }
         ListEmptyComponent={
           selectedCategory && visibleEvents.length === 0 && !loading ? (
-            <View style={styles.empty}><Text style={styles.emptyText}>Không có sự kiện trong danh mục này</Text></View>
+            <View style={styles.empty}><Text style={styles.emptyText}>{t('home.noEventsInCategory')}</Text></View>
           ) : null
         }
       />

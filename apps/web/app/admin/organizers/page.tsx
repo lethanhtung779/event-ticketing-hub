@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Pagination } from '@/components/ui/Pagination'
 import { unwrapList, unwrapMeta, getErrorMessage, formatDate, bannerUrl as bu, getStatusColor } from '@/lib/utils'
 import { adminApi } from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 interface Organizer {
   id: string
@@ -35,6 +36,7 @@ export default function AdminOrganizersPage() {
   const [search, setSearch] = useState('')
   const [verifiedFilter, setVerifiedFilter] = useState('')
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const { t } = useTranslation()
 
   const fetchOrganizers = async () => {
     setLoading(true)
@@ -63,10 +65,10 @@ export default function AdminOrganizersPage() {
     setProcessingId(id)
     try {
       await adminApi.verifyOrganizer(id, verified)
-      toast.success(verified ? 'Đã xác thực nhà tổ chức' : 'Đã huỷ xác thực')
+      toast.success(verified ? t('admin.toastVerified') : t('admin.toastUnverified'))
       fetchOrganizers()
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Thao tác thất bại'))
+      toast.error(getErrorMessage(err, t('admin.toastActionFailed')))
     } finally {
       setProcessingId(null)
     }
@@ -81,7 +83,7 @@ export default function AdminOrganizersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý nhà tổ chức</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('admin.organizerManagement')}</h1>
       </div>
 
       <div className="flex gap-3 mb-6">
@@ -89,7 +91,7 @@ export default function AdminOrganizersPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Tìm kiếm nhà tổ chức..."
+            placeholder={t('admin.searchOrganizers')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="block w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-neutral-900 dark:text-white"
@@ -100,9 +102,9 @@ export default function AdminOrganizersPage() {
           onChange={(e) => { setVerifiedFilter(e.target.value); setPage(1) }}
           className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-neutral-900 dark:text-white"
         >
-          <option value="">Tất cả</option>
-          <option value="true">Đã xác thực</option>
-          <option value="false">Chưa xác thực</option>
+          <option value="">{t('admin.allOrganizers')}</option>
+          <option value="true">{t('admin.organizerVerified')}</option>
+          <option value="false">{t('admin.organizerUnverified')}</option>
         </select>
       </div>
 
@@ -113,18 +115,18 @@ export default function AdminOrganizersPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Nhà tổ chức</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Người dùng</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Sự kiện</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Theo dõi</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Trạng thái</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Ngày tạo</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colOrganizer')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colUserLabel')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colEvents')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colFollowers')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colStatus')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colCreatedAt')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {organizers.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Chưa có nhà tổ chức nào</td></tr>
+                <tr><td colSpan={7} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('admin.noOrganizers')}</td></tr>
               ) : organizers.map((org) => (
                 <tr key={org.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
                   <td className="px-4 py-3">
@@ -150,18 +152,18 @@ export default function AdminOrganizersPage() {
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{org._count.follows}</td>
                   <td className="px-4 py-3">
                     <Badge className={org.verified ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
-                      {org.verified ? 'Đã xác thực' : 'Chờ xác thực'}
+                      {org.verified ? t('admin.verifiedBadge') : t('admin.pendingBadge')}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(org.createdAt, 'dd/MM/yyyy')}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       {org.verified ? (
-                        <Button variant="ghost" size="sm" onClick={() => handleVerify(org.id, false)} disabled={processingId === org.id} title="Huỷ xác thực">
+                        <Button variant="ghost" size="sm" onClick={() => handleVerify(org.id, false)} disabled={processingId === org.id} title={t('admin.unverifyBtn')}>
                           <XCircle className="h-4 w-4 text-red-500" />
                         </Button>
                       ) : (
-                        <Button variant="ghost" size="sm" onClick={() => handleVerify(org.id, true)} disabled={processingId === org.id} title="Xác thực">
+                        <Button variant="ghost" size="sm" onClick={() => handleVerify(org.id, true)} disabled={processingId === org.id} title={t('admin.verifyBtn')}>
                           <CheckCircle2 className="h-4 w-4 text-green-500" />
                         </Button>
                       )}

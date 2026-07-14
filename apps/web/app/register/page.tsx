@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -15,22 +15,22 @@ import { authApi } from '@/lib/api'
 import { getErrorMessage } from '@/lib/utils'
 import SeoHead from '@/components/SeoHead'
 
-const registerSchema = z.object({
-  fullName: z.string().min(1, 'Vui lòng nhập họ tên'),
-  email: z.string().email('Email không hợp lệ'),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-  confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Mật khẩu không khớp',
-  path: ['confirmPassword'],
-})
-
-type RegisterForm = z.infer<typeof registerSchema>
-
 export default function RegisterPage() {
   const { t } = useTranslation()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+
+  const registerSchema = useMemo(() => z.object({
+    fullName: z.string().min(1, t('auth.required', { field: t('auth.fullName') })),
+    email: z.string().email(t('auth.invalidEmail')),
+    password: z.string().min(6, t('auth.passwordMinLength')),
+    confirmPassword: z.string().min(1, t('auth.required', { field: t('auth.confirmPassword') })),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('auth.passwordMismatch'),
+    path: ['confirmPassword'],
+  }), [t])
+
+  type RegisterForm = z.infer<typeof registerSchema>
 
   const {
     register,
@@ -59,7 +59,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4">
-      <SeoHead title="Đăng ký" />
+      <SeoHead title={t('auth.register')} />
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl text-indigo-600">
@@ -114,7 +114,7 @@ export default function RegisterPage() {
             {t('auth.register')}
           </Button>
           <p className="text-center text-xs text-gray-400 dark:text-gray-400">
-            Bằng cách đăng ký, bạn đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của chúng tôi.
+            {t('auth.termsAgreement')}
           </p>
         </form>
       </div>

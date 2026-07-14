@@ -49,7 +49,7 @@ export default function Header() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm sự kiện..."
+              placeholder={t('events.searchPlaceholder')}
               className="w-40 lg:w-56 rounded-lg border border-white/20 bg-white/15 pl-9 pr-3 py-1.5 text-sm text-white placeholder:text-white/50 transition-all duration-200 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
             />
           </form>
@@ -59,7 +59,7 @@ export default function Header() {
                 {t('nav.myTickets')}
               </Link>
               <Link href="/organizer/events/new" target="_blank" rel="noopener noreferrer" className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.97] flex items-center gap-1.5">
-                <Plus className="h-4 w-4" /> Tạo sự kiện
+                <Plus className="h-4 w-4" /> {t('nav.createEvent')}
               </Link>
             </>
           )}
@@ -91,7 +91,7 @@ export default function Header() {
                         className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors dark:text-gray-200 dark:hover:bg-white/5"
                       >
                         <Calendar className="h-4 w-4 text-slate-400 dark:text-gray-400" />
-                        Sự kiện của tôi
+                        {t('nav.myEvents')}
                       </Link>
                       <hr className="my-1 border-slate-100 dark:border-gray-800" />
                       <Link
@@ -100,7 +100,7 @@ export default function Header() {
                         className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors dark:text-gray-200 dark:hover:bg-white/5"
                       >
                         <Heart className="h-4 w-4 text-slate-400 dark:text-gray-400" />
-                        Yêu thích
+                        {t('nav.wishlist')}
                       </Link>
                       <Link
                         href="/my-tickets"
@@ -187,7 +187,7 @@ export default function Header() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm sự kiện..."
+              placeholder={t('events.searchPlaceholder')}
               className="w-full rounded-lg border border-white/20 bg-white/15 pl-10 pr-3 py-2.5 text-sm text-white placeholder:text-white/50 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
             />
           </form>
@@ -196,7 +196,7 @@ export default function Header() {
             <>
               <Link href="/organizer/events" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5 px-1 py-1.5 text-sm font-medium text-white/85 hover:text-white transition-colors">
                 <Calendar className="h-4 w-4 text-white/60" />
-                Sự kiện của tôi
+                {t('nav.myEvents')}
               </Link>
               <Link href="/my-tickets" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5 px-1 py-1.5 text-sm font-medium text-white/85 hover:text-white transition-colors">
                 <Ticket className="h-4 w-4 text-white/60" />
@@ -235,6 +235,7 @@ export default function Header() {
 }
 
 function NotificationBell() {
+  const { t } = useTranslation()
   const { notifications, unreadCount, markRead, markAllRead } = useNotificationStore()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -278,10 +279,10 @@ function NotificationBell() {
       {open && (
         <div className="absolute right-0 z-30 mt-2 w-80 sm:w-96 rounded-2xl border border-slate-200 bg-white shadow-[0_4px_16px_-4px_rgb(0_0_0_/_0.1),0_2px_4px_-4px_rgb(0_0_0_/_0.04)] animate-scale-in origin-top-right dark:border-gray-800 dark:bg-neutral-900">
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-gray-800">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Thông báo</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{t('notification.title')}</h3>
             {unreadCount > 0 && (
               <button onClick={markAllRead} className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 dark:text-emerald-400 dark:hover:text-emerald-300">
-                <CheckCheck className="h-3.5 w-3.5" /> Đã đọc tất cả
+                <CheckCheck className="h-3.5 w-3.5" /> {t('notification.markAllRead')}
               </button>
             )}
           </div>
@@ -290,7 +291,7 @@ function NotificationBell() {
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <Bell className="h-8 w-8 text-slate-300 dark:text-gray-600 mb-2" />
-                <p className="text-sm text-slate-500 dark:text-gray-400">Chưa có thông báo</p>
+                <p className="text-sm text-slate-500 dark:text-gray-400">{t('notification.empty')}</p>
               </div>
             ) : (
               notifications.map((n) => (
@@ -309,7 +310,7 @@ function NotificationBell() {
                   <div className="flex flex-col items-center gap-1">
                     {!n.read && (
                       <button onClick={(e) => handleMarkRead(e, n.id)} className="text-[10px] text-indigo-600 hover:text-indigo-700 dark:text-emerald-400 dark:hover:text-emerald-300">
-                        Đọc
+                        {t('notification.read')}
                       </button>
                     )}
                     {n.link && (

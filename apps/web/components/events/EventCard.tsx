@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next'
 import { MapPin, Calendar, Clock, Heart } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -17,6 +18,7 @@ interface EventCardProps {
 const savedCache = new Map<string, boolean>()
 
 export default function EventCard({ event, isSaved: initialSaved }: EventCardProps) {
+  const { t } = useTranslation()
   const { user } = useAuthStore()
   const [saved, setSaved] = useState(initialSaved ?? savedCache.get(event.id) ?? false)
   const [saving, setSaving] = useState(false)
@@ -40,7 +42,7 @@ export default function EventCard({ event, isSaved: initialSaved }: EventCardPro
     e.preventDefault()
     e.stopPropagation()
     if (!user) {
-      toast.error('Vui lòng đăng nhập để lưu sự kiện')
+      toast.error(t('auth.loginRequired'))
       return
     }
     setSaving(true)
@@ -48,14 +50,14 @@ export default function EventCard({ event, isSaved: initialSaved }: EventCardPro
       if (saved) {
         await wishlistApi.unsave(event.id)
         setSaved(false)
-        toast.success('Đã bỏ lưu sự kiện')
+        toast.success(t('event.unsaved'))
       } else {
         await wishlistApi.save(event.id)
         setSaved(true)
-        toast.success('Đã lưu sự kiện')
+        toast.success(t('event.saved'))
       }
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Thao tác thất bại'))
+      toast.error(getErrorMessage(err, t('common.error')))
     } finally {
       setSaving(false)
     }
@@ -139,7 +141,7 @@ export default function EventCard({ event, isSaved: initialSaved }: EventCardPro
                 {event.ticketTypes.length > 1 && <span className="text-sm font-normal text-slate-400 dark:text-gray-500">+</span>}
               </span>
             ) : (
-              <span className="text-sm text-slate-400 dark:text-gray-500">Liên hệ</span>
+              <span className="text-sm text-slate-400 dark:text-gray-500">{t('event.contact')}</span>
             )}
           </div>
         </div>

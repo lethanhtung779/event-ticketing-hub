@@ -18,6 +18,7 @@ import { PageSpinner } from '@/components/ui/Spinner'
 import { formatDate, formatCurrency, getStatusColor, getStatusLabel, getErrorMessage } from '@/lib/utils'
 import { eventApi, adminApi } from '@/lib/api'
 import type { Event, TicketType } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 export default function AdminEventDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params)
@@ -29,6 +30,7 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
   const [ttModal, setTtModal] = useState(false)
   const [editingTT, setEditingTT] = useState<TicketType | null>(null)
   const [saving, setSaving] = useState(false)
+  const { t } = useTranslation()
 
   const [reportModal, setReportModal] = useState(false)
   const [reportData, setReportData] = useState<any>(null)
@@ -69,7 +71,7 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
       const { data } = await adminApi.getEventReport(params.id)
       setReportData(data)
     } catch {
-      toast.error('Không thể tải báo cáo')
+      toast.error(t('admin.toastReportFailed'))
     } finally { setReportLoading(false) }
   }
 
@@ -96,16 +98,16 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
           language: transLang, title: transTitle || undefined,
           description: transDesc || undefined, location: transLoc || undefined,
         })
-        toast.success('Đã lưu bản dịch sự kiện!')
+        toast.success(t('admin.toastEventTranslationSaved'))
       } else if (transModal?.type === 'tickettype') {
         await adminApi.upsertTicketTypeTranslation(transModal.id, {
           language: transLang, name: transName,
         })
-        toast.success('Đã lưu bản dịch loại vé!')
+        toast.success(t('admin.toastTTTranslationSaved'))
       }
       setTransModal(null)
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Lưu thất bại'))
+      toast.error(getErrorMessage(err, t('admin.toastCategorySaveFailed')))
     } finally { setSavingTrans(false) }
   }
 
@@ -146,15 +148,15 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
 
       if (editingTT) {
         await eventApi.updateTicketType(params.id, editingTT.id, payload)
-        toast.success('Cập nhật loại vé thành công!')
+        toast.success(t('admin.toastTTUpdated'))
       } else {
         await eventApi.createTicketType(params.id, payload)
-        toast.success('Thêm loại vé thành công!')
+        toast.success(t('admin.toastTTAdded'))
       }
       setTtModal(false)
       fetchEvent()
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Có lỗi xảy ra'))
+      toast.error(getErrorMessage(err, t('common.error')))
     } finally { setSaving(false) }
   }
 
@@ -164,7 +166,7 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
   return (
     <div>
       <Link href="/admin/events" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-4">
-        <ArrowLeft className="h-4 w-4" /> Quản lý sự kiện
+        <ArrowLeft className="h-4 w-4" /> {t('admin.eventManagement')}
       </Link>
 
       <div className="flex items-center justify-between mb-6">
@@ -178,23 +180,23 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
           <button onClick={openReport}
             className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 transition-colors"
           >
-            <BarChart3 className="h-4 w-4" /> Báo cáo
+            <BarChart3 className="h-4 w-4" /> {t('admin.report')}
           </button>
           <button onClick={openEventTrans}
             className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 transition-colors"
           >
-            <Languages className="h-4 w-4" /> Dịch
+            <Languages className="h-4 w-4" /> {t('admin.translate')}
           </button>
           <button onClick={openWaitingList}
             className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 transition-colors"
           >
-            <Clock className="h-4 w-4" /> Chờ
+            <Clock className="h-4 w-4" /> {t('admin.waitingList')}
           </button>
           <Link
             href={`/admin/events/${event.id}/attendees`}
             className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50 transition-colors"
           >
-            <Users className="h-4 w-4" /> Check-in
+            <Users className="h-4 w-4" /> {t('admin.checkIn')}
           </Link>
           <Badge className={getStatusColor(event.status)}>{getStatusLabel(event.status)}</Badge>
         </div>
@@ -202,8 +204,8 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
 
       <Card className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <CardTitle>Loại vé</CardTitle>
-          <Button size="sm" onClick={openCreateTT}><Plus className="h-4 w-4" /> Thêm loại vé</Button>
+          <CardTitle>{t('admin.ticketTypes')}</CardTitle>
+          <Button size="sm" onClick={openCreateTT}><Plus className="h-4 w-4" /> {t('admin.addTicketType')}</Button>
         </div>
 
         {event.ticketTypes?.length ? (
@@ -215,11 +217,11 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{tt.name}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {formatCurrency(tt.price)} &middot; {tt.soldQuantity}/{tt.totalQuantity} đã bán &middot; còn {available}
+                      {formatCurrency(tt.price)} &middot; {tt.soldQuantity}/{tt.totalQuantity} {t('admin.ttSold')} &middot; {t('admin.ttRemaining')} {available}
                     </p>
                   </div>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => openTTTrans(tt)} title="Dịch thuật">
+                      <Button variant="ghost" size="sm" onClick={() => openTTTrans(tt)} title={t('admin.translate')}>
                         <Languages className="h-4 w-4 text-blue-500" />
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => openEditTT(tt)}>
@@ -227,13 +229,13 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
                       </Button>
                       {tt.soldQuantity === 0 && (
                         <Button variant="ghost" size="sm" onClick={async () => {
-                        if (!confirm(`Xoá loại vé "${tt.name}"?`)) return
+                        if (!confirm(t('admin.confirmDeleteTicketType'))) return
                         try {
                           await eventApi.deleteTicketType(params.id, tt.id)
-                          toast.success('Đã xoá loại vé')
+                          toast.success(t('admin.toastTTDeleted'))
                           fetchEvent()
                         } catch {
-                          toast.error('Xoá thất bại')
+                          toast.error(t('admin.toastTTDeleteFailed'))
                         }
                       }}>
                         <Trash2 className="h-4 w-4 text-red-500" />
@@ -245,39 +247,39 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
             })}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 dark:text-gray-400 py-4">Chưa có loại vé nào</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-4">{t('admin.noTicketTypes')}</p>
         )}
       </Card>
 
-      <Modal open={ttModal} onClose={() => setTtModal(false)} title={editingTT ? 'Sửa loại vé' : 'Thêm loại vé'}>
+      <Modal open={ttModal} onClose={() => setTtModal(false)} title={editingTT ? t('admin.editTicketType') : t('admin.addTicketType')}>
         <div className="space-y-4">
-          <Input label="Tên loại vé" value={ttForm.name} onChange={(e) => setTtForm({ ...ttForm, name: e.target.value })} />
+          <Input label={t('admin.ttName')} value={ttForm.name} onChange={(e) => setTtForm({ ...ttForm, name: e.target.value })} />
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Giá (VND)" type="number" value={ttForm.price}
+            <Input label={t('admin.ttPrice')} type="number" value={ttForm.price}
               onChange={(e) => setTtForm({ ...ttForm, price: e.target.value })} />
-            <Input label="Tổng số lượng" type="number" value={ttForm.totalQuantity}
+            <Input label={t('admin.ttQuantity')} type="number" value={ttForm.totalQuantity}
               onChange={(e) => setTtForm({ ...ttForm, totalQuantity: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Tối thiểu/đơn" type="number" value={ttForm.minPerOrder}
+            <Input label={t('admin.ttMinPerOrder')} type="number" value={ttForm.minPerOrder}
               onChange={(e) => setTtForm({ ...ttForm, minPerOrder: e.target.value })} />
-            <Input label="Tối đa/đơn" type="number" value={ttForm.maxPerOrder} placeholder="Không giới hạn"
+            <Input label={t('admin.ttMaxPerOrder')} type="number" value={ttForm.maxPerOrder} placeholder={t('admin.ttMaxPerOrderPlaceholder')}
               onChange={(e) => setTtForm({ ...ttForm, maxPerOrder: e.target.value })} />
           </div>
-          <Input label="Mở bán từ" type="datetime-local" value={ttForm.saleStartTime}
+          <Input label={t('admin.ttSaleStart')} type="datetime-local" value={ttForm.saleStartTime}
             onChange={(e) => setTtForm({ ...ttForm, saleStartTime: e.target.value })} />
-          <Input label="Kết thúc bán" type="datetime-local" value={ttForm.saleEndTime}
+          <Input label={t('admin.ttSaleEnd')} type="datetime-local" value={ttForm.saleEndTime}
             onChange={(e) => setTtForm({ ...ttForm, saleEndTime: e.target.value })} />
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setTtModal(false)}>Huỷ</Button>
-            <Button loading={saving} onClick={handleSaveTT}>{editingTT ? 'Cập nhật' : 'Thêm'}</Button>
+            <Button variant="secondary" onClick={() => setTtModal(false)}>{t('common.cancel')}</Button>
+            <Button loading={saving} onClick={handleSaveTT}>{editingTT ? t('admin.ttUpdate') : t('admin.ttAdd')}</Button>
           </div>
         </div>
       </Modal>
 
-      <Modal open={waitingOpen} onClose={() => setWaitingOpen(false)} title="Danh sách chờ">
+      <Modal open={waitingOpen} onClose={() => setWaitingOpen(false)} title={t('admin.waitingList')}>
         {waitingList.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">Chưa có ai đăng ký chờ</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">{t('admin.noWaitingList')}</p>
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {waitingList.map((w: any) => (
@@ -287,7 +289,7 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
                   <p className="text-xs text-gray-400 dark:text-gray-500">{w.user?.email}</p>
                 </div>
                 <div className="text-right text-sm">
-                  <p className="text-gray-500 dark:text-gray-400">SL: {w.quantity}</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t('admin.waitingListQty')}: {w.quantity}</p>
                   <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(w.createdAt, 'dd/MM')}</p>
                 </div>
               </div>
@@ -297,43 +299,43 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
       </Modal>
 
       {/* Report Modal */}
-      <Modal open={reportModal} onClose={() => setReportModal(false)} title="Báo cáo sự kiện" className="!max-w-2xl">
+      <Modal open={reportModal} onClose={() => setReportModal(false)} title={t('admin.report')} className="!max-w-2xl">
         {reportLoading ? (
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">Đang tải...</p>
+          <p className="text-center text-gray-500 dark:text-gray-400 py-8">{t('common.loading')}</p>
         ) : reportData ? (
           <div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
               <Card className="!p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Đã bán</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.sold')}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">{reportData.totalSold}/{reportData.totalCapacity}</p>
               </Card>
               <Card className="!p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Tỷ lệ lấp đầy</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.fillRate')}</p>
                 <p className="text-xl font-bold text-indigo-600">{reportData.fillRate}%</p>
               </Card>
               <Card className="!p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Đánh giá TB</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.avgRating')}</p>
                 <p className="text-xl font-bold text-amber-500 flex items-center gap-1">
                   {reportData.avgRating ? reportData.avgRating.toFixed(1) : 'N/A'}
                   {reportData.avgRating && <Star className="h-4 w-4" />}
                 </p>
               </Card>
               <Card className="!p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">DS chờ</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.waitingCount')}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">{reportData._count?.waitingListEntries || 0}</p>
               </Card>
             </div>
 
-            <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-200 mb-2">Chi tiết loại vé</h4>
+            <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-200 mb-2">{t('admin.ttDetail')}</h4>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
                   <tr>
-                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Tên</th>
-                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Giá</th>
-                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">SL</th>
-                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Đã bán</th>
-                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Tỷ lệ</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{t('admin.colTtName')}</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{t('admin.colPrice')}</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{t('admin.colQuantity')}</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{t('admin.colSold')}</th>
+                    <th className="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{t('admin.colRate')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -355,7 +357,7 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
             </div>
           </div>
         ) : (
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">Không có dữ liệu</p>
+          <p className="text-center text-gray-500 dark:text-gray-400 py-8">{t('admin.noData')}</p>
         )}
       </Modal>
 
@@ -363,11 +365,11 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
       <Modal
         open={!!transModal}
         onClose={() => setTransModal(null)}
-        title={transModal?.type === 'event' ? 'Dịch sự kiện' : 'Dịch loại vé'}
+        title={transModal?.type === 'event' ? t('admin.translateEvent') : t('admin.translateTicketType')}
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Ngôn ngữ</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('admin.fieldLanguage')}</label>
             <Select
               value={transLang}
               onChange={(e) => setTransLang(e.target.value)}
@@ -379,9 +381,9 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
           </div>
           {transModal?.type === 'event' ? (
             <>
-              <Input label="Tiêu đề" value={transTitle} onChange={(e) => setTransTitle(e.target.value)} placeholder="Dịch tiêu đề..." />
+              <Input label={t('admin.transTitle')} value={transTitle} onChange={(e) => setTransTitle(e.target.value)} placeholder={t('admin.transTitlePlaceholder')} />
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Mô tả</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('admin.transDesc')}</label>
                 <textarea
                   value={transDesc}
                   onChange={(e) => setTransDesc(e.target.value)}
@@ -389,17 +391,17 @@ export default function AdminEventDetailPage(props: { params: Promise<{ id: stri
                   className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm"
                 />
               </div>
-              <Input label="Địa điểm" value={transLoc} onChange={(e) => setTransLoc(e.target.value)} placeholder="Dịch địa điểm..." />
+              <Input label={t('admin.transLoc')} value={transLoc} onChange={(e) => setTransLoc(e.target.value)} placeholder={t('admin.transLocPlaceholder')} />
             </>
           ) : (
             <>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Đang dịch: <strong>{transModal?.name}</strong></p>
-              <Input label="Tên loại vé" value={transName} onChange={(e) => setTransName(e.target.value)} placeholder="Dịch tên loại vé..." />
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.translatingFor')} <strong>{transModal?.name}</strong></p>
+              <Input label={t('admin.transName')} value={transName} onChange={(e) => setTransName(e.target.value)} placeholder={t('admin.transNamePlaceholder')} />
             </>
           )}
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setTransModal(null)}>Huỷ</Button>
-            <Button loading={savingTrans} onClick={handleSaveTrans}>Lưu bản dịch</Button>
+            <Button variant="secondary" onClick={() => setTransModal(null)}>{t('common.cancel')}</Button>
+            <Button loading={savingTrans} onClick={handleSaveTrans}>{t('admin.saveTranslation')}</Button>
           </div>
         </div>
       </Modal>

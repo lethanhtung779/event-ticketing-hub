@@ -11,8 +11,10 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { BarChart3, Ticket, DollarSign, Calendar, TrendingUp } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import type { Event } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 export default function ReportsPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const { user } = useAuthStore()
   const [stats, setStats] = useState<{
@@ -44,12 +46,12 @@ export default function ReportsPage() {
   if (noOrg) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quản lý báo cáo</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('organizer.reports')}</h1>
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400 mb-4">Bạn chưa có hồ sơ nhà tổ chức.</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">{t('organizer.noProfile')}</p>
             <Link href="/organizer/setup">
-              <Button>Tạo hồ sơ ngay</Button>
+              <Button>{t('organizer.createProfileNow')}</Button>
             </Link>
           </div>
         </Card>
@@ -59,7 +61,7 @@ export default function ReportsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quản lý báo cáo</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('organizer.reports')}</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
@@ -68,7 +70,7 @@ export default function ReportsPage() {
               <Calendar className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Tổng sự kiện</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('organizer.totalEvents')}</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{stats?.totalEvents || 0}</p>
             </div>
           </div>
@@ -79,7 +81,7 @@ export default function ReportsPage() {
               <Ticket className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Vé đã bán</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('organizer.ticketsSold')}</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{stats?.totalTicketsSold || 0}</p>
             </div>
           </div>
@@ -90,7 +92,7 @@ export default function ReportsPage() {
               <DollarSign className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Doanh thu</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('organizer.revenue')}</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats?.totalRevenue || 0)}</p>
             </div>
           </div>
@@ -101,7 +103,7 @@ export default function ReportsPage() {
               <TrendingUp className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Đơn gần đây</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('organizer.recentOrders')}</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{stats?.recentOrders?.length || 0}</p>
             </div>
           </div>
@@ -109,14 +111,14 @@ export default function ReportsPage() {
       </div>
 
       <Card>
-        <CardTitle>Doanh thu theo sự kiện</CardTitle>
+        <CardTitle>{t('organizer.revenueByEvent')}</CardTitle>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left py-3 font-medium text-gray-600 dark:text-gray-300">Sự kiện</th>
-                <th className="text-center py-3 font-medium text-gray-600 dark:text-gray-300">Vé đã bán</th>
-                <th className="text-right py-3 font-medium text-gray-600 dark:text-gray-300">Doanh thu</th>
+                <th className="text-left py-3 font-medium text-gray-600 dark:text-gray-300">{t('organizer.event')}</th>
+                <th className="text-center py-3 font-medium text-gray-600 dark:text-gray-300">{t('organizer.ticketsSold')}</th>
+                <th className="text-right py-3 font-medium text-gray-600 dark:text-gray-300">{t('organizer.revenue')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -136,7 +138,7 @@ export default function ReportsPage() {
               })}
               {events.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="py-8 text-center text-gray-400 dark:text-gray-500">Chưa có dữ liệu</td>
+                  <td colSpan={3} className="py-8 text-center text-gray-400 dark:text-gray-500">{t('organizer.noData')}</td>
                 </tr>
               )}
             </tbody>

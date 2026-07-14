@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
 import { ticketApi } from '../../api/client'
@@ -9,6 +10,7 @@ function fd(date: string) {
 }
 
 export default function CheckInHistoryScreen({ navigation }: any) {
+  const { t } = useTranslation()
   const [history, setHistory] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -25,7 +27,7 @@ export default function CheckInHistoryScreen({ navigation }: any) {
         <Text style={styles.checkIcon}>✅</Text>
       </View>
       <View style={styles.cardContent}>
-        <Text style={styles.userName}>{item.user?.fullName || 'Không tên'}</Text>
+        <Text style={styles.userName}>{item.user?.fullName || t('staff.manual.noName')}</Text>
         <Text style={styles.userEmail}>{item.user?.email}</Text>
         <Text style={styles.ticketType}>🎟️ {item.ticketType?.name || 'Vé'}</Text>
         {item.ticketType?.event?.title && (
@@ -40,9 +42,9 @@ export default function CheckInHistoryScreen({ navigation }: any) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtn}>← Quay lại</Text>
+          <Text style={styles.backBtn}>{t('staff.history.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Lịch sử check-in</Text>
+        <Text style={styles.headerTitle}>{t('staff.history.title')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -50,7 +52,7 @@ export default function CheckInHistoryScreen({ navigation }: any) {
         <ActivityIndicator size="large" color="#059669" style={{ marginTop: 60 }} />
       ) : history.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>Chưa có check-in nào</Text>
+          <Text style={styles.emptyText}>{t('staff.history.empty')}</Text>
         </View>
       ) : (
         <FlatList

@@ -124,7 +124,7 @@ export default function EventsContent() {
           {organizerName ? organizerName : t('events.title')}
         </h1>
         <p className="mt-2 text-gray-600 dark:text-gray-300">
-          {organizerName ? 'Sự kiện của nhà tổ chức này' : (total > 0 ? `${total} ${t('events.title').toLowerCase()}` : '')}
+          {organizerName ? t('events.organizerEvents') : (total > 0 ? `${total} ${t('events.title').toLowerCase()}` : '')}
         </p>
       </div>
 

@@ -11,6 +11,7 @@ import { Modal } from '@/components/ui/Modal'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { formatDate, unwrapList, unwrapMeta, getErrorMessage } from '@/lib/utils'
 import { adminApi } from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([])
@@ -18,6 +19,7 @@ export default function AdminReviewsPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [deleteTarget, setDeleteTarget] = useState<any>(null)
+  const { t } = useTranslation()
 
   const fetch = async () => {
     setLoading(true)
@@ -36,34 +38,34 @@ export default function AdminReviewsPage() {
     if (!deleteTarget) return
     try {
       await adminApi.deleteReview(deleteTarget.id)
-      toast.success('Đã xoá đánh giá')
+      toast.success(t('admin.toastReviewDeleted'))
       setDeleteTarget(null)
       fetch()
-    } catch { toast.error('Xoá thất bại') }
+    } catch { toast.error(t('admin.toastReviewDeleteFailed')) }
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quản lý đánh giá</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('admin.reviewManagement')}</h1>
 
       <Card className="!p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800/50 text-left">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Người dùng</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Sự kiện</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Đánh giá</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Nội dung</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Ngày tạo</th>
-                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Hành động</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colReviewUser')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colReviewEvent')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colRating')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colComment')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colReviewDate')}</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t('admin.colActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {loading ? (
                 <tr><td colSpan={6} className="px-4 py-12"><PageSpinner /></td></tr>
               ) : reviews.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Chưa có đánh giá nào</td></tr>
+                <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('admin.noReviews')}</td></tr>
               ) : reviews.map((r) => (
                 <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-800/50">
                   <td className="px-4 py-3">
@@ -92,15 +94,15 @@ export default function AdminReviewsPage() {
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
 
-      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Xoá đánh giá">
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title={t('admin.deleteReview')}>
         {deleteTarget && (
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Xoá đánh giá của <strong>{deleteTarget.user?.fullName}</strong> cho sự kiện <strong>{deleteTarget.event?.title}</strong>?
+              {t('admin.confirmDeleteReview', { user: deleteTarget.user?.fullName, event: deleteTarget.event?.title })}
             </p>
             <div className="flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Huỷ</Button>
-              <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Xác nhận xoá</Button>
+              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>{t('common.cancel')}</Button>
+              <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">{t('admin.btnConfirmDelete')}</Button>
             </div>
           </div>
         )}

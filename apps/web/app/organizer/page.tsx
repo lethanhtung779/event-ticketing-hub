@@ -8,8 +8,10 @@ import Button from '@/components/ui/Button'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { organizerApi } from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 export default function OrganizerDashboard() {
+  const { t } = useTranslation()
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [noOrg, setNoOrg] = useState(false)
@@ -27,12 +29,12 @@ export default function OrganizerDashboard() {
   if (noOrg) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Tổng quan</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('organizer.tabOverview')}</h1>
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400 mb-4">Bạn chưa có hồ sơ nhà tổ chức.</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">{t('organizer.noProfile')}</p>
             <Link href="/organizer/setup">
-              <Button>Tạo hồ sơ ngay</Button>
+              <Button>{t('organizer.createProfileNow')}</Button>
             </Link>
           </div>
         </Card>
@@ -42,7 +44,7 @@ export default function OrganizerDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Tổng quan</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('organizer.tabOverview')}</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         <Link href="/organizer/events">
@@ -52,7 +54,7 @@ export default function OrganizerDashboard() {
                 <Calendar className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Sự kiện</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('organizer.events')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.totalEvents ?? 0}</p>
               </div>
             </div>
@@ -64,7 +66,7 @@ export default function OrganizerDashboard() {
               <Ticket className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Vé đã bán</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('organizer.ticketsSold')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.totalTicketsSold ?? 0}</p>
             </div>
           </div>
@@ -75,7 +77,7 @@ export default function OrganizerDashboard() {
               <DollarSign className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Doanh thu</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('organizer.revenue')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats?.totalRevenue ?? 0)}</p>
             </div>
           </div>
@@ -85,7 +87,7 @@ export default function OrganizerDashboard() {
       <Card>
         <CardTitle className="flex items-center gap-2">
           <ExternalLink className="h-5 w-5 text-indigo-600" />
-          Đơn hàng gần đây
+          {t('organizer.recentOrders')}
         </CardTitle>
         {stats?.recentOrders?.length ? (
           <div className="mt-4 divide-y divide-gray-100 dark:divide-gray-800">
@@ -103,7 +105,7 @@ export default function OrganizerDashboard() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 dark:text-gray-400 py-4">Chưa có đơn hàng nào</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-4">{t('organizer.noOrders')}</p>
         )}
       </Card>
     </div>

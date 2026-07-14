@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native'
 import { wishlistApi } from '../api/client'
 import { getUser } from '../stores/auth'
+import { useTranslation } from 'react-i18next'
 import EventCard from '../components/EventCard'
 import type { Event } from '../types'
 
 export default function WishlistScreen({ navigation }: any) {
+  const { t } = useTranslation()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -30,13 +32,13 @@ export default function WishlistScreen({ navigation }: any) {
   if (!user) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}><Text style={styles.headerTitle}>Yêu thích</Text></View>
+        <View style={styles.header}><Text style={styles.headerTitle}>{t('wishlist.title')}</Text></View>
         <View style={styles.prompt}>
           <Text style={{ fontSize: 48, marginBottom: 16 }}>❤️</Text>
-          <Text style={styles.promptTitle}>Vui lòng đăng nhập</Text>
-          <Text style={styles.promptDesc}>Đăng nhập để lưu sự kiện yêu thích</Text>
+          <Text style={styles.promptTitle}>{t('wishlist.loginTitle')}</Text>
+          <Text style={styles.promptDesc}>{t('wishlist.loginDesc')}</Text>
           <TouchableOpacity style={styles.promptBtn} onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.promptBtnText}>Đăng nhập</Text>
+            <Text style={styles.promptBtnText}>{t('wishlist.loginBtn')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -46,8 +48,8 @@ export default function WishlistScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Yêu thích</Text>
-        <Text style={styles.headerSub}>{events.length} sự kiện</Text>
+        <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
+        <Text style={styles.headerSub}>{events.length} {t('wishlist.count')}</Text>
       </View>
       {loading ? (
         <ActivityIndicator size="large" color="#059669" style={{ marginTop: 40 }} />
@@ -61,9 +63,9 @@ export default function WishlistScreen({ navigation }: any) {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={{ fontSize: 40, marginBottom: 12 }}>❤️</Text>
-              <Text style={styles.emptyText}>Chưa có sự kiện yêu thích</Text>
+              <Text style={styles.emptyText}>{t('wishlist.empty')}</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Trang chủ')}>
-                <Text style={styles.exploreLink}>Khám phá sự kiện</Text>
+                <Text style={styles.exploreLink}>{t('wishlist.exploreEvents')}</Text>
               </TouchableOpacity>
             </View>
           }

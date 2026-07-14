@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { Ticket, ArrowLeft } from 'lucide-react'
 import Button from '@/components/ui/Button'
@@ -13,15 +14,16 @@ import { authApi } from '@/lib/api'
 import { getErrorMessage } from '@/lib/utils'
 import SeoHead from '@/components/SeoHead'
 
-const forgotSchema = z.object({
-  email: z.string().email('Email không hợp lệ'),
-})
-
-type ForgotForm = z.infer<typeof forgotSchema>
-
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+
+  const forgotSchema = useMemo(() => z.object({
+    email: z.string().email(t('auth.invalidEmail')),
+  }), [t])
+
+  type ForgotForm = z.infer<typeof forgotSchema>
 
   const {
     register,
@@ -36,9 +38,9 @@ export default function ForgotPasswordPage() {
     try {
       await authApi.forgotPassword(data.email)
       setSent(true)
-      toast.success('Email khôi phục mật khẩu đã được gửi!')
+      toast.success(t('auth.resetPasswordSent'))
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Gửi yêu cầu thất bại'))
+      toast.error(getErrorMessage(err, t('auth.sendRequestFailed')))
     } finally {
       setLoading(false)
     }
@@ -46,40 +48,40 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4">
-      <SeoHead title="Quên mật khẩu" />
+      <SeoHead title={t('auth.forgotPassword')} />
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl text-indigo-600">
             <Ticket className="h-8 w-8" />
-            TicketHub
+            {t('app.name')}
           </Link>
-          <h1 className="mt-6 text-2xl font-bold text-gray-900 dark:text-white">Quên mật khẩu</h1>
+          <h1 className="mt-6 text-2xl font-bold text-gray-900 dark:text-white">{t('auth.forgotPassword')}</h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Nhập email của bạn để nhận liên kết khôi phục mật khẩu
+            {t('auth.forgotPasswordDescription')}
           </p>
         </div>
 
         {sent ? (
           <div className="rounded-xl bg-green-50 p-6 text-center">
             <p className="text-green-800 font-medium">
-              Email khôi phục mật khẩu đã được gửi!
+              {t('auth.resetPasswordSent')}
             </p>
             <p className="mt-2 text-sm text-green-600">
-              Vui lòng kiểm tra hộp thư đến của bạn.
+              {t('auth.checkInbox')}
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
             <Input
               id="email"
-              label="Email"
+              label={t('auth.email')}
               type="email"
               placeholder="you@example.com"
               error={errors.email?.message}
               {...register('email')}
             />
             <Button type="submit" loading={loading} className="w-full" size="lg">
-              Gửi yêu cầu
+              {t('auth.sendRequest')}
             </Button>
           </form>
         )}
@@ -87,7 +89,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center">
           <Link href="/login" className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
             <ArrowLeft className="h-4 w-4" />
-            Quay lại đăng nhập
+            {t('auth.backToLogin')}
           </Link>
         </div>
       </div>
