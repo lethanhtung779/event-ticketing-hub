@@ -3,8 +3,8 @@ services:
     name: ticketing-api
     env: node
     plan: free
-    buildCommand: npm_config_prefix=/opt/render/.npm-global npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter api build && pnpm --filter api exec prisma generate
-    startCommand: node apps/api/dist/main
+    buildCommand: npm_config_prefix=/opt/render/.npm-global npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter api exec prisma generate && pnpm --filter api build
+    startCommand: node apps/api/dist/src/main.js
     healthCheckPath: /auth/login
     envVars:
       - key: NODE_ENV
