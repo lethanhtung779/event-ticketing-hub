@@ -13,6 +13,7 @@ i18n
     ns: ['common'],
     defaultNS: 'common',
     fallbackLng: 'vi',
+    initImmediate: false,
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],

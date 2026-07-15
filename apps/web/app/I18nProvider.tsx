@@ -8,19 +8,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const init = async () => {
-      if (!i18n.isInitialized) {
-        await new Promise<void>((resolve) => {
-          i18n.on('initialized', () => resolve())
-        })
-      }
-      await loadLocale(i18n.language || 'vi')
-      setReady(true)
-    }
-    init()
+    loadLocale(i18n.language || 'vi').then(() => setReady(true))
   }, [])
 
-  if (!ready) return <>{children}</>
+  if (!ready) return null
 
   return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
 }
