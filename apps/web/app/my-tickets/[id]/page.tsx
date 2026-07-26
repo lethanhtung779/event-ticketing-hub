@@ -171,34 +171,38 @@ export default function TicketDetailPage(props: { params: Promise<{ id: string }
           </Badge>
         </div>
 
-        <div className="flex justify-center mb-6">
-          <div className="relative">
-            {qrSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={qrSrc} alt="QR Code" className="h-48 w-48 rounded-xl border-2 border-gray-200" />
-            ) : (
-              <div className="h-48 w-48 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-400 dark:text-gray-400 text-sm">
-                {generatingQRText}
+        {ticket.qrCodeToken && (
+          <>
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                {qrSrc ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={qrSrc} alt="QR Code" className="h-48 w-48 rounded-xl border-2 border-gray-200" />
+                ) : (
+                  <div className="h-48 w-48 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-400 dark:text-gray-400 text-sm">
+                    {generatingQRText}
+                  </div>
+                )}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                  <Badge className="bg-indigo-100 text-indigo-800 text-xs">{t('ticketDetail.qrCode')}</Badge>
+                </div>
               </div>
-            )}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-              <Badge className="bg-indigo-100 text-indigo-800 text-xs">{t('ticketDetail.qrCode')}</Badge>
             </div>
-          </div>
-        </div>
 
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <Button variant="outline" size="sm" onClick={handleCopy}>
-            {copied ? (
-              <><Check className="h-4 w-4" /> {t('common.copied')}</>
-            ) : (
-              <><Copy className="h-4 w-4" /> {t('ticketDetail.copyCode')}</>
-            )}
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleDownload}>
-            <Download className="h-4 w-4" /> {t('ticketDetail.download')}
-          </Button>
-        </div>
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <Button variant="outline" size="sm" onClick={handleCopy}>
+                {copied ? (
+                  <><Check className="h-4 w-4" /> {t('common.copied')}</>
+                ) : (
+                  <><Copy className="h-4 w-4" /> {t('ticketDetail.copyCode')}</>
+                )}
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="h-4 w-4" /> {t('ticketDetail.download')}
+              </Button>
+            </div>
+          </>
+        )}
 
         <div className="space-y-3 text-left border-t pt-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white text-center">

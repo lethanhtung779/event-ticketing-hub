@@ -131,27 +131,27 @@ export default function TicketDetailScreen({ route, navigation }: any) {
             <View style={[styles.statusBadge, { backgroundColor: cfg.color + '20' }]}>
               <Text style={[styles.statusText, { color: cfg.color }]}>{cfg.label}</Text>
             </View>
-            <View style={styles.qrBox}>
-              {ticket.qrCodeToken ? (
-                <QRCode
-                  value={ticket.qrCodeToken}
-                  size={180}
-                  backgroundColor="#fff"
-                  color="#1e1e2e"
-                  getRef={(ref) => { qrRef.current = ref }}
-                />
-              ) : (
-                <View style={styles.qrPlaceholder}><Text style={styles.qrPlaceholderText}>Đang tạo...</Text></View>
-              )}
-            </View>
-            <View style={styles.qrActions}>
-              <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
-                <Text style={styles.copyBtnText}>📋 {t('ticket.share')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.copyBtn} onPress={handleDownloadQR}>
-                <Text style={styles.copyBtnText}>💾 {t('ticket.downloadQR')}</Text>
-              </TouchableOpacity>
-            </View>
+            {ticket.qrCodeToken && (
+              <>
+                <View style={styles.qrBox}>
+                  <QRCode
+                    value={ticket.qrCodeToken}
+                    size={180}
+                    backgroundColor="#fff"
+                    color="#1e1e2e"
+                    getRef={(ref) => { qrRef.current = ref }}
+                  />
+                </View>
+                <View style={styles.qrActions}>
+                  <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
+                    <Text style={styles.copyBtnText}>📋 {t('ticket.share')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.copyBtn} onPress={handleDownloadQR}>
+                    <Text style={styles.copyBtnText}>💾 {t('ticket.downloadQR')}</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
 
           <Text style={styles.eventTitle}>{ticket.ticketType?.event?.title}</Text>
