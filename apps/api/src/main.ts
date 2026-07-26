@@ -12,6 +12,7 @@ async function bootstrap() {
 
   app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginOpenerPolicy: { policy: 'unsafe-none' },
   }));
 
   app.enableCors({

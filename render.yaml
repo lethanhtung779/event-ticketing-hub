@@ -28,19 +28,19 @@ services:
       - key: SMTP_FROM
         sync: false
       - key: VNPAY_TMN_CODE
-        sync: false
+        value: 6S50MSD6
       - key: VNPAY_HASH_SECRET
-        sync: false
+        value: HQHOEBWIPCK5O6ABCBAWGU28EDBQSBHS
       - key: VNPAY_URL
-        sync: false
+        value: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
       - key: VNPAY_RETURN_URL
-        sync: false
+        value: https://event-ticketing-api-db5k.onrender.com/payments/vnpay-return
       - key: CORS_ORIGIN
-        sync: false
+        value: https://event-ticketing-hub-eight.vercel.app
       - key: FRONTEND_URL
-        sync: false
+        value: https://event-ticketing-hub-eight.vercel.app
       - key: BACKEND_URL
-        sync: false
+        value: https://event-ticketing-api-db5k.onrender.com
       - key: PORT
         value: "3000"
       - key: UPSTASH_REDIS_REST_URL

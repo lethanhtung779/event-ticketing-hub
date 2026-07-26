@@ -182,7 +182,11 @@ export class VnpayService {
       }),
     ]);
 
-    await this.redis.del(BOOKING_KEY(orderId));
+    try {
+      await this.redis.del(BOOKING_KEY(orderId));
+    } catch {
+      // Redis không available, payment vẫn đã confirm thành công
+    }
 
     try {
       const eventDate = event.startTime.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
