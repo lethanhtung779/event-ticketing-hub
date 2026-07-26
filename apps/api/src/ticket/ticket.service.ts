@@ -337,6 +337,9 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
       },
     });
     if (!ticket) throw new NotFoundException('Vé không tồn tại');
+    if (ticket.status !== 'VALID' && ticket.status !== 'CHECKED_IN') {
+      return { ...ticket, qrCodeToken: '' };
+    }
     return ticket;
   }
 
