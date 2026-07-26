@@ -181,7 +181,7 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
 
   async getMyTickets(userId: string) {
     return this.prisma.ticket.findMany({
-      where: { userId },
+      where: { userId, status: { in: ['VALID', 'CHECKED_IN'] } },
       include: {
         order: { select: { id: true, status: true, finalAmount: true } },
         ticketType: { include: { event: { select: { id: true, title: true, location: true, startTime: true, bannerUrl: true } } } },
