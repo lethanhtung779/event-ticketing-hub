@@ -242,6 +242,18 @@ npx expo start     # Expo dev server
 | Staff | staff@ticketing.com   | staff123  |
 | User  | user@test.com         | user123   |
 
+### Test VNPay Payment (Sandbox)
+
+Use these card details on the VNPay payment page:
+
+| Field | Value |
+|-------|-------|
+| Ngân hàng | `NCB` |
+| Số thẻ | `9704198526191432198` |
+| Tên chủ thẻ | `NGUYEN VAN A` |
+| Ngày phát hành | `07/15` |
+| Mã OTP | `123456` |
+
 ## Available Scripts
 
 ### Web (`apps/web`)
