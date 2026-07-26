@@ -18,8 +18,8 @@ export class TicketController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  getTicket(@Param('id') id: string) {
-    return this.ticketService.getTicket(id);
+  getTicket(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.ticketService.getTicket(id, req.user.sub);
   }
 
   @Get()
