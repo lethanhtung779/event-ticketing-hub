@@ -291,10 +291,10 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
       } catch {
         // order already processed
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 10 * 60 * 1000);
 
     return {
-      message: 'Đặt vé thành công. Vui lòng thanh toán trong 24 giờ.',
+      message: 'Đặt vé thành công. Vui lòng thanh toán trong 10 phút.',
       orderId: order.id,
       quantity,
       ticketType: { id: ticketTypeId, name: ticketType.name, price: ticketType.price },
