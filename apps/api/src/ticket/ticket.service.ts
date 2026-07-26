@@ -181,7 +181,7 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
 
   async getMyTickets(userId: string) {
     return this.prisma.ticket.findMany({
-      where: { userId, status: { notIn: ['CANCELLED', 'TRANSFERRED'] } },
+      where: { userId },
       include: {
         order: { select: { id: true, status: true, finalAmount: true } },
         ticketType: { include: { event: { select: { id: true, title: true, location: true, startTime: true, bannerUrl: true } } } },
@@ -328,7 +328,7 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
     await this.releaseTickets(ticketTypeId, orderId, order.tickets.length);
   }
 
-  async getTicket(id: string, userId?: string) {
+  async getTicket(id: string) {
     const ticket = await this.prisma.ticket.findUnique({
       where: { id },
       include: {
@@ -337,10 +337,6 @@ export class TicketService implements OnModuleInit, OnModuleDestroy {
       },
     });
     if (!ticket) throw new NotFoundException('Vé không tồn tại');
-    if (userId && ticket.userId !== userId) throw new BadRequestException('Không phải vé của bạn');
-    if (ticket.status === 'CANCELLED' || ticket.status === 'TRANSFERRED') {
-      throw new BadRequestException('Vé đã bị hủy');
-    }
     return ticket;
   }
 
